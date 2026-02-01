@@ -3,6 +3,10 @@ set -e
 
 echo "=== Clever Cloud Post-Build Hook ==="
 
+# Change to APP_FOLDER
+cd "${APP_HOME}/backend/server"
+echo "Working directory: $(pwd)"
+
 # Collectstatic
 echo "Running collectstatic..."
 python manage.py collectstatic --noinput
