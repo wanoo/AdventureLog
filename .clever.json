@@ -1,0 +1,20 @@
+{
+  "apps": [
+    {
+      "app_id": "app_e90f21de-00bf-470f-8ce5-a5da62519f8d",
+      "org_id": "orga_c7767b74-60be-4716-addf-bb1da4f78b3b",
+      "deploy_url": "https://push-n3-par-clevercloud-customers.services.clever-cloud.com/app_e90f21de-00bf-470f-8ce5-a5da62519f8d.git",
+      "git_ssh_url": "git+ssh://git@push-n3-par-clevercloud-customers.services.clever-cloud.com/app_e90f21de-00bf-470f-8ce5-a5da62519f8d.git",
+      "name": "adventurelog-backend",
+      "alias": "adventurelog-backend"
+    },
+    {
+      "app_id": "app_aaf7bb76-38f1-4801-86a3-146b966549a6",
+      "org_id": "orga_c7767b74-60be-4716-addf-bb1da4f78b3b",
+      "deploy_url": "https://push-n3-par-clevercloud-customers.services.clever-cloud.com/app_aaf7bb76-38f1-4801-86a3-146b966549a6.git",
+      "git_ssh_url": "git+ssh://git@push-n3-par-clevercloud-customers.services.clever-cloud.com/app_aaf7bb76-38f1-4801-86a3-146b966549a6.git",
+      "name": "adventurelog-frontend",
+      "alias": "adventurelog-frontend"
+    }
+  ]
+}

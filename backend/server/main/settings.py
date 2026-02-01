@@ -98,13 +98,22 @@ MIDDLEWARE = (
 # ---------------------------------------------------------------------------
 # Caching
 # ---------------------------------------------------------------------------
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
-        'LOCATION': '127.0.0.1:11211',
-        'TIMEOUT': 60 * 60 * 24,  # Optional: 1 day cache
+REDIS_URL = getenv('REDIS_URL')
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+            'TIMEOUT': 60 * 60 * 24,  # 1 day cache
+        }
     }
-}
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    }
 
 # For backwards compatibility for Django 1.8
 MIDDLEWARE_CLASSES = MIDDLEWARE
