@@ -49,7 +49,14 @@ if not User.objects.filter(username=username).exists():
     )
     print("EmailAddress object created successfully for AllAuth.")
 else:
-    print(f"Superuser {username} already exists.")
+    # Update password if user exists
+    superuser = User.objects.get(username=username)
+    superuser.set_password(password)
+    superuser.email = email
+    superuser.is_staff = True
+    superuser.is_superuser = True
+    superuser.save()
+    print(f"Superuser {username} password updated.")
 EOF
 fi
 
