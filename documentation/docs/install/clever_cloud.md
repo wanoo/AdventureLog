@@ -84,13 +84,13 @@ clever addon create redis-addon adventurelog-redis --plan s_mono --link adventur
 ### FS Bucket for Media Storage
 
 ```bash
-clever addon create fs-bucket-addon adventurelog-media --link adventurelog-backend
+clever addon create fs-bucket adventurelog-media --link adventurelog-backend
 ```
 
 ### Mailpace for Emails (Optional)
 
 ```bash
-clever addon create mailpace-addon adventurelog-email --link adventurelog-backend
+clever addon create mailpace adventurelog-email --link adventurelog-backend
 ```
 
 ## Step 4: Configure Instance Sizes
