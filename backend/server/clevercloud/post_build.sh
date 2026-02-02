@@ -15,6 +15,10 @@ python manage.py collectstatic --noinput
 echo "Running migrations..."
 python manage.py migrate --noinput
 
+# Create media directory if it doesn't exist
+echo "Creating media directory..."
+mkdir -p media
+
 # Download countries data
 echo "Downloading countries data..."
 python manage.py download-countries || echo "Warning: download-countries failed, continuing..."
