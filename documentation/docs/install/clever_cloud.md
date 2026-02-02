@@ -316,6 +316,14 @@ clever env set --alias adventurelog-backend CSRF_TRUSTED_ORIGINS "https://fronte
 clever restart --alias adventurelog-backend
 ```
 
+### Media Files Not Loading (Images, Flags)
+
+**Symptom**: Images like country flags or uploaded media don't load.
+
+**Explanation**: On Clever Cloud, there's no user-controlled Nginx to serve media files via `X-Accel-Redirect`. AdventureLog automatically detects this and serves media files directly through Django.
+
+This is handled automatically - no configuration needed. If you're using a custom setup with Nginx (like Docker), you can set `NGINX_MEDIA_ACCEL=true` to use Nginx for serving protected media.
+
 ### View All Environment Variables
 
 ```bash
