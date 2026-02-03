@@ -7,6 +7,17 @@ Clever Cloud is a European PaaS (Platform as a Service) that allows you to deplo
 - A [Clever Cloud](https://www.clever-cloud.com/) account
 - [Clever Cloud CLI](https://www.clever-cloud.com/doc/cli/) installed on your machine
 - Git installed on your machine
+- **A custom domain** (required for session cookies - see note below)
+
+::: danger Custom Domain Required
+The default `*.cleverapps.io` domains **will not work** for AdventureLog. The `cleverapps.io` domain is on the [Public Suffix List](https://publicsuffix.org/), which means session cookies cannot be shared between the frontend and backend applications.
+
+You **must** use a custom domain where both apps share a parent domain:
+- `adventurelog.your-domain.com` (frontend)
+- `api.adventurelog.your-domain.com` (backend)
+
+This allows session cookies to be set on `.your-domain.com` and shared between both apps.
+:::
 
 ### Installing Clever Cloud CLI
 
@@ -24,17 +35,17 @@ clever login
 
 AdventureLog on Clever Cloud requires:
 
-| Component | Type | Recommended Size | Purpose |
-|-----------|------|------------------|---------|
-| Frontend | Node.js | **M** (2GB RAM) | SvelteKit application |
-| Backend | Python | **XS** (512MB RAM) | Django REST API |
-| Database | PostgreSQL Add-on | S or M | Data storage |
-| Cache | Redis Add-on | S | Session & caching |
-| Storage | FS Bucket Add-on | - | Media files |
-| Email | Mailpace Add-on | - | Transactional emails |
+| Component | Build Size | Runtime Size | Purpose |
+|-----------|------------|--------------|---------|
+| Frontend | **M** (2GB RAM) | **XS** (512MB RAM) | SvelteKit application |
+| Backend | - | **XS** (512MB RAM) | Django REST API |
+| Database | - | PostgreSQL Add-on (S or M) | Data storage |
+| Cache | - | Redis Add-on (S) | Session & caching |
+| Storage | - | FS Bucket Add-on | Media files (persistent) |
+| Email | - | Mailpace Add-on | Transactional emails |
 
-::: warning Instance Sizes
-The frontend **requires at least M size** (2GB RAM) for the build process. Using smaller instances (XS or S) will cause Out of Memory (OOM) errors during the Vite/SvelteKit build.
+::: tip Cost Optimization
+The frontend uses **dedicated build instances**: the build runs on a temporary M instance (2GB RAM), while the runtime uses a smaller XS instance (512MB RAM). This significantly reduces costs.
 :::
 
 ## Step 1: Clone the Repository
@@ -93,36 +104,46 @@ clever addon create fs-bucket adventurelog-media --link adventurelog-backend
 clever addon create mailpace adventurelog-email --link adventurelog-backend
 ```
 
-## Step 4: Configure Instance Sizes
+## Step 4: Configure Custom Domain
 
-### Scale the Frontend (Required)
+::: warning Required Step
+You must configure a custom domain before the application will work properly.
+:::
 
-The frontend build requires more memory. **This is mandatory to avoid OOM errors**:
+### Add Domains to Clever Cloud
 
 ```bash
-clever scale --alias adventurelog-frontend --flavor M
+# Replace with your actual domain
+clever domain add adventurelog.your-domain.com --alias adventurelog-frontend
+clever domain add api.adventurelog.your-domain.com --alias adventurelog-backend
 ```
 
-### Backend Size (Optional)
+### Configure DNS
 
-The backend runs fine on XS, but you can scale if needed:
+Add these CNAME records in your DNS provider:
+
+| Type | Name | Value |
+|------|------|-------|
+| CNAME | `adventurelog` | `domain.cleverapps.io` |
+| CNAME | `api.adventurelog` | `domain.cleverapps.io` |
+
+## Step 5: Configure Instance Sizes
+
+### Frontend: Dedicated Build + Small Runtime
+
+The frontend build requires 2GB RAM, but the runtime only needs 512MB. Use dedicated build to optimize costs:
+
+```bash
+clever scale --alias adventurelog-frontend --flavor XS --build-flavor M
+```
+
+### Backend Size
 
 ```bash
 clever scale --alias adventurelog-backend --flavor XS
 ```
 
-## Step 5: Configure Environment Variables
-
-### Get Your Application URLs
-
-First, get the default URLs assigned by Clever Cloud:
-
-```bash
-clever domain --alias adventurelog-backend
-clever domain --alias adventurelog-frontend
-```
-
-Note down these URLs (format: `app-xxxxxxxx.cleverapps.io`).
+## Step 6: Configure Environment Variables
 
 ### Backend Environment Variables
 
@@ -147,10 +168,22 @@ clever env set --alias adventurelog-backend DJANGO_ADMIN_USERNAME "admin"
 clever env set --alias adventurelog-backend DJANGO_ADMIN_PASSWORD "your-secure-password"
 clever env set --alias adventurelog-backend DJANGO_ADMIN_EMAIL "admin@example.com"
 
-# URLs (replace with your actual Clever Cloud app URLs)
-clever env set --alias adventurelog-backend PUBLIC_URL "https://app-BACKEND-ID.cleverapps.io"
-clever env set --alias adventurelog-backend FRONTEND_URL "https://app-FRONTEND-ID.cleverapps.io"
-clever env set --alias adventurelog-backend CSRF_TRUSTED_ORIGINS "https://app-FRONTEND-ID.cleverapps.io,https://app-BACKEND-ID.cleverapps.io"
+# URLs (use your custom domain)
+clever env set --alias adventurelog-backend PUBLIC_URL "https://api.adventurelog.your-domain.com"
+clever env set --alias adventurelog-backend FRONTEND_URL "https://adventurelog.your-domain.com"
+clever env set --alias adventurelog-backend CSRF_TRUSTED_ORIGINS "https://adventurelog.your-domain.com,https://api.adventurelog.your-domain.com"
+```
+
+### Configure FS Bucket for Media Persistence
+
+Get your bucket host and configure the mount:
+
+```bash
+# Get the bucket host
+clever env --alias adventurelog-backend | grep BUCKET_HOST
+
+# Configure the mount (replace BUCKET_HOST with the value from above)
+clever env set --alias adventurelog-backend CC_FS_BUCKET "backend/server/media:YOUR-BUCKET-HOST"
 ```
 
 ### Database Configuration
@@ -178,16 +211,20 @@ clever env set --alias adventurelog-frontend APP_FOLDER "frontend"
 # Node.js configuration
 clever env set --alias adventurelog-frontend CC_NODE_BUILD_TOOL "pnpm"
 clever env set --alias adventurelog-frontend CC_NODE_DEV_DEPENDENCIES "install"
-clever env set --alias adventurelog-frontend CC_PRE_RUN_HOOK "cd frontend && pnpm run build"
+
+# Build in post-build hook (runs on dedicated M instance)
+clever env set --alias adventurelog-frontend CC_POST_BUILD_HOOK "cd frontend && pnpm run build"
+
+# Run command (runs on XS instance)
 clever env set --alias adventurelog-frontend CC_RUN_COMMAND "cd frontend && node build"
 
-# Frontend configuration (replace with your actual URLs)
-clever env set --alias adventurelog-frontend ORIGIN "https://app-FRONTEND-ID.cleverapps.io"
-clever env set --alias adventurelog-frontend PUBLIC_SERVER_URL "https://app-BACKEND-ID.cleverapps.io"
+# Frontend configuration (use your custom domain)
+clever env set --alias adventurelog-frontend ORIGIN "https://adventurelog.your-domain.com"
+clever env set --alias adventurelog-frontend PUBLIC_SERVER_URL "https://api.adventurelog.your-domain.com"
 clever env set --alias adventurelog-frontend BODY_SIZE_LIMIT "Infinity"
 ```
 
-## Step 6: Configure Email with Mailpace
+## Step 7: Configure Email with Mailpace
 
 If you created the Mailpace add-on, configure the email settings:
 
@@ -213,7 +250,7 @@ clever env set --alias adventurelog-backend DEFAULT_FROM_EMAIL "noreply@your-ver
 4. Use the API token for both `EMAIL_HOST_USER` and `EMAIL_HOST_PASSWORD`
 :::
 
-## Step 7: Deploy
+## Step 8: Deploy
 
 ### Deploy the Backend First
 
@@ -232,11 +269,11 @@ Wait for the deployment to complete. The post_build hook will:
 clever deploy --alias adventurelog-frontend
 ```
 
-::: warning Build Time
-The frontend build may take several minutes due to the SvelteKit compilation process. This is normal.
+::: tip Build Process
+The frontend build runs on a dedicated M instance (2GB RAM), then the artifacts are transferred to the XS runtime instance. This may take a few minutes on first deploy.
 :::
 
-## Step 8: Verify Deployment
+## Step 9: Verify Deployment
 
 Check the status of your applications:
 
@@ -256,33 +293,58 @@ clever logs --alias adventurelog-frontend
 
 | URL | Purpose |
 |-----|---------|
-| `https://app-FRONTEND-ID.cleverapps.io` | Main application |
-| `https://app-BACKEND-ID.cleverapps.io/api` | REST API |
-| `https://app-BACKEND-ID.cleverapps.io/admin` | Django Admin Panel |
+| `https://adventurelog.your-domain.com` | Main application |
+| `https://api.adventurelog.your-domain.com/api` | REST API |
+| `https://api.adventurelog.your-domain.com/admin` | Django Admin Panel |
 
 ### Admin Panel Login
 
 To access the Django admin panel:
 
-1. Go to `https://app-BACKEND-ID.cleverapps.io/accounts/login/`
+1. Go to `https://api.adventurelog.your-domain.com/accounts/login/?next=/admin/`
 2. Login with your admin credentials
-3. Navigate to `https://app-BACKEND-ID.cleverapps.io/admin/`
+3. You will be redirected to the admin panel
 
 ::: tip
-Django-allauth handles authentication. You must login via `/accounts/login/` first, then access `/admin/`.
+Django-allauth handles authentication. The `?next=/admin/` parameter ensures you're redirected to the admin panel after login.
 :::
 
 ## Troubleshooting
+
+### Login Not Working / Session Not Saved
+
+**Symptom**: After logging in, you're redirected back to the login page.
+
+**Cause**: You're using the default `*.cleverapps.io` domains. Session cookies cannot be shared between different cleverapps.io subdomains.
+
+**Solution**: You **must** use a custom domain. See [Step 4: Configure Custom Domain](#step-4-configure-custom-domain).
 
 ### Frontend Build Fails (OOM)
 
 **Symptom**: Build hangs and eventually fails, or logs show the process was killed.
 
-**Solution**: Scale to a larger instance:
+**Solution**: Ensure dedicated build is configured:
 
 ```bash
-clever scale --alias adventurelog-frontend --flavor M
+clever scale --alias adventurelog-frontend --flavor XS --build-flavor M
 clever restart --alias adventurelog-frontend --without-cache
+```
+
+### Media Files Disappear After Restart
+
+**Symptom**: Uploaded images (avatars, attachments) disappear after restarting the backend.
+
+**Cause**: FS Bucket is not properly mounted.
+
+**Solution**: Configure the FS Bucket mount:
+
+```bash
+# Get your bucket host
+clever env --alias adventurelog-backend | grep BUCKET_HOST
+
+# Set the mount (replace with your actual bucket host)
+clever env set --alias adventurelog-backend CC_FS_BUCKET "backend/server/media:bucket-xxx.services.clever-cloud.com"
+clever restart --alias adventurelog-backend --without-cache
 ```
 
 ### "No Country Data Available"
@@ -312,7 +374,7 @@ clever restart --alias adventurelog-backend --without-cache
 **Solution**: Ensure `CSRF_TRUSTED_ORIGINS` includes both URLs:
 
 ```bash
-clever env set --alias adventurelog-backend CSRF_TRUSTED_ORIGINS "https://frontend-url.cleverapps.io,https://backend-url.cleverapps.io"
+clever env set --alias adventurelog-backend CSRF_TRUSTED_ORIGINS "https://adventurelog.your-domain.com,https://api.adventurelog.your-domain.com"
 clever restart --alias adventurelog-backend
 ```
 
@@ -322,7 +384,7 @@ clever restart --alias adventurelog-backend
 
 **Explanation**: On Clever Cloud, there's no user-controlled Nginx to serve media files via `X-Accel-Redirect`. AdventureLog automatically detects this and serves media files directly through Django.
 
-This is handled automatically - no configuration needed. If you're using a custom setup with Nginx (like Docker), you can set `NGINX_MEDIA_ACCEL=true` to use Nginx for serving protected media.
+This is handled automatically - no configuration needed.
 
 ### View All Environment Variables
 
@@ -330,36 +392,6 @@ This is handled automatically - no configuration needed. If you're using a custo
 clever env --alias adventurelog-backend
 clever env --alias adventurelog-frontend
 ```
-
-## Custom Domain
-
-To add a custom domain:
-
-```bash
-# For the frontend (main app)
-clever domain add your-domain.com --alias adventurelog-frontend
-
-# For the backend API (optional)
-clever domain add api.your-domain.com --alias adventurelog-backend
-```
-
-Then configure your DNS:
-- Add a CNAME record pointing to `domain.cleverapps.io`
-
-Don't forget to update the environment variables with your new domains:
-
-```bash
-# Update backend URLs
-clever env set --alias adventurelog-backend PUBLIC_URL "https://api.your-domain.com"
-clever env set --alias adventurelog-backend FRONTEND_URL "https://your-domain.com"
-clever env set --alias adventurelog-backend CSRF_TRUSTED_ORIGINS "https://your-domain.com,https://api.your-domain.com"
-
-# Update frontend URLs
-clever env set --alias adventurelog-frontend ORIGIN "https://your-domain.com"
-clever env set --alias adventurelog-frontend PUBLIC_SERVER_URL "https://api.your-domain.com"
-```
-
-See [Clever Cloud documentation](https://www.clever-cloud.com/doc/administrate/domain-names/) for more details.
 
 ## Updating AdventureLog
 
@@ -375,13 +407,14 @@ clever deploy --alias adventurelog-frontend
 
 | Component | Size | Estimated Monthly Cost |
 |-----------|------|------------------------|
-| Frontend | M | ~15€ |
+| Frontend (runtime) | XS | ~5€ |
+| Frontend (build) | M (temporary) | ~0.50€ |
 | Backend | XS | ~5€ |
 | PostgreSQL | S | ~10€ |
 | Redis | S | ~5€ |
 | FS Bucket | - | ~2€ |
 | Mailpace | - | Free tier available |
-| **Total** | | **~37€/month** |
+| **Total** | | **~27.50€/month** |
 
 *Prices are estimates and may vary. Check [Clever Cloud pricing](https://www.clever-cloud.com/pricing/) for current rates.*
 
