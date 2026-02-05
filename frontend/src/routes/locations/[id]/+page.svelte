@@ -21,6 +21,7 @@
 	import TrailCard from '$lib/components/cards/TrailCard.svelte';
 	import NewLocationModal from '$lib/components/locations/LocationModal.svelte';
 	import CashMultiple from '~icons/mdi/cash-multiple';
+	import HistoryPanel from '$lib/components/HistoryPanel.svelte';
 	import { DEFAULT_CURRENCY, formatMoney, toMoneyValue } from '$lib/money';
 
 	let geojson: any;
@@ -55,6 +56,7 @@
 	let adventure_images: { image: string; adventure: AdditionalLocation | null }[] = [];
 	let modalInitialIndex: number = 0;
 	let isImageModalOpen: boolean = false;
+	let history: any[] = [];
 
 	onMount(async () => {
 		if (data.props.adventure) {
@@ -76,6 +78,18 @@
 					const bTs = DateTime.fromISO(b.start_date || b.created_at || '').toMillis() || 0;
 					return aTs - bTs; // oldest first (chronological)
 				});
+			}
+
+			// Fetch history in collaborative mode
+			if (data.collaborativeMode) {
+				try {
+					const res = await fetch(`/api/locations/${adventure.id}/history/`);
+					if (res.ok) {
+						history = await res.json();
+					}
+				} catch (e) {
+					console.error('Failed to fetch history:', e);
+				}
 			}
 		} else {
 			notFound = true;
@@ -902,6 +916,11 @@
 							</div>
 						</div>
 					</div>
+				{/if}
+
+				<!-- History Panel (Collaborative Mode) -->
+				{#if data.collaborativeMode && history.length > 0}
+					<HistoryPanel {history} />
 				{/if}
 			</div>
 		</div>
