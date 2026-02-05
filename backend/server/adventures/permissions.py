@@ -270,8 +270,14 @@ class ContentImagePermission(IsOwnerOrSharedWithFullAccess):
         if not content_object:
             return False
 
+        # Check if this is a delete operation (DELETE method or image_delete action which uses POST)
+        is_delete_operation = (
+            request.method == 'DELETE' or
+            (hasattr(view, 'action') and view.action == 'image_delete')
+        )
+
         # In collaborative mode, only allow deleting your own images
-        if request.method == 'DELETE' and getattr(settings, 'COLLABORATIVE_MODE', False):
+        if is_delete_operation and getattr(settings, 'COLLABORATIVE_MODE', False):
             # Image owner can always delete their own images
             if obj.user == request.user:
                 return True
