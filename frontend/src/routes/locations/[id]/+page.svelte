@@ -453,7 +453,7 @@
 												<div class="card-body p-4">
 													{#if visit.user_username}
 														<div class="text-xs opacity-60 mb-2">
-															{$t('adventures.added_by')} <span class="font-semibold">{visit.user_username}</span>
+															{$t('adventures.added_by')} <a href="/profile/{visit.user_username}" class="font-semibold link link-hover link-primary">{visit.user_username}</a>
 														</div>
 													{/if}
 													{#if isAllDay(visit.start_date)}
@@ -893,9 +893,9 @@
 											</div>
 										{/if}
 										{#if image.user_username}
-											<div class="absolute bottom-1 left-1">
-												<span class="badge badge-neutral badge-xs opacity-80">{image.user_username}</span>
-											</div>
+											<a href="/profile/{image.user_username}" class="absolute bottom-1 left-1">
+												<span class="badge badge-neutral badge-xs opacity-80 hover:badge-primary transition-colors">{image.user_username}</span>
+											</a>
 										{/if}
 									</div>
 								{/each}
