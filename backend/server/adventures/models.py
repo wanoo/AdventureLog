@@ -124,6 +124,7 @@ User = get_user_model()
 class Visit(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     location = models.ForeignKey('Location', on_delete=models.CASCADE, related_name='visits')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='visits')
     start_date = models.DateTimeField(null=True, blank=True)
     end_date = models.DateTimeField(null=True, blank=True)
     timezone = models.CharField(max_length=50, choices=[(tz, tz) for tz in TIMEZONES], null=True, blank=True)

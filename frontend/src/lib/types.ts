@@ -37,6 +37,7 @@ export type ContentImage = {
 	image: string;
 	is_primary: boolean;
 	immich_id: string | null;
+	user_username?: string | null;
 };
 
 export type Location = {
@@ -481,6 +482,7 @@ export type Visit = {
 	location: string;
 	created_at: string;
 	updated_at: string;
+	user_username?: string | null;
 };
 
 export type TransportationVisit = {

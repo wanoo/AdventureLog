@@ -451,6 +451,11 @@
 										<div class="flex-1 pb-4">
 											<div class="card bg-base-100 shadow">
 												<div class="card-body p-4">
+													{#if visit.user_username}
+														<div class="text-xs opacity-60 mb-2">
+															{$t('adventures.added_by')} <span class="font-semibold">{visit.user_username}</span>
+														</div>
+													{/if}
 													{#if isAllDay(visit.start_date)}
 														<div class="flex items-center gap-2 mb-2">
 															<span class="badge badge-primary">All Day</span>
@@ -885,6 +890,11 @@
 										{#if image.is_primary}
 											<div class="absolute top-1 right-1">
 												<span class="badge badge-primary badge-xs">{$t('settings.primary')}</span>
+											</div>
+										{/if}
+										{#if image.user_username}
+											<div class="absolute bottom-1 left-1">
+												<span class="badge badge-neutral badge-xs opacity-80">{image.user_username}</span>
 											</div>
 										{/if}
 									</div>

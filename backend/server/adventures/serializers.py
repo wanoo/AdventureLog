@@ -42,10 +42,12 @@ def _serialize_collaborator(user, owner_id=None, request_user=None):
 
 
 class ContentImageSerializer(CustomModelSerializer):
+    user_username = serializers.CharField(source='user.username', read_only=True, default=None)
+
     class Meta:
         model = ContentImage
-        fields = ['id', 'image', 'is_primary', 'user', 'immich_id']
-        read_only_fields = ['id', 'user']
+        fields = ['id', 'image', 'is_primary', 'user', 'immich_id', 'user_username']
+        read_only_fields = ['id', 'user', 'user_username']
 
     def to_representation(self, instance):
         # If immich_id is set, check for user integration once
@@ -256,15 +258,20 @@ class ActivitySerializer(CustomModelSerializer):
 class VisitSerializer(serializers.ModelSerializer):
 
     activities = ActivitySerializer(many=True, read_only=True, required=False)
+    user_username = serializers.CharField(source='user.username', read_only=True, default=None)
 
     class Meta:
         model = Visit
-        fields = ['id', 'start_date', 'end_date', 'timezone', 'notes', 'activities','location', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        fields = ['id', 'start_date', 'end_date', 'timezone', 'notes', 'activities', 'location', 'created_at', 'updated_at', 'user', 'user_username']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'user_username']
 
     def create(self, validated_data):
         if not validated_data.get('end_date') and validated_data.get('start_date'):
             validated_data['end_date'] = validated_data['start_date']
+        # Set the user from the request context
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            validated_data['user'] = request.user
         return super().create(validated_data)
 
 
