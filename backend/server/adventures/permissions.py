@@ -1,4 +1,5 @@
 from rest_framework import permissions
+from django.conf import settings
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """
@@ -142,7 +143,11 @@ class IsOwnerOrSharedWithFullAccess(permissions.BasePermission):
         # Anonymous users only get read access to public objects
         if not user or not user.is_authenticated:
             return is_safe_method and getattr(obj, 'is_public', False)
-        
+
+        # Collaborative mode: authenticated users can edit public content
+        if getattr(settings, 'COLLABORATIVE_MODE', False) and getattr(obj, 'is_public', False):
+            return True
+
         # Owner always has full access
         if self._is_owner(obj, user):
             return True

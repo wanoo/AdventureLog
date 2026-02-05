@@ -1,6 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 const PUBLIC_SERVER_URL = process.env['PUBLIC_SERVER_URL'];
+const COLLABORATIVE_MODE = process.env['COLLABORATIVE_MODE'] === 'true';
 import type { Location } from '$lib/types';
 
 import type { Actions } from '@sveltejs/kit';
@@ -55,7 +56,8 @@ export const load = (async (event) => {
 			props: {
 				adventures,
 				count
-			}
+			},
+			collaborativeMode: COLLABORATIVE_MODE
 		};
 	}
 }) satisfies PageServerLoad;

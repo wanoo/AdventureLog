@@ -3,14 +3,15 @@ from django.db import transaction
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q, Max, Prefetch
 from django.db.models.functions import Lower
+from django.conf import settings
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 import requests
-from adventures.models import Location, Category, CollectionItineraryItem, Visit
+from adventures.models import Location, Category, CollectionItineraryItem, Visit, AuditLog
 from django.contrib.contenttypes.models import ContentType
 from adventures.permissions import IsOwnerOrSharedWithFullAccess
-from adventures.serializers import LocationSerializer, MapPinSerializer, CalendarLocationSerializer
+from adventures.serializers import LocationSerializer, MapPinSerializer, CalendarLocationSerializer, AuditLogSerializer
 from adventures.utils import pagination
 
 class LocationViewSet(viewsets.ModelViewSet):
@@ -196,17 +197,20 @@ class LocationViewSet(viewsets.ModelViewSet):
         include_collections = request.query_params.get('include_collections', 'false') == 'true'
         nested = request.query_params.get('nested', 'false') == 'true'
         allowedNestedFields = request.query_params.get('allowed_nested_fields', '').split(',')
-        
-        # Build queryset with collection filtering
-        base_filter = Q(user=request.user.id)
-        
-        if include_collections:
-            queryset = Location.objects.filter(base_filter)
-        else:
-            queryset = Location.objects.filter(base_filter, collections__isnull=True)
+
+        # Use retrieve_locations with collaborative mode support
+        queryset = Location.objects.retrieve_locations(
+            request.user,
+            include_owned=True,
+            include_shared=include_collections,
+            include_public=getattr(settings, 'COLLABORATIVE_MODE', False)
+        )
+
+        if not include_collections:
+            queryset = queryset.filter(collections__isnull=True)
 
         queryset = self.apply_sorting(queryset)
-        serializer = self.get_serializer(queryset, many=True, context={'nested': nested, 'allowed_nested_fields': allowedNestedFields})
+        serializer = self.get_serializer(queryset, many=True, context={'nested': nested, 'allowed_nested_fields': allowedNestedFields, 'request': request})
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
@@ -261,8 +265,28 @@ class LocationViewSet(viewsets.ModelViewSet):
         if not request.user.is_authenticated:
             return Response({"error": "User is not authenticated"}, status=400)
 
-        locations = Location.objects.filter(user=request.user)
-        serializer = MapPinSerializer(locations, many=True)
+        locations = Location.objects.retrieve_locations(
+            request.user,
+            include_owned=True,
+            include_shared=True,
+            include_public=getattr(settings, 'COLLABORATIVE_MODE', False)
+        )
+        serializer = MapPinSerializer(locations, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'], url_path='history')
+    def history(self, request, pk=None):
+        """Get audit history for a location (collaborative mode only)."""
+        if not getattr(settings, 'COLLABORATIVE_MODE', False):
+            return Response({"error": "History is only available in collaborative mode"}, status=400)
+
+        location = self.get_object()
+        content_type = ContentType.objects.get_for_model(Location)
+        logs = AuditLog.objects.filter(
+            content_type=content_type,
+            object_id=location.pk
+        ).select_related('user')[:50]
+        serializer = AuditLogSerializer(logs, many=True)
         return Response(serializer.data)
 
     # ==================== HELPER METHODS ====================

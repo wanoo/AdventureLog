@@ -1,5 +1,5 @@
 import os
-from .models import Location, ContentImage, ChecklistItem, Collection, Note, Transportation, Checklist, Visit, Category, ContentAttachment, Lodging, CollectionInvite, Trail, Activity, CollectionItineraryItem, CollectionItineraryDay
+from .models import Location, ContentImage, ChecklistItem, Collection, Note, Transportation, Checklist, Visit, Category, ContentAttachment, Lodging, CollectionInvite, Trail, Activity, CollectionItineraryItem, CollectionItineraryDay, AuditLog
 from rest_framework import serializers
 from main.utils import CustomModelSerializer
 from users.serializers import CustomUserDetailsSerializer
@@ -119,7 +119,18 @@ class CategorySerializer(serializers.ModelSerializer):
     
     def get_num_locations(self, obj):
         return Location.objects.filter(category=obj, user=obj.user).count()
-    
+
+
+class AuditLogSerializer(serializers.ModelSerializer):
+    """Serializer for audit log entries in collaborative mode."""
+    user_username = serializers.CharField(source='user.username', read_only=True, default='Unknown')
+
+    class Meta:
+        model = AuditLog
+        fields = ['id', 'user_username', 'action', 'object_repr', 'changes', 'timestamp']
+        read_only_fields = fields
+
+
 class TrailSerializer(CustomModelSerializer):
     provider = serializers.SerializerMethodField()
     wanderer_data = serializers.SerializerMethodField()
@@ -264,12 +275,13 @@ class LocationSerializer(CustomModelSerializer):
     attachments = AttachmentSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=False, required=False)
     is_visited = serializers.SerializerMethodField()
+    is_owned = serializers.SerializerMethodField()
     country = CountrySerializer(read_only=True)
     region = RegionSerializer(read_only=True)
     city = CitySerializer(read_only=True)
     collections = serializers.PrimaryKeyRelatedField(
-        many=True, 
-        queryset=Collection.objects.all(), 
+        many=True,
+        queryset=Collection.objects.all(),
         required=False
     )
     trails = TrailSerializer(many=True, read_only=True, required=False)
@@ -277,12 +289,18 @@ class LocationSerializer(CustomModelSerializer):
     class Meta:
         model = Location
         fields = [
-            'id', 'name', 'description', 'rating', 'tags', 'location', 
-            'is_public', 'collections', 'created_at', 'updated_at', 'images', 'link', 'longitude', 
-            'latitude', 'visits', 'is_visited', 'category', 'attachments', 'user', 'city', 'country', 'region', 'trails',
+            'id', 'name', 'description', 'rating', 'tags', 'location',
+            'is_public', 'collections', 'created_at', 'updated_at', 'images', 'link', 'longitude',
+            'latitude', 'visits', 'is_visited', 'is_owned', 'category', 'attachments', 'user', 'city', 'country', 'region', 'trails',
             'price', 'price_currency'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'is_owned']
+
+    def get_is_owned(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            return obj.user == request.user
+        return False
 
     # Makes it so the whole user object is returned in the serializer instead of just the user uuid
     def to_representation(self, instance):
@@ -463,15 +481,22 @@ class LocationSerializer(CustomModelSerializer):
     
 class MapPinSerializer(serializers.ModelSerializer):
     is_visited = serializers.SerializerMethodField()
+    is_owned = serializers.SerializerMethodField()
     category = CategorySerializer(read_only=True, required=False)
-    
+
     class Meta:
         model = Location
-        fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'category']
-        read_only_fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'category']
-    
+        fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'category', 'is_owned']
+        read_only_fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'category', 'is_owned']
+
     def get_is_visited(self, obj):
         return obj.is_visited_status()
+
+    def get_is_owned(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            return obj.user == request.user
+        return False
 
 class TransportationSerializer(CustomModelSerializer):
     distance = serializers.SerializerMethodField()
@@ -909,15 +934,22 @@ class UltraSlimCollectionSerializer(serializers.ModelSerializer):
     days_until_start = serializers.SerializerMethodField()
     primary_image = ContentImageSerializer(read_only=True)
     collaborators = serializers.SerializerMethodField()
-    
+    is_owned = serializers.SerializerMethodField()
+
     class Meta:
         model = Collection
         fields = [
-            'id', 'user', 'name', 'description', 'is_public', 'start_date', 'end_date', 
-            'is_archived', 'link', 'created_at', 'updated_at', 'location_images', 
-            'location_count', 'shared_with', 'collaborators', 'status', 'days_until_start', 'primary_image'
+            'id', 'user', 'name', 'description', 'is_public', 'start_date', 'end_date',
+            'is_archived', 'link', 'created_at', 'updated_at', 'location_images',
+            'location_count', 'shared_with', 'collaborators', 'status', 'days_until_start', 'primary_image', 'is_owned'
         ]
         read_only_fields = fields  # All fields are read-only for listing
+
+    def get_is_owned(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            return obj.user == request.user
+        return False
 
     def get_collaborators(self, obj):
         request = self.context.get('request')

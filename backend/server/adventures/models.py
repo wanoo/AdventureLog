@@ -532,10 +532,11 @@ class ContentAttachment(models.Model):
 class Category(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, default=default_user)
+        User, on_delete=models.CASCADE, default=default_user, null=True, blank=True)
     name = models.CharField(max_length=200)
     display_name = models.CharField(max_length=200)
     icon = models.CharField(max_length=200, default='🌍')
+    is_global = models.BooleanField(default=False)  # True for collaborative mode categories
 
     class Meta:
         verbose_name_plural = 'Categories'
@@ -545,8 +546,8 @@ class Category(models.Model):
         self.name = self.name.lower().strip()
 
         return super().clean()
-    
-    
+
+
     def __str__(self):
         return self.name + ' - ' + self.display_name + ' - ' + self.icon
     
@@ -785,3 +786,32 @@ class CollectionItineraryItem(models.Model):
                     return value
 
         return None
+
+
+class AuditLog(models.Model):
+    """Tracks all modifications to content in collaborative mode."""
+
+    ACTION_CHOICES = [
+        ('create', 'Created'),
+        ('update', 'Updated'),
+        ('delete', 'Deleted'),
+    ]
+
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.UUIDField()
+    object_repr = models.CharField(max_length=200)  # e.g., "Location: Paris Trip"
+    changes = models.JSONField(default=dict)  # {"field": {"old": x, "new": y}}
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['content_type', 'object_id']),
+            models.Index(fields=['user', 'timestamp']),
+        ]
+
+    def __str__(self):
+        return f"{self.action} {self.object_repr} by {self.user}"

@@ -1,3 +1,5 @@
+from django.db.models import Q
+from django.conf import settings
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -5,12 +7,25 @@ from rest_framework.response import Response
 from adventures.models import Category, Location
 from adventures.serializers import CategorySerializer
 
+
 class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            # In collaborative mode, show global categories plus user's own
+            return Category.objects.filter(
+                Q(is_global=True) | Q(user=self.request.user)
+            ).distinct()
         return Category.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            # In collaborative mode, create categories as global
+            serializer.save(is_global=True, user=None)
+        else:
+            serializer.save(user=self.request.user)
 
     def list(self, request, *args, **kwargs):
         """

@@ -65,6 +65,7 @@ export type Location = {
 	region?: Region | null;
 	country?: Country | null;
 	trails: Trail[];
+	is_owned?: boolean; // For collaborative mode
 };
 
 export type AdditionalLocation = Location & {
@@ -161,6 +162,7 @@ export type Collection = {
 	itinerary_days: CollectionItineraryDay[]; // Day metadata (names/descriptions)
 	status: 'folder' | 'upcoming' | 'in_progress' | 'completed';
 	days_until_start: number | null;
+	is_owned?: boolean; // For collaborative mode
 };
 
 export type SlimCollection = {
@@ -182,6 +184,7 @@ export type SlimCollection = {
 	primary_image?: ContentImage | null;
 	status: 'folder' | 'upcoming' | 'in_progress' | 'completed';
 	days_until_start: number | null;
+	is_owned?: boolean; // For collaborative mode
 };
 
 export type GeocodeSearchResult = {
@@ -526,6 +529,7 @@ export type Pin = {
 	longitude: string;
 	is_visited?: boolean;
 	category: Category | null;
+	is_owned?: boolean; // For collaborative mode
 };
 
 export type Recommendation = {

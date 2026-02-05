@@ -9,13 +9,13 @@ Clever Cloud is a European PaaS (Platform as a Service) that allows you to deplo
 - Git installed
 - **A custom domain** (required - see note below)
 
-::: danger Custom Domain Required
+Custom Domain Required
+
 The default `*.cleverapps.io` domains **will not work**. The `cleverapps.io` domain is on the [Public Suffix List](https://publicsuffix.org/), which prevents session cookies from being shared between applications.
 
 You must use a custom domain where both apps share a parent domain:
 - `adventurelog.your-domain.com` (frontend)
 - `api.adventurelog.your-domain.com` (backend)
-:::
 
 ## Architecture
 
@@ -61,10 +61,6 @@ clever addon create fs-bucket adventurelog-media --link adventurelog-backend
 clever addon create mailpace adventurelog-email --link adventurelog-backend
 ```
 
-::: tip No Redis Required
-AdventureLog uses memcached by default. We start it automatically via `CC_PRE_RUN_HOOK` - no additional add-on required.
-:::
-
 ## Step 4: Configure Custom Domains
 
 ```bash
@@ -94,7 +90,7 @@ clever env set --alias adventurelog-backend APP_FOLDER "backend/server"
 clever env set --alias adventurelog-backend CC_PYTHON_VERSION "3"
 clever env set --alias adventurelog-backend CC_PYTHON_MODULE "main.wsgi:application"
 clever env set --alias adventurelog-backend CC_PRE_RUN_HOOK "memcached -u nobody -m 64 -p 11211 -d"
-clever env set --alias adventurelog-backend CC_PYTHON_MANAGE_TASKS "collectstatic --noinput, migrate --noinput, download-countries"
+clever env set --alias adventurelog-backend CC_PYTHON_MANAGE_TASKS "collectstatic --noinput, migrate --noinput, download-countries --force"
 ```
 
 ### Django Configuration
@@ -208,16 +204,15 @@ clever deploy --alias adventurelog-backend
 clever deploy --alias adventurelog-frontend
 ```
 
-::: tip No Git Conflicts
+No Git Conflicts
+
 This configuration does not modify the AdventureLog source code. You can update without conflicts.
-:::
 
 ## Quick Reference - Environment Variables
 
-::: tip Two Methods Available
+Two Methods Available
 - **CLI (recommended)**: Use the `jq` commands from steps 6-8 to automatically map add-on variables.
 - **Web Interface**: Copy the blocks below and manually replace `REPLACE_*` values in the Clever Cloud console.
-:::
 
 ### Backend (Python)
 
@@ -373,6 +368,104 @@ Redeploy to re-run `download-countries`:
 ```bash
 clever restart --alias adventurelog-backend --without-cache
 ```
+
+## Internal/Collaborative Usage (Optional)
+
+For internal team or collaborative usage, you can configure AdventureLog as a closed environment where:
+- Only OIDC-authenticated users can access the application
+- All content is automatically shared between team members
+
+### Environment Variables
+
+```bash
+# Force OIDC login only (no password login)
+clever env set --alias adventurelog-backend FORCE_SOCIALACCOUNT_LOGIN "true"
+
+# Allow new users to sign up via OIDC
+clever env set --alias adventurelog-backend SOCIALACCOUNT_ALLOW_SIGNUP "true"
+
+# Disable regular registration (OIDC only)
+clever env set --alias adventurelog-backend DISABLE_REGISTRATION "true"
+
+# Custom message for disabled registration
+clever env set --alias adventurelog-backend DISABLE_REGISTRATION_MESSAGE "Registration is disabled. Please sign in with your Clever Cloud account (SSO)."
+```
+
+### Force Public Content (PostgreSQL Triggers)
+
+Since the server is closed to outsiders via OIDC authentication, you can force all content to be "public" (visible to all authenticated team members) using PostgreSQL triggers.
+
+Connect to your database via pgstudio or `python manage.py dbshell` and run:
+
+```sql
+-- Function for users (public_profile)
+CREATE OR REPLACE FUNCTION set_public_profile_on_insert()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.public_profile := TRUE;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function for content (is_public)
+CREATE OR REPLACE FUNCTION set_is_public_on_insert()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.is_public := TRUE;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- USERS
+DROP TRIGGER IF EXISTS trigger_public_profile_on_insert ON users_customuser;
+CREATE TRIGGER trigger_public_profile_on_insert
+    BEFORE INSERT OR UPDATE ON users_customuser
+    FOR EACH ROW EXECUTE FUNCTION set_public_profile_on_insert();
+
+-- LOCATIONS
+DROP TRIGGER IF EXISTS trigger_is_public_on_insert ON adventures_location;
+CREATE TRIGGER trigger_is_public_on_insert
+    BEFORE INSERT OR UPDATE ON adventures_location
+    FOR EACH ROW EXECUTE FUNCTION set_is_public_on_insert();
+
+-- COLLECTIONS
+DROP TRIGGER IF EXISTS trigger_is_public_on_insert ON adventures_collection;
+CREATE TRIGGER trigger_is_public_on_insert
+    BEFORE INSERT OR UPDATE ON adventures_collection
+    FOR EACH ROW EXECUTE FUNCTION set_is_public_on_insert();
+
+-- CHECKLISTS
+DROP TRIGGER IF EXISTS trigger_is_public_on_insert ON adventures_checklist;
+CREATE TRIGGER trigger_is_public_on_insert
+    BEFORE INSERT OR UPDATE ON adventures_checklist
+    FOR EACH ROW EXECUTE FUNCTION set_is_public_on_insert();
+
+-- LODGINGS
+DROP TRIGGER IF EXISTS trigger_is_public_on_insert ON adventures_lodging;
+CREATE TRIGGER trigger_is_public_on_insert
+    BEFORE INSERT OR UPDATE ON adventures_lodging
+    FOR EACH ROW EXECUTE FUNCTION set_is_public_on_insert();
+
+-- NOTES
+DROP TRIGGER IF EXISTS trigger_is_public_on_insert ON adventures_note;
+CREATE TRIGGER trigger_is_public_on_insert
+    BEFORE INSERT OR UPDATE ON adventures_note
+    FOR EACH ROW EXECUTE FUNCTION set_is_public_on_insert();
+
+-- TRANSPORTATIONS
+DROP TRIGGER IF EXISTS trigger_is_public_on_insert ON adventures_transportation;
+CREATE TRIGGER trigger_is_public_on_insert
+    BEFORE INSERT OR UPDATE ON adventures_transportation
+    FOR EACH ROW EXECUTE FUNCTION set_is_public_on_insert();
+```
+
+::: tip Why Triggers?
+These triggers run at the database level, requiring no code modification to AdventureLog. This keeps updates conflict-free while ensuring all content is automatically shared within your closed team environment.
+:::
+
+::: warning
+With these triggers, users cannot set their content to private. This is intentional for collaborative usage where all authenticated users should see all content.
+:::
 
 ## Cost Estimation
 
