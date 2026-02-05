@@ -58,10 +58,15 @@ class VisitViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         instance = serializer.instance
         new_location = serializer.validated_data.get('location')
-        
+
         # Prevent changing location after creation
         if new_location and new_location != instance.location:
             raise PermissionDenied("Cannot change visit location after creation. Create a new visit instead.")
+
+        # In collaborative mode, users can only edit their own visits
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            if instance.user and instance.user != self.request.user:
+                raise PermissionDenied("You can only edit your own visits.")
 
         # Check permission for updates to the existing location
         if not IsOwnerOrSharedWithFullAccess().has_object_permission(self.request, self, instance.location):
@@ -72,6 +77,11 @@ class VisitViewSet(viewsets.ModelViewSet):
         background_geocode_and_assign(str(instance.location.id))
 
     def perform_destroy(self, instance):
+        # In collaborative mode, users can only delete their own visits
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            if instance.user and instance.user != self.request.user:
+                raise PermissionDenied("You can only delete your own visits.")
+
         if not IsOwnerOrSharedWithFullAccess().has_object_permission(self.request, self, instance.location):
             raise PermissionDenied("You do not have permission to delete this visit.")
 
