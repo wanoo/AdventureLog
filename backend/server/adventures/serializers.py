@@ -1,4 +1,6 @@
 import os
+from django.conf import settings
+from django.db.models import Q
 from .models import Location, ContentImage, ChecklistItem, Collection, Note, Transportation, Checklist, Visit, Category, ContentAttachment, Lodging, CollectionInvite, Trail, Activity, CollectionItineraryItem, CollectionItineraryDay, AuditLog
 from rest_framework import serializers
 from main.utils import CustomModelSerializer
@@ -96,18 +98,21 @@ class AttachmentSerializer(CustomModelSerializer):
     
 class CategorySerializer(serializers.ModelSerializer):
     num_locations = serializers.SerializerMethodField()
+    is_public = serializers.BooleanField(source='is_global', default=True)
+    is_owned = serializers.SerializerMethodField()
+
     class Meta:
         model = Category
-        fields = ['id', 'name', 'display_name', 'icon', 'num_locations']
-        read_only_fields = ['id', 'num_locations']
+        fields = ['id', 'name', 'display_name', 'icon', 'num_locations', 'is_public', 'is_owned']
+        read_only_fields = ['id', 'num_locations', 'is_owned']
 
     def validate_name(self, value):
         return value.lower()
 
     def create(self, validated_data):
-        user = self.context['request'].user
         validated_data['name'] = validated_data['name'].lower()
-        return Category.objects.create(user=user, **validated_data)
+        # User is set by perform_create in the view
+        return Category.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
@@ -116,9 +121,27 @@ class CategorySerializer(serializers.ModelSerializer):
             instance.name = validated_data['name'].lower()
         instance.save()
         return instance
-    
+
     def get_num_locations(self, obj):
-        return Location.objects.filter(category=obj, user=obj.user).count()
+        request = self.context.get('request')
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            # In collaborative mode: count user's locations + public locations using this category
+            if request and request.user.is_authenticated:
+                return Location.objects.filter(
+                    Q(user=request.user) | Q(is_public=True),
+                    category=obj
+                ).distinct().count()
+            return Location.objects.filter(category=obj, is_public=True).count()
+        # In normal mode, count only user's locations
+        if obj.user:
+            return Location.objects.filter(category=obj, user=obj.user).count()
+        return 0
+
+    def get_is_owned(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.user == request.user
+        return False
 
 
 class AuditLogSerializer(serializers.ModelSerializer):
@@ -399,18 +422,26 @@ class LocationSerializer(CustomModelSerializer):
         if category_data:
             user = self.context['request'].user
             name = category_data.get('name', '').lower()
-            existing_category = Category.objects.filter(user=user, name=name).first()
+            # In collaborative mode, check user's own categories first, then public ones
+            if getattr(settings, 'COLLABORATIVE_MODE', False):
+                # Prefer user's own category, then fall back to public
+                existing_category = Category.objects.filter(user=user, name=name).first()
+                if not existing_category:
+                    existing_category = Category.objects.filter(is_global=True, name=name).first()
+            else:
+                existing_category = Category.objects.filter(user=user, name=name).first()
             if existing_category:
                 return existing_category
             category_data['name'] = name
         return category_data
-    
+
     def get_or_create_category(self, category_data):
         user = self.context['request'].user
-        
+        is_collaborative = getattr(settings, 'COLLABORATIVE_MODE', False)
+
         if isinstance(category_data, Category):
             return category_data
-        
+
         if isinstance(category_data, dict):
             name = category_data.get('name', '').lower()
             display_name = category_data.get('display_name', name)
@@ -420,14 +451,32 @@ class LocationSerializer(CustomModelSerializer):
             display_name = category_data.display_name
             icon = category_data.icon
 
-        category, created = Category.objects.get_or_create(
-            user=user,
-            name=name,
-            defaults={
-                'display_name': display_name,
-                'icon': icon
-            }
-        )
+        if is_collaborative:
+            # First check user's own category
+            existing = Category.objects.filter(user=user, name=name).first()
+            if existing:
+                return existing
+            # Then check public categories
+            existing = Category.objects.filter(is_global=True, name=name).first()
+            if existing:
+                return existing
+            # Create as user's public category by default
+            category = Category.objects.create(
+                user=user,
+                is_global=True,
+                name=name,
+                display_name=display_name,
+                icon=icon
+            )
+        else:
+            category, created = Category.objects.get_or_create(
+                user=user,
+                name=name,
+                defaults={
+                    'display_name': display_name,
+                    'icon': icon
+                }
+            )
         return category
     
     def get_is_visited(self, obj):

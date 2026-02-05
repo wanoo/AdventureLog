@@ -1,3 +1,4 @@
+import logging
 from django.utils import timezone
 from django.db import transaction
 from django.core.exceptions import PermissionDenied
@@ -9,6 +10,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 import requests
 from adventures.models import Location, Category, CollectionItineraryItem, Visit, AuditLog
+
+logger = logging.getLogger(__name__)
 from django.contrib.contenttypes.models import ContentType
 from adventures.permissions import IsOwnerOrSharedWithFullAccess
 from adventures.serializers import LocationSerializer, MapPinSerializer, CalendarLocationSerializer, AuditLogSerializer
@@ -155,37 +158,69 @@ class LocationViewSet(viewsets.ModelViewSet):
 
     # ==================== CUSTOM ACTIONS ====================
 
+    @action(detail=False, methods=['get'], url_path='debug-collab')
+    def debug_collab(self, request):
+        """Debug endpoint to check collaborative mode status."""
+        is_collaborative = getattr(settings, 'COLLABORATIVE_MODE', False)
+        user_locations = Location.objects.filter(user=request.user).count()
+        public_locations = Location.objects.filter(is_public=True).count()
+        all_locations = Location.objects.retrieve_locations(
+            request.user,
+            include_owned=True,
+            include_shared=True,
+            include_public=is_collaborative
+        ).count()
+        return Response({
+            "collaborative_mode": is_collaborative,
+            "user": str(request.user),
+            "user_locations": user_locations,
+            "public_locations": public_locations,
+            "visible_locations": all_locations,
+        })
+
     @action(detail=False, methods=['get'])
     def filtered(self, request):
         """Filter locations by category types and visit status."""
         types = request.query_params.get('types', '').split(',')
-        
-        # Handle 'all' types
-        if 'all' in types:
-            types = Category.objects.filter(
-                user=request.user
-            ).values_list('name', flat=True)
-        else:
-            # Validate provided types
-            if not types or not all(
-                Category.objects.filter(user=request.user, name=type_name).exists() 
-                for type_name in types
-            ):
+        is_collaborative = getattr(settings, 'COLLABORATIVE_MODE', False)
+
+        logger.info(f"[filtered] User: {request.user}, types: {types}, collaborative: {is_collaborative}")
+
+        # Get base queryset using the same method as map_locations for consistency
+        queryset = Location.objects.retrieve_locations(
+            request.user,
+            include_owned=True,
+            include_shared=True,
+            include_public=is_collaborative
+        )
+
+        logger.info(f"[filtered] Base queryset count: {queryset.count()}")
+
+        # Filter by category if specific types requested (not 'all')
+        if 'all' not in types:
+            # Build category filter based on collaborative mode
+            if is_collaborative:
+                user_category_filter = Q(is_global=True) | Q(user=request.user)
+            else:
+                user_category_filter = Q(user=request.user)
+
+            # Validate provided types against user's accessible categories
+            valid_categories = Category.objects.filter(user_category_filter, name__in=types)
+            if not valid_categories.exists():
+                logger.warning(f"[filtered] No valid categories found for types: {types}")
                 return Response(
-                    {"error": "Invalid category or no types provided"}, 
+                    {"error": "Invalid category or no types provided"},
                     status=400
                 )
 
-        # Build base queryset
-        queryset = Location.objects.filter(
-            category__in=Category.objects.filter(name__in=types, user=request.user),
-            user=request.user.id
-        )
+            # Filter by category name to include all locations with matching category names
+            queryset = queryset.filter(category__name__in=types)
+            logger.info(f"[filtered] After category filter count: {queryset.count()}")
 
         # Apply visit status filtering
         queryset = self._apply_visit_filtering(queryset, request)
         queryset = self.apply_sorting(queryset)
-        
+
         return self.paginate_and_respond(queryset, request)
 
     @action(detail=False, methods=['get'])

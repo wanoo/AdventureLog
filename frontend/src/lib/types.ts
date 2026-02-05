@@ -291,6 +291,8 @@ export type Category = {
 	icon: string;
 	user: string;
 	num_locations?: number | null;
+	is_public?: boolean;
+	is_owned?: boolean;
 };
 
 export type ImmichIntegration = {

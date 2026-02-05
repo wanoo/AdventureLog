@@ -927,7 +927,9 @@
     "select_category": "Select Category",
     "category_name": "Category Name",
     "add_new_category": "Add New Category",
-    "name_required": "Category name is required"
+    "name_required": "Category name is required",
+    "make_public": "Public",
+    "public_description": "Public categories are visible and usable by all users"
   },
   "dashboard": {
     "welcome_back": "Welcome back",

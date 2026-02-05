@@ -904,7 +904,9 @@
     "select_category": "Sélectionnez une catégorie",
     "add_new_category": "Ajouter une nouvelle catégorie",
     "name_required": "Le nom de catégorie est requis",
-    "location_update_after_refresh": "Les cartes de localisation seront mises à jour une fois que vous avez actualisé la page."
+    "location_update_after_refresh": "Les cartes de localisation seront mises à jour une fois que vous avez actualisé la page.",
+    "make_public": "Publique",
+    "public_description": "Les catégories publiques sont visibles et utilisables par tous les utilisateurs"
   },
   "dashboard": {
     "countries_visited": "Pays visités",

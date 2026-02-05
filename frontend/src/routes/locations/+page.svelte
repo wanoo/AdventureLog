@@ -186,7 +186,10 @@
 {/if}
 
 {#if is_category_modal_open}
-	<CategoryModal on:close={() => (is_category_modal_open = false)} />
+	<CategoryModal
+		on:close={() => (is_category_modal_open = false)}
+		collaborativeMode={data.collaborativeMode}
+	/>
 {/if}
 
 <div class="min-h-screen bg-gradient-to-br from-base-200 via-base-100 to-base-200">
