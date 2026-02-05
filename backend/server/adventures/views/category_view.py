@@ -20,6 +20,20 @@ class CategoryViewSet(viewsets.ModelViewSet):
             ).distinct()
         return Category.objects.filter(user=self.request.user)
 
+    def create(self, request, *args, **kwargs):
+        """Create a category, preventing duplicates in collaborative mode."""
+        name = request.data.get('name', '').lower().strip()
+
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            # Check if a public category with this name already exists
+            existing = Category.objects.filter(is_global=True, name=name).first()
+            if existing:
+                # Return the existing category instead of creating a duplicate
+                serializer = self.get_serializer(existing)
+                return Response(serializer.data, status=200)
+
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         # User always owns their categories, is_public can be set via request data
         serializer.save(user=self.request.user)
@@ -49,11 +63,11 @@ class CategoryViewSet(viewsets.ModelViewSet):
         if instance.user != request.user:
             return Response({"error": "User does not own this category"}, status=400)
 
-        # Reassign locations to user's general category
-        general_category = Category.objects.filter(user=request.user, name='general').first()
+        # Reassign locations to global general category (or create it)
+        general_category = Category.objects.filter(is_global=True, name='general').first()
         if not general_category:
             general_category = Category.objects.create(
-                user=request.user, name='general', icon='🌍', display_name='General'
+                user=None, is_global=True, name='general', icon='🌍', display_name='General'
             )
 
         # Only reassign the user's own locations that use this category

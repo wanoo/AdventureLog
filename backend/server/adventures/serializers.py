@@ -443,24 +443,24 @@ class LocationSerializer(CustomModelSerializer):
             return category_data
 
         if isinstance(category_data, dict):
-            name = category_data.get('name', '').lower()
+            name = category_data.get('name', '').lower().strip()
             display_name = category_data.get('display_name', name)
             icon = category_data.get('icon', '🌍')
         else:
-            name = category_data.name.lower()
+            name = category_data.name.lower().strip()
             display_name = category_data.display_name
             icon = category_data.icon
 
         if is_collaborative:
-            # First check user's own category
-            existing = Category.objects.filter(user=user, name=name).first()
-            if existing:
-                return existing
-            # Then check public categories
+            # In collaborative mode, check if ANY category with this name exists (public first)
             existing = Category.objects.filter(is_global=True, name=name).first()
             if existing:
                 return existing
-            # Create as user's public category by default
+            # Then check user's own category
+            existing = Category.objects.filter(user=user, name=name).first()
+            if existing:
+                return existing
+            # Create as global public category (no duplicates)
             category = Category.objects.create(
                 user=user,
                 is_global=True,
