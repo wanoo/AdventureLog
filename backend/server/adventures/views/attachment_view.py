@@ -198,9 +198,13 @@ class AttachmentViewSet(viewsets.ModelViewSet):
 
     def _get_attachment_user(self, content_object):
         """
-        Determine which user should own the attachment based on the content object.
-        This preserves the original logic for shared collections.
+        Determine which user should own the attachment.
+        In collaborative mode, always use the uploader (request.user).
         """
+        # In collaborative mode, attachments are always owned by the uploader
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            return self.request.user
+
         # Handle Location objects
         if isinstance(content_object, Location):
             if content_object.collections.exists():
@@ -209,14 +213,14 @@ class AttachmentViewSet(viewsets.ModelViewSet):
                 return collection.user
             else:
                 return self.request.user
-        
+
         # Handle other content types with collections
         elif hasattr(content_object, 'collection') and content_object.collection:
             return content_object.collection.user
-        
+
         # Handle content objects with a user field
         elif hasattr(content_object, 'user'):
             return content_object.user
-        
+
         # Default to request user
         return self.request.user

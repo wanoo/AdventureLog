@@ -75,10 +75,12 @@ class ContentImageSerializer(CustomModelSerializer):
 class AttachmentSerializer(CustomModelSerializer):
     extension = serializers.SerializerMethodField()
     geojson = serializers.SerializerMethodField()
+    user_username = serializers.CharField(source='user.username', read_only=True, default=None)
+
     class Meta:
         model = ContentAttachment
-        fields = ['id', 'file', 'extension', 'name', 'user', 'geojson']
-        read_only_fields = ['id', 'user']
+        fields = ['id', 'file', 'extension', 'name', 'user', 'geojson', 'user_username']
+        read_only_fields = ['id', 'user', 'user_username']
 
     def get_extension(self, obj):
         return obj.file.name.split('.')[-1]

@@ -336,6 +336,7 @@ export type Attachment = {
 	file: string;
 	extension: string;
 	user: string;
+	user_username?: string;
 	name: string;
 	geojson: any | null; // GeoJSON representation of the attachment if the file is a GPX
 };
