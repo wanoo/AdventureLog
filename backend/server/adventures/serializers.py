@@ -487,6 +487,20 @@ class LocationSerializer(CustomModelSerializer):
         return category
     
     def get_is_visited(self, obj):
+        # In collaborative mode, only count the current user's visits
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            request = self.context.get('request')
+            if request and request.user.is_authenticated:
+                from django.utils import timezone
+                current_date = timezone.now().date()
+                # Only check visits made by the current user
+                user_visits = obj.visits.filter(user=request.user)
+                for visit in user_visits:
+                    start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
+                    if start_date and start_date <= current_date:
+                        return True
+                return False
+        # In normal mode, use the standard check
         return obj.is_visited_status()
 
     def create(self, validated_data):
@@ -546,6 +560,20 @@ class MapPinSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'category', 'is_owned']
 
     def get_is_visited(self, obj):
+        # In collaborative mode, only count the current user's visits
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            request = self.context.get('request')
+            if request and request.user.is_authenticated:
+                from django.utils import timezone
+                current_date = timezone.now().date()
+                # Only check visits made by the current user
+                user_visits = obj.visits.filter(user=request.user)
+                for visit in user_visits:
+                    start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
+                    if start_date and start_date <= current_date:
+                        return True
+                return False
+        # In normal mode, use the standard check
         return obj.is_visited_status()
 
     def get_is_owned(self, obj):
