@@ -95,8 +95,8 @@ def _remove_collection_itinerary_items_on_object_delete(sender, instance, **kwar
 
 def _get_auditable_models():
     """Returns list of models that should be audited in collaborative mode."""
-    from adventures.models import Location, Collection, Category
-    return [Location, Collection, Category]
+    from adventures.models import Location, Collection, Category, Visit, ContentImage
+    return [Location, Collection, Category, Visit, ContentImage]
 
 
 @receiver(pre_save)

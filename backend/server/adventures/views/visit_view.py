@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from django.db.models import Q
+from django.conf import settings
 from adventures.models import Location, Visit
 from adventures.serializers import VisitSerializer
 from adventures.permissions import IsOwnerOrSharedWithFullAccess
@@ -18,21 +19,26 @@ class VisitViewSet(viewsets.ModelViewSet):
         - The owner of the location
         - The location is in a collection that is shared with the user
         - The location is in a collection that the user owns
+        - In collaborative mode: the location is public
         """
         user = self.request.user
-        
+
         if not user or not user.is_authenticated:
             raise PermissionDenied("You must be authenticated to view visits.")
-        
+
         # Build the filter for accessible locations
         location_filter = Q(location__user=user)  # User owns the location
-        
+
         # Location is in collections (many-to-many) that are shared with user
         location_filter |= Q(location__collections__shared_with=user)
-        
+
         # Location is in collections (many-to-many) that user owns
         location_filter |= Q(location__collections__user=user)
-        
+
+        # In collaborative mode, include visits from public locations
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            location_filter |= Q(location__is_public=True)
+
         return Visit.objects.filter(location_filter).distinct()
 
     def perform_create(self, serializer):
