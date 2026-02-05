@@ -253,19 +253,33 @@ class ContentImagePermission(IsOwnerOrSharedWithFullAccess):
     """
     Specialized permission for ContentImage objects that checks permissions
     on the related content object.
+
+    In collaborative mode, users can only delete their own images.
     """
-    
+
     def has_object_permission(self, request, view, obj):
         """
         For ContentImage objects, check permissions on the related content object.
+        For DELETE operations in collaborative mode, only allow image owner to delete.
         """
         if not request.user or not request.user.is_authenticated:
             return False
-            
+
         # Get the related content object
         content_object = obj.content_object
         if not content_object:
             return False
-        
+
+        # In collaborative mode, only allow deleting your own images
+        if request.method == 'DELETE' and getattr(settings, 'COLLABORATIVE_MODE', False):
+            # Image owner can always delete their own images
+            if obj.user == request.user:
+                return True
+            # Content object owner can delete any image on their content
+            if hasattr(content_object, 'user') and content_object.user == request.user:
+                return True
+            # Otherwise, deny deletion
+            return False
+
         # Use the parent permission class to check access to the content object
         return super().has_object_permission(request, view, content_object)

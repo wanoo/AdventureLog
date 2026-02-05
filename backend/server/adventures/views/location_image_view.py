@@ -251,9 +251,9 @@ class ContentImageViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(data=request_data)
             serializer.is_valid(raise_exception=True)
             
-            # Save with the downloaded image
+            # Save with the downloaded image - always attribute to the uploader
             serializer.save(
-                user=content_object.user if hasattr(content_object, 'user') else request.user,
+                user=request.user,
                 image=image_file,
                 content_type=content_type,
                 object_id=object_id
@@ -301,9 +301,9 @@ class ContentImageViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request_data)
         serializer.is_valid(raise_exception=True)
 
-        # Prepare save parameters
+        # Prepare save parameters - always attribute to the uploader
         save_kwargs = {
-            'user': getattr(content_object, 'user', request.user),
+            'user': request.user,
             'content_type': content_type,
             'object_id': object_id,
         }

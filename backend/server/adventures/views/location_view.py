@@ -32,9 +32,11 @@ class LocationViewSet(viewsets.ModelViewSet):
         """
         Returns queryset based on user authentication and action type.
         Public actions allow unauthenticated access to public locations.
+        In collaborative mode, authenticated users can access public locations for editing.
         """
         user = self.request.user
         public_allowed_actions = {'retrieve', 'additional_info'}
+        is_collaborative = getattr(settings, 'COLLABORATIVE_MODE', False)
 
         if not user.is_authenticated:
             if self.action in public_allowed_actions:
@@ -43,7 +45,13 @@ class LocationViewSet(viewsets.ModelViewSet):
                 ).order_by('-updated_at')
             return Location.objects.none()
 
-        include_public = self.action in public_allowed_actions
+        # In collaborative mode, include public locations for all actions (except destroy)
+        # The permission class will handle fine-grained access control
+        if is_collaborative and self.action != 'destroy':
+            include_public = True
+        else:
+            include_public = self.action in public_allowed_actions
+
         return Location.objects.retrieve_locations(
             user,
             include_public=include_public,
