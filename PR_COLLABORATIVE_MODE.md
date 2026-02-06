@@ -22,6 +22,11 @@ This PR introduces a collaborative mode for AdventureLogs that enables shared ed
 - Revert image/attachment deletion (restore from soft-delete)
 - Permission checks: only creator, location owner, or staff can revert
 
+### UI Enhancements
+- **Contributors Display**: Shows avatars of all users who contributed to a location (owner, visitors, uploaders)
+- **Last Modified By**: Shows who last edited the location and when
+- **User Attribution**: Username displayed on visits, images, and attachments
+
 ## Technical Changes
 
 ### Backend
@@ -31,12 +36,15 @@ This PR introduces a collaborative mode for AdventureLogs that enables shared ed
 - `middleware.py`: `AuditUserMiddleware` captures current user for logging
 - `models.py`: Soft-delete fields on `ContentImage` and `ContentAttachment`
 - `serializers.py`: Added `user_username` to Visit, ContentImage, Attachment serializers
+- `serializers.py`: Added `contributors` and `last_modified_by` fields to LocationSerializer
 - Views updated: location_view, visit_view, location_image_view, attachment_view, note_view, transportation_view, lodging_view
 
 ### Frontend
 - `HistoryPanel.svelte`: Display audit history with revert buttons
 - `LocationVisits.svelte`: Show who added each visit, restrict edit/delete to owner
-- `+page.svelte`: Show uploader username on images
+- `+page.svelte`: Show uploader username on images, contributors avatars, last modified by
+- `types.ts`: Added `Contributor`, `LastModifiedBy` types and updated `Location` type
+- `en.json`, `fr.json`: Added translation keys for contributors and last_edited_by
 
 ### Database Migrations
 - `0072_visit_user.py`: Add user field to Visit model

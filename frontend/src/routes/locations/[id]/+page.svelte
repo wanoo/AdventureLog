@@ -413,6 +413,49 @@
 											</div>
 										{/if}
 									</div>
+									<!-- Last Modified By -->
+									{#if adventure.last_modified_by}
+										<div class="text-xs opacity-60 mt-2">
+											{$t('adventures.last_edited_by')}
+											<a href="/profile/{adventure.last_modified_by.username}" class="link link-hover link-primary font-semibold">{adventure.last_modified_by.username}</a>
+											• {new Date(adventure.last_modified_by.timestamp).toLocaleDateString()}
+										</div>
+									{/if}
+								</div>
+							</div>
+						</div>
+					</div>
+				{/if}
+
+				<!-- Contributors (Collaborative Mode) -->
+				{#if adventure.contributors && adventure.contributors.length > 1}
+					<div class="card bg-base-200 shadow-xl">
+						<div class="card-body py-4">
+							<div class="flex items-center justify-between">
+								<h3 class="text-sm font-semibold opacity-70">{$t('adventures.contributors')}</h3>
+								<div class="avatar-group -space-x-3 rtl:space-x-reverse">
+									{#each adventure.contributors.slice(0, 8) as contributor}
+										<a href="/profile/{contributor.username}" class="tooltip" data-tip={contributor.username}>
+											<div class="avatar border-2 border-base-200">
+												{#if contributor.profile_pic}
+													<div class="w-8">
+														<img src={contributor.profile_pic} alt={contributor.username} />
+													</div>
+												{:else}
+													<div class="bg-primary text-primary-content w-8">
+														<span class="text-xs">{contributor.username.charAt(0).toUpperCase()}</span>
+													</div>
+												{/if}
+											</div>
+										</a>
+									{/each}
+									{#if adventure.contributors.length > 8}
+										<div class="avatar placeholder border-2 border-base-200">
+											<div class="bg-neutral text-neutral-content w-8">
+												<span class="text-xs">+{adventure.contributors.length - 8}</span>
+											</div>
+										</div>
+									{/if}
 								</div>
 							</div>
 						</div>

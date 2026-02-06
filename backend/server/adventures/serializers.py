@@ -358,6 +358,8 @@ class LocationSerializer(CustomModelSerializer):
     category = CategorySerializer(read_only=False, required=False)
     is_visited = serializers.SerializerMethodField()
     is_owned = serializers.SerializerMethodField()
+    contributors = serializers.SerializerMethodField()
+    last_modified_by = serializers.SerializerMethodField()
     country = CountrySerializer(read_only=True)
     region = RegionSerializer(read_only=True)
     city = CitySerializer(read_only=True)
@@ -373,16 +375,100 @@ class LocationSerializer(CustomModelSerializer):
         fields = [
             'id', 'name', 'description', 'rating', 'tags', 'location',
             'is_public', 'collections', 'created_at', 'updated_at', 'images', 'link', 'longitude',
-            'latitude', 'visits', 'is_visited', 'is_owned', 'category', 'attachments', 'user', 'city', 'country', 'region', 'trails',
+            'latitude', 'visits', 'is_visited', 'is_owned', 'contributors', 'last_modified_by', 'category', 'attachments', 'user', 'city', 'country', 'region', 'trails',
             'price', 'price_currency'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'is_owned']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'is_owned', 'contributors', 'last_modified_by']
 
     def get_is_owned(self, obj):
         request = self.context.get('request')
         if request and hasattr(request, 'user') and request.user.is_authenticated:
             return obj.user == request.user
         return False
+
+    def get_contributors(self, obj):
+        """
+        Get unique users who have contributed to this location.
+        Contributors include: owner, users who added visits, images, or attachments.
+        Owner is always listed first. Limited to 10 contributors.
+        """
+        MAX_CONTRIBUTORS = 10
+        seen_ids = set()
+        contributors = []
+
+        # Add owner first (if exists)
+        if obj.user:
+            seen_ids.add(obj.user.id)
+            contributors.append({
+                'uuid': str(obj.user.uuid),
+                'username': obj.user.username,
+                'profile_pic': _build_profile_pic_url(obj.user),
+            })
+
+        # Collect users from visits
+        for visit in obj.visits.select_related('user').all():
+            if visit.user and visit.user.id not in seen_ids:
+                seen_ids.add(visit.user.id)
+                contributors.append({
+                    'uuid': str(visit.user.uuid),
+                    'username': visit.user.username,
+                    'profile_pic': _build_profile_pic_url(visit.user),
+                })
+                if len(contributors) >= MAX_CONTRIBUTORS:
+                    return contributors
+
+        # Collect users from images (non-deleted only)
+        for image in obj.images.filter(is_deleted=False).select_related('user').all():
+            if image.user and image.user.id not in seen_ids:
+                seen_ids.add(image.user.id)
+                contributors.append({
+                    'uuid': str(image.user.uuid),
+                    'username': image.user.username,
+                    'profile_pic': _build_profile_pic_url(image.user),
+                })
+                if len(contributors) >= MAX_CONTRIBUTORS:
+                    return contributors
+
+        # Collect users from attachments (non-deleted only)
+        for attachment in obj.attachments.filter(is_deleted=False).select_related('user').all():
+            if attachment.user and attachment.user.id not in seen_ids:
+                seen_ids.add(attachment.user.id)
+                contributors.append({
+                    'uuid': str(attachment.user.uuid),
+                    'username': attachment.user.username,
+                    'profile_pic': _build_profile_pic_url(attachment.user),
+                })
+                if len(contributors) >= MAX_CONTRIBUTORS:
+                    return contributors
+
+        return contributors
+
+    def get_last_modified_by(self, obj):
+        """
+        Get the user who last modified this location (from audit logs).
+        Returns dict with username, timestamp, and profile_pic, or None.
+        """
+        if not getattr(settings, 'COLLABORATIVE_MODE', False):
+            return None
+
+        from django.contrib.contenttypes.models import ContentType
+
+        ct = ContentType.objects.get_for_model(Location)
+        latest_log = AuditLog.objects.filter(
+            content_type=ct,
+            object_id=obj.pk,
+            action='update'
+        ).select_related('user').order_by('-timestamp').first()
+
+        if not latest_log or not latest_log.user:
+            return None
+
+        return {
+            'uuid': str(latest_log.user.uuid),
+            'username': latest_log.user.username,
+            'profile_pic': _build_profile_pic_url(latest_log.user),
+            'timestamp': latest_log.timestamp.isoformat(),
+        }
 
     # Makes it so the whole user object is returned in the serializer instead of just the user uuid
     def to_representation(self, instance):

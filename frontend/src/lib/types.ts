@@ -32,6 +32,19 @@ export type Collaborator = {
 	is_current_user?: boolean;
 };
 
+export type Contributor = {
+	uuid: string;
+	username: string;
+	profile_pic: string | null;
+};
+
+export type LastModifiedBy = {
+	uuid: string;
+	username: string;
+	profile_pic: string | null;
+	timestamp: string; // ISO 8601 date string
+};
+
 export type ContentImage = {
 	id: string;
 	image: string;
@@ -67,6 +80,8 @@ export type Location = {
 	country?: Country | null;
 	trails: Trail[];
 	is_owned?: boolean; // For collaborative mode
+	contributors?: Contributor[]; // Users who have contributed (owner, visits, images, attachments)
+	last_modified_by?: LastModifiedBy | null; // Who last edited this location (collaborative mode)
 };
 
 export type AdditionalLocation = Location & {
