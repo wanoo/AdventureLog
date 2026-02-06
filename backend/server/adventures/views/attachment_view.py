@@ -103,7 +103,15 @@ class AttachmentViewSet(viewsets.ModelViewSet):
                 Q(object_id__in=Visit.objects.filter(location__is_public=True).values_list('id', flat=True))
             )
 
-        return ContentAttachment.objects.filter(query).distinct()
+        # Exclude soft-deleted attachments
+        return ContentAttachment.objects.filter(query, is_deleted=False).distinct()
+
+    def perform_destroy(self, instance):
+        """Set deleted_by before soft-deleting."""
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            instance.deleted_by = self.request.user
+            instance.save(update_fields=['deleted_by'])
+        instance.delete()
 
     def create(self, request, *args, **kwargs):
         if not request.user.is_authenticated:

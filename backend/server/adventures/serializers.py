@@ -151,11 +151,61 @@ class CategorySerializer(serializers.ModelSerializer):
 class AuditLogSerializer(serializers.ModelSerializer):
     """Serializer for audit log entries in collaborative mode."""
     user_username = serializers.CharField(source='user.username', read_only=True, default='Unknown')
+    content_type_name = serializers.SerializerMethodField()
+    is_revertible = serializers.SerializerMethodField()
 
     class Meta:
         model = AuditLog
-        fields = ['id', 'user_username', 'action', 'object_repr', 'changes', 'timestamp']
+        fields = ['id', 'user_username', 'action', 'object_repr', 'changes', 'timestamp', 'content_type_name', 'is_revertible']
         read_only_fields = fields
+
+    def get_content_type_name(self, obj):
+        return obj.content_type.model if obj.content_type else None
+
+    def get_is_revertible(self, obj):
+        """Determine if this audit log entry can be reverted."""
+        from adventures.models import Location, ContentImage, ContentAttachment
+
+        # Can't revert if no object_id
+        if not obj.object_id:
+            return False
+
+        model_class = obj.content_type.model_class()
+
+        if obj.action == 'create':
+            # Can revert create by deleting the object (if it still exists)
+            try:
+                if model_class == ContentImage:
+                    return ContentImage.objects.filter(id=obj.object_id, is_deleted=False).exists()
+                elif model_class == ContentAttachment:
+                    return ContentAttachment.objects.filter(id=obj.object_id, is_deleted=False).exists()
+                else:
+                    return model_class.objects.filter(pk=obj.object_id).exists()
+            except Exception:
+                return False
+
+        elif obj.action == 'update':
+            # Can revert update if object exists and we have old values
+            if not obj.changes:
+                return False
+            try:
+                return model_class.objects.filter(pk=obj.object_id).exists()
+            except Exception:
+                return False
+
+        elif obj.action == 'delete':
+            # Can revert delete if object is soft-deleted (images/attachments only)
+            try:
+                if model_class == ContentImage:
+                    return ContentImage.objects.filter(id=obj.object_id, is_deleted=True).exists()
+                elif model_class == ContentAttachment:
+                    return ContentAttachment.objects.filter(id=obj.object_id, is_deleted=True).exists()
+                else:
+                    return False  # Can't revert hard deletes
+            except Exception:
+                return False
+
+        return False
 
 
 class TrailSerializer(CustomModelSerializer):
@@ -358,7 +408,7 @@ class LocationSerializer(CustomModelSerializer):
 
 
     def get_images(self, obj):
-        serializer = ContentImageSerializer(obj.images.all(), many=True, context=self.context)
+        serializer = ContentImageSerializer(obj.images.filter(is_deleted=False), many=True, context=self.context)
         # Filter out None values from the serialized data
         return [image for image in serializer.data if image is not None]
 
@@ -603,12 +653,12 @@ class TransportationSerializer(CustomModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'distance', 'travel_duration_minutes']
 
     def get_images(self, obj):
-        serializer = ContentImageSerializer(obj.images.all(), many=True, context=self.context)
+        serializer = ContentImageSerializer(obj.images.filter(is_deleted=False), many=True, context=self.context)
         # Filter out None values from the serialized data
         return [image for image in serializer.data if image is not None]
 
     def get_attachments(self, obj):
-        serializer = AttachmentSerializer(obj.attachments.all(), many=True, context=self.context)
+        serializer = AttachmentSerializer(obj.attachments.filter(is_deleted=False), many=True, context=self.context)
         # Filter out None values from the serialized data
         return [attachment for attachment in serializer.data if attachment is not None]
 
@@ -705,12 +755,12 @@ class LodgingSerializer(CustomModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at', 'user']
 
     def get_images(self, obj):
-        serializer = ContentImageSerializer(obj.images.all(), many=True, context=self.context)
+        serializer = ContentImageSerializer(obj.images.filter(is_deleted=False), many=True, context=self.context)
         # Filter out None values from the serialized data
         return [image for image in serializer.data if image is not None]
 
     def get_attachments(self, obj):
-        serializer = AttachmentSerializer(obj.attachments.all(), many=True, context=self.context)
+        serializer = AttachmentSerializer(obj.attachments.filter(is_deleted=False), many=True, context=self.context)
         # Filter out None values from the serialized data
         return [attachment for attachment in serializer.data if attachment is not None]
 

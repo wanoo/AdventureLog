@@ -107,11 +107,19 @@ class ContentImageViewSet(viewsets.ModelViewSet):
                 Q(object_id__in=Visit.objects.filter(location__is_public=True).values_list('id', flat=True))
             )
 
-        return ContentImage.objects.filter(query).distinct()
+        # Exclude soft-deleted images
+        return ContentImage.objects.filter(query, is_deleted=False).distinct()
 
     @action(detail=True, methods=['post'])
     def image_delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+
+    def perform_destroy(self, instance):
+        """Set deleted_by before soft-deleting."""
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            instance.deleted_by = self.request.user
+            instance.save(update_fields=['deleted_by'])
+        instance.delete()
     
     @action(detail=True, methods=['post'])
     def toggle_primary(self, request, *args, **kwargs):

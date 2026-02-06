@@ -459,7 +459,15 @@ class ContentImage(models.Model):
     )
     immich_id = models.CharField(max_length=200, null=True, blank=True)
     is_primary = models.BooleanField(default=False)
-    
+
+    # Soft-delete fields for collaborative mode revert
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    deleted_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='deleted_images'
+    )
+
     # Generic foreign key fields
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='content_images')
     object_id = models.UUIDField()
@@ -493,10 +501,34 @@ class ContentImage(models.Model):
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        # Remove file from disk when deleting image
+        from django.conf import settings
+        from django.utils import timezone
+
+        # In collaborative mode, soft-delete instead of hard delete
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            self.is_deleted = True
+            self.deleted_at = timezone.now()
+            # deleted_by is set by the view
+            self.save(update_fields=['is_deleted', 'deleted_at', 'deleted_by'])
+            return
+
+        # Hard delete: remove file from disk
         if self.image and os.path.isfile(self.image.path):
             os.remove(self.image.path)
         super().delete(*args, **kwargs)
+
+    def hard_delete(self, *args, **kwargs):
+        """Permanently delete the image and its file."""
+        if self.image and os.path.isfile(self.image.path):
+            os.remove(self.image.path)
+        super().delete(*args, **kwargs)
+
+    def restore(self):
+        """Restore a soft-deleted image."""
+        self.is_deleted = False
+        self.deleted_at = None
+        self.deleted_by = None
+        self.save(update_fields=['is_deleted', 'deleted_at', 'deleted_by'])
 
     def __str__(self):
         content_name = getattr(self.content_object, 'name', 'Unknown')
@@ -508,7 +540,15 @@ class ContentAttachment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=default_user)
     file = models.FileField(upload_to=PathAndRename('attachments/'), validators=[validate_file_extension])
     name = models.CharField(max_length=200, null=True, blank=True)
-    
+
+    # Soft-delete fields for collaborative mode revert
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    deleted_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='deleted_attachments'
+    )
+
     # Generic foreign key fields
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='content_attachments')
     object_id = models.UUIDField()
@@ -522,9 +562,34 @@ class ContentAttachment(models.Model):
         ]
 
     def delete(self, *args, **kwargs):
+        from django.conf import settings
+        from django.utils import timezone
+
+        # In collaborative mode, soft-delete instead of hard delete
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            self.is_deleted = True
+            self.deleted_at = timezone.now()
+            # deleted_by is set by the view
+            self.save(update_fields=['is_deleted', 'deleted_at', 'deleted_by'])
+            return
+
+        # Hard delete: remove file from disk
         if self.file and os.path.isfile(self.file.path):
             os.remove(self.file.path)
         super().delete(*args, **kwargs)
+
+    def hard_delete(self, *args, **kwargs):
+        """Permanently delete the attachment and its file."""
+        if self.file and os.path.isfile(self.file.path):
+            os.remove(self.file.path)
+        super().delete(*args, **kwargs)
+
+    def restore(self):
+        """Restore a soft-deleted attachment."""
+        self.is_deleted = False
+        self.deleted_at = None
+        self.deleted_by = None
+        self.save(update_fields=['is_deleted', 'deleted_at', 'deleted_by'])
 
     def __str__(self):
         content_name = getattr(self.content_object, 'name', 'Unknown')
