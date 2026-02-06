@@ -198,6 +198,8 @@
 		"update_visited_regions": "Aktualizovať navštívené regióny",
 		"link_new": "Prepojiť nové...",
 		"add_new": "Pridať nové...",
+		"link_transportation": "Prepojiť dopravu",
+		"link_lodging": "Prepojiť ubytovanie",
 		"transportation": "Doprava",
 		"note": "Poznámka",
 		"checklist": "Checklist",
@@ -839,7 +841,12 @@
 		"arrival_timezone": "Časové pásmo príchodu",
 		"departure_code": "Kód odchodu",
 		"departure_date": "Dátum odchodu",
-		"departure_timezone": "Časové pásmo odletu"
+		"departure_timezone": "Časové pásmo odletu",
+		"public_transportation": "Verejná doprava",
+		"public_transportation_description": "Povoliť ostatným používateľom zobraziť túto dopravu",
+		"move_to_collection_confirm": "Táto doprava sa už nachádza v inej zbierke. Presunúť do tejto zbierky?",
+		"linked_success": "Doprava úspešne prepojená",
+		"linked_error": "Prepojenie dopravy zlyhalo"
 	},
 	"lodging": {
 		"new_lodging": "Nové ubytovanie",
@@ -863,7 +870,12 @@
 		"update_lodging_details": "Aktualizovať detaily ubytovania",
 		"create_new_lodging": "Nové ubytovanie",
 		"enter_lodging_name": "Zadajte názov ubytovania",
-		"enter_reservation_number": "Zadajte číslo rezervácie"
+		"enter_reservation_number": "Zadajte číslo rezervácie",
+		"public_lodging": "Verejné ubytovanie",
+		"public_lodging_description": "Povoliť ostatným používateľom zobraziť toto ubytovanie",
+		"move_to_collection_confirm": "Toto ubytovanie sa už nachádza v inej zbierke. Presunúť do tejto zbierky?",
+		"linked_success": "Ubytovanie úspešne prepojené",
+		"linked_error": "Prepojenie ubytovania zlyhalo"
 	},
 	"search": {
 		"result": "Výsledok",

@@ -147,6 +147,8 @@
     "update_visited_regions": "Aktualizuj odwiedzone regiony",
     "link_new": "Powiąż nową...",
     "add_new": "Dodaj nową...",
+    "link_transportation": "Powiąż transport",
+    "link_lodging": "Powiąż zakwaterowanie",
     "transportation": "Transport",
     "note": "Notatka",
     "checklist": "Lista kontrolna",
@@ -839,7 +841,12 @@
     "arrival_timezone": "Strefa czasowa przybycia",
     "departure_code": "Kod wyjazdu",
     "departure_date": "Data wyjazdu",
-    "departure_timezone": "Strefa czasowa wyjazdu"
+    "departure_timezone": "Strefa czasowa wyjazdu",
+    "public_transportation": "Transport publiczny",
+    "public_transportation_description": "Pozwól innym użytkownikom zobaczyć ten transport",
+    "move_to_collection_confirm": "Ten transport jest już w innej kolekcji. Przenieść do tej kolekcji?",
+    "linked_success": "Transport powiązany pomyślnie",
+    "linked_error": "Nie udało się powiązać transportu"
   },
   "search": {
     "cities": "Miasta",
@@ -1008,7 +1015,12 @@
     "create_new_lodging": "Nowe zakwaterowanie",
     "enter_lodging_name": "Wprowadź nazwę lodowania",
     "enter_reservation_number": "Wprowadź numer rezerwacji",
-    "update_lodging_details": "Zaktualizuj szczegóły lodowania"
+    "update_lodging_details": "Zaktualizuj szczegóły lodowania",
+    "public_lodging": "Publiczne zakwaterowanie",
+    "public_lodging_description": "Pozwól innym użytkownikom zobaczyć to zakwaterowanie",
+    "move_to_collection_confirm": "To zakwaterowanie jest już w innej kolekcji. Przenieść do tej kolekcji?",
+    "linked_success": "Zakwaterowanie powiązane pomyślnie",
+    "linked_error": "Nie udało się powiązać zakwaterowania"
   },
   "google_maps": {
     "google_maps_integration_desc": "Połącz swoje konto Google Maps, aby uzyskać wysokiej jakości wyniki wyszukiwania i zalecenia dotyczące lokalizacji.",

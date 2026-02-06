@@ -98,6 +98,8 @@
     "regions_updated": "régions mises à jour",
     "update_visited_regions": "Mettre à jour les régions visitées",
     "add_new": "Ajouter un nouveau...",
+    "link_transportation": "Lier transport",
+    "link_lodging": "Lier hébergement",
     "checklists": "Listes de contrôle",
     "days": "jours",
     "link_new": "Ajouter un lien vers...",
@@ -843,7 +845,12 @@
     "arrival_timezone": "Fuseau horaire d'arrivée",
     "departure_code": "Code de départ",
     "departure_date": "Date de départ",
-    "departure_timezone": "Fuseau horaire de départ"
+    "departure_timezone": "Fuseau horaire de départ",
+    "public_transportation": "Transport public",
+    "public_transportation_description": "Autoriser les autres utilisateurs à voir ce transport",
+    "move_to_collection_confirm": "Ce transport est déjà dans une autre collection. Le déplacer vers cette collection ?",
+    "linked_success": "Transport lié avec succès",
+    "linked_error": "Échec de la liaison du transport"
   },
   "search": {
     "cities": "Villes",
@@ -1014,7 +1021,12 @@
     "create_new_lodging": "Nouveau logement",
     "enter_lodging_name": "Entrez le nom de l'hébergement",
     "enter_reservation_number": "Entrez le numéro de réservation",
-    "update_lodging_details": "Mettre à jour les détails de l'hébergement"
+    "update_lodging_details": "Mettre à jour les détails de l'hébergement",
+    "public_lodging": "Hébergement public",
+    "public_lodging_description": "Autoriser les autres utilisateurs à voir cet hébergement",
+    "move_to_collection_confirm": "Cet hébergement est déjà dans une autre collection. Le déplacer vers cette collection ?",
+    "linked_success": "Hébergement lié avec succès",
+    "linked_error": "Échec de la liaison de l'hébergement"
   },
   "google_maps": {
     "google_maps_integration_desc": "Connectez votre compte Google Maps pour obtenir des résultats de recherche et recommandations de recherche de haute qualité.",

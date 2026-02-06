@@ -20,6 +20,8 @@
     "add": "يضيف",
     "add_a_tag": "إضافة علامة",
     "add_new": "أضف جديد ...",
+    "link_transportation": "ربط النقل",
+    "link_lodging": "ربط الإقامة",
     "add_to_collection": "إضافة إلى المجموعة",
     "adventure_not_found": "لا توجد مغامرات لعرضها. \nأضف بعضًا باستخدام الزر Plus في أسفل اليمين أو حاول تغيير المرشحات!",
     "all": "الجميع",
@@ -659,7 +661,12 @@
     "create_new_lodging": "سكن جديد",
     "enter_lodging_name": "أدخل اسم الإقامة",
     "enter_reservation_number": "أدخل رقم الحجز",
-    "update_lodging_details": "تحديث تفاصيل الإقامة"
+    "update_lodging_details": "تحديث تفاصيل الإقامة",
+    "public_lodging": "الإقامة العامة",
+    "public_lodging_description": "السماح للمستخدمين الآخرين بمشاهدة هذه الإقامة",
+    "move_to_collection_confirm": "هذه الإقامة موجودة بالفعل في مجموعة أخرى. هل تريد نقلها إلى هذه المجموعة؟",
+    "linked_success": "تم ربط الإقامة بنجاح",
+    "linked_error": "فشل ربط الإقامة"
   },
   "map": {
     "add_location": "أضف موقعًا جديدًا",
@@ -987,7 +994,12 @@
     "arrival_timezone": "المنطقة الزمنية للوصول",
     "departure_code": "رمز المغادرة",
     "departure_date": "تاريخ المغادرة",
-    "departure_timezone": "منطقة المغادرة الزمنية"
+    "departure_timezone": "منطقة المغادرة الزمنية",
+    "public_transportation": "النقل العام",
+    "public_transportation_description": "السماح للمستخدمين الآخرين بمشاهدة هذا النقل",
+    "move_to_collection_confirm": "هذا النقل موجود بالفعل في مجموعة أخرى. هل تريد نقله إلى هذه المجموعة؟",
+    "linked_success": "تم ربط النقل بنجاح",
+    "linked_error": "فشل ربط النقل"
   },
   "users": {
     "no_users_found": "لم يتم العثور على مستخدمين مع ملفات تعريف عامة."

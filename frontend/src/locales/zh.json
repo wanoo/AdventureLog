@@ -160,6 +160,8 @@
     "update_visited_regions": "更新已访问地区",
     "link_new": "链接新...",
     "add_new": "添加新...",
+    "link_transportation": "链接交通",
+    "link_lodging": "链接住宿",
     "transportation": "交通",
     "note": "笔记",
     "checklist": "检查清单",
@@ -839,7 +841,12 @@
     "arrival_date": "抵达日期",
     "arrival_timezone": "到达时区",
     "departure_date": "出发日期",
-    "departure_timezone": "出发时区"
+    "departure_timezone": "出发时区",
+    "public_transportation": "公开交通",
+    "public_transportation_description": "允许其他用户查看此交通",
+    "move_to_collection_confirm": "此交通已在另一个收藏夹中。是否移动到此收藏夹？",
+    "linked_success": "交通链接成功",
+    "linked_error": "链接交通失败"
   },
   "search": {
     "cities": "城市",
@@ -1008,7 +1015,12 @@
     "create_new_lodging": "新住宿",
     "enter_lodging_name": "输入住宿名称",
     "enter_reservation_number": "输入预订号",
-    "update_lodging_details": "更新住宿详细信息"
+    "update_lodging_details": "更新住宿详细信息",
+    "public_lodging": "公开住宿",
+    "public_lodging_description": "允许其他用户查看此住宿",
+    "move_to_collection_confirm": "此住宿已在另一个收藏夹中。是否移动到此收藏夹？",
+    "linked_success": "住宿链接成功",
+    "linked_error": "链接住宿失败"
   },
   "google_maps": {
     "google_maps_integration_desc": "连接您的Google Maps帐户以获取高质量的地点搜索结果和建议。",

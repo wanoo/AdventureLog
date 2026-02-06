@@ -94,6 +94,8 @@
 		"update_visited_regions": "Uppdatera besökta regioner",
 		"wikipedia": "Wikipedia",
 		"add_new": "Lägg till ny...",
+		"link_transportation": "Länka transport",
+		"link_lodging": "Länka boende",
 		"checklist": "Checklista",
 		"checklists": "Checklistor",
 		"days": "dagar",
@@ -839,7 +841,12 @@
 		"arrival_timezone": "Tidszon för ankomst",
 		"departure_code": "Avgångskod",
 		"departure_date": "Avresedatum",
-		"departure_timezone": "Tidszon för avgång"
+		"departure_timezone": "Tidszon för avgång",
+		"public_transportation": "Offentlig transport",
+		"public_transportation_description": "Tillåt andra användare att se denna transport",
+		"move_to_collection_confirm": "Denna transport finns redan i en annan samling. Flytta till denna samling?",
+		"linked_success": "Transport länkad framgångsrikt",
+		"linked_error": "Kunde inte länka transport"
 	},
 	"search": {
 		"cities": "Städer",
@@ -1008,7 +1015,12 @@
 		"create_new_lodging": "Inställning",
 		"enter_lodging_name": "Ange logi -namn",
 		"enter_reservation_number": "Ange bokningsnummer",
-		"update_lodging_details": "Uppdatera logiinformation"
+		"update_lodging_details": "Uppdatera logiinformation",
+		"public_lodging": "Offentligt boende",
+		"public_lodging_description": "Tillåt andra användare att se detta boende",
+		"move_to_collection_confirm": "Detta boende finns redan i en annan samling. Flytta till denna samling?",
+		"linked_success": "Boende länkat framgångsrikt",
+		"linked_error": "Kunde inte länka boende"
 	},
 	"google_maps": {
 		"google_maps_integration_desc": "Anslut ditt Google Maps-konto för att få sökresultat och rekommendationer av hög kvalitet.",

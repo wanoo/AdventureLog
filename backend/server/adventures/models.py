@@ -123,7 +123,10 @@ User = get_user_model()
 
 class Visit(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
-    location = models.ForeignKey('Location', on_delete=models.CASCADE, related_name='visits')
+    # A visit must be associated with exactly one of: Location, Transportation, or Lodging
+    location = models.ForeignKey('Location', on_delete=models.CASCADE, related_name='visits', null=True, blank=True)
+    transportation = models.ForeignKey('Transportation', on_delete=models.CASCADE, related_name='visits', null=True, blank=True)
+    lodging = models.ForeignKey('Lodging', on_delete=models.CASCADE, related_name='visits', null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='visits')
     start_date = models.DateTimeField(null=True, blank=True)
     end_date = models.DateTimeField(null=True, blank=True)
@@ -137,7 +140,16 @@ class Visit(models.Model):
     attachments = GenericRelation('ContentAttachment', related_query_name='visit')
 
     def clean(self):
-        if self.start_date > self.end_date:
+        # Validation: exactly one parent must be set
+        parent_count = sum([
+            self.location is not None,
+            self.transportation is not None,
+            self.lodging is not None
+        ])
+        if parent_count != 1:
+            raise ValidationError('Visit must be associated with exactly one of: Location, Transportation, or Lodging.')
+
+        if self.start_date and self.end_date and self.start_date > self.end_date:
             raise ValidationError('The start date must be before or equal to the end date.')
 
     def delete(self, *args, **kwargs):
@@ -149,7 +161,15 @@ class Visit(models.Model):
         super().delete(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.location.name} - {self.start_date} to {self.end_date}"
+        if self.location:
+            parent_name = self.location.name
+        elif self.transportation:
+            parent_name = self.transportation.name
+        elif self.lodging:
+            parent_name = self.lodging.name
+        else:
+            parent_name = "Unknown"
+        return f"{parent_name} - {self.start_date} to {self.end_date}"
 
 class Location(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)

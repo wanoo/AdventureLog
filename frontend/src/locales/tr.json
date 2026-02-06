@@ -210,6 +210,8 @@
     "update_visited_regions": "Ziyaret Edilen Bölgeleri Güncelle",
     "link_new": "Yeni Bağlantı Ekle...",
     "add_new": "Yeni Ekle...",
+    "link_transportation": "Ulaşım Bağla",
+    "link_lodging": "Konaklama Bağla",
     "from": "Nereden",
     "to": "Nereye",
     "start": "Başlat",
@@ -839,7 +841,12 @@
     "arrival_timezone": "Varış Saat Dilimi",
     "departure_code": "Kalkış Kodu",
     "departure_date": "Ayrılış Tarihi",
-    "departure_timezone": "Kalkış Saat Dilimi"
+    "departure_timezone": "Kalkış Saat Dilimi",
+    "public_transportation": "Herkese Açık Ulaşım",
+    "public_transportation_description": "Diğer kullanıcıların bu ulaşımı görmesine izin ver",
+    "move_to_collection_confirm": "Bu ulaşım zaten başka bir koleksiyonda. Bu koleksiyona taşınsın mı?",
+    "linked_success": "Ulaşım başarıyla bağlandı",
+    "linked_error": "Ulaşım bağlanamadı"
   },
   "lodging": {
     "new_lodging": "Yeni Konaklama",
@@ -863,7 +870,12 @@
     "update_lodging_details": "Konaklama Detaylarını Güncelle",
     "create_new_lodging": "Yeni Konaklama",
     "enter_lodging_name": "Konaklama adını girin",
-    "enter_reservation_number": "Rezervasyon numarası girin"
+    "enter_reservation_number": "Rezervasyon numarası girin",
+    "public_lodging": "Herkese Açık Konaklama",
+    "public_lodging_description": "Diğer kullanıcıların bu konaklamayı görmesine izin ver",
+    "move_to_collection_confirm": "Bu konaklama zaten başka bir koleksiyonda. Bu koleksiyona taşınsın mı?",
+    "linked_success": "Konaklama başarıyla bağlandı",
+    "linked_error": "Konaklama bağlanamadı"
   },
   "search": {
     "result": "Sonuç",

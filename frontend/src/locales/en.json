@@ -253,6 +253,8 @@
     "update_visited_regions": "Update Visited Regions",
     "link_new": "Link New...",
     "add_new": "Add New...",
+    "link_transportation": "Link Transportation",
+    "link_lodging": "Link Lodging",
     "transportation": "Transportation",
     "note": "Note",
     "checklist": "Checklist",
@@ -844,7 +846,12 @@
     "arrival_date": "Arrival Date",
     "departure_timezone": "Departure Timezone",
     "arrival_timezone": "Arrival Timezone",
-    "departure_date": "Departure Date"
+    "departure_date": "Departure Date",
+    "public_transportation": "Public Transportation",
+    "public_transportation_description": "Allow other users to view this transportation",
+    "move_to_collection_confirm": "This transportation is already in another collection. Move it to this collection?",
+    "linked_success": "Transportation linked successfully",
+    "linked_error": "Failed to link transportation"
   },
   "lodging": {
     "new_lodging": "New Lodging",
@@ -868,7 +875,12 @@
     "update_lodging_details": "Update Lodging Details",
     "create_new_lodging": "New Lodging",
     "enter_lodging_name": "Enter lodging name",
-    "enter_reservation_number": "Enter reservation number"
+    "enter_reservation_number": "Enter reservation number",
+    "public_lodging": "Public Lodging",
+    "public_lodging_description": "Allow other users to view this lodging",
+    "move_to_collection_confirm": "This lodging is already in another collection. Move it to this collection?",
+    "linked_success": "Lodging linked successfully",
+    "linked_error": "Failed to link lodging"
   },
   "search": {
     "result": "Result",

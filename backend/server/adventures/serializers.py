@@ -314,7 +314,7 @@ class VisitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Visit
-        fields = ['id', 'start_date', 'end_date', 'timezone', 'notes', 'activities', 'location', 'created_at', 'updated_at', 'user', 'user_username']
+        fields = ['id', 'start_date', 'end_date', 'timezone', 'notes', 'activities', 'location', 'transportation', 'lodging', 'created_at', 'updated_at', 'user', 'user_username']
         read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'user_username']
 
     def create(self, validated_data):
@@ -725,16 +725,17 @@ class TransportationSerializer(CustomModelSerializer):
     images = serializers.SerializerMethodField()
     attachments = serializers.SerializerMethodField()
     travel_duration_minutes = serializers.SerializerMethodField()
+    visits = VisitSerializer(many=True, read_only=True)
 
     class Meta:
         model = Transportation
         fields = [
             'id', 'user', 'type', 'name', 'description', 'rating', 'price', 'price_currency',
-            'link', 'date', 'flight_number', 'from_location', 'to_location', 
+            'link', 'date', 'flight_number', 'from_location', 'to_location',
             'is_public', 'collection', 'created_at', 'updated_at', 'end_date',
             'origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude',
             'start_timezone', 'end_timezone', 'distance', 'images', 'attachments', 'start_code', 'end_code',
-            'travel_duration_minutes'
+            'travel_duration_minutes', 'visits'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'distance', 'travel_duration_minutes']
 
@@ -830,13 +831,14 @@ class TransportationSerializer(CustomModelSerializer):
 class LodgingSerializer(CustomModelSerializer):
     images = serializers.SerializerMethodField()
     attachments = serializers.SerializerMethodField()
+    visits = VisitSerializer(many=True, read_only=True)
 
     class Meta:
         model = Lodging
         fields = [
-            'id', 'user', 'name', 'description', 'rating', 'link', 'check_in', 'check_out', 
+            'id', 'user', 'name', 'description', 'rating', 'link', 'check_in', 'check_out',
             'reservation_number', 'price', 'price_currency', 'latitude', 'longitude', 'location', 'is_public',
-            'collection', 'created_at', 'updated_at', 'type', 'timezone', 'images', 'attachments'
+            'collection', 'created_at', 'updated_at', 'type', 'timezone', 'images', 'attachments', 'visits'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'user']
 

@@ -94,6 +94,8 @@
     "regions_updated": "Regionen aktualisiert",
     "update_visited_regions": "Besuchte Regionen aktualisieren",
     "add_new": "Neu...",
+    "link_transportation": "Transport verknüpfen",
+    "link_lodging": "Unterkunft verknüpfen",
     "checklist": "Checkliste",
     "checklists": "Checklisten",
     "days": "Tage",
@@ -839,7 +841,12 @@
     "arrival_timezone": "Ankunftszeitzone",
     "departure_code": "Abflugcode",
     "departure_date": "Abreisedatum",
-    "departure_timezone": "Abreisezeitzone"
+    "departure_timezone": "Abreisezeitzone",
+    "public_transportation": "Öffentlicher Transport",
+    "public_transportation_description": "Anderen Benutzern erlauben, diesen Transport zu sehen",
+    "move_to_collection_confirm": "Dieser Transport ist bereits in einer anderen Sammlung. Zur dieser Sammlung verschieben?",
+    "linked_success": "Transport erfolgreich verknüpft",
+    "linked_error": "Transport konnte nicht verknüpft werden"
   },
   "search": {
     "cities": "Städte",
@@ -1008,7 +1015,12 @@
     "create_new_lodging": "Neue Unterkunft",
     "enter_lodging_name": "Unterkunftsnamen eingeben",
     "enter_reservation_number": "Reservierungsnummer eingeben",
-    "update_lodging_details": "Aktualisieren der Unterkunftsdetails"
+    "update_lodging_details": "Aktualisieren der Unterkunftsdetails",
+    "public_lodging": "Öffentliche Unterkunft",
+    "public_lodging_description": "Anderen Benutzern erlauben, diese Unterkunft zu sehen",
+    "move_to_collection_confirm": "Diese Unterkunft ist bereits in einer anderen Sammlung. Zur dieser Sammlung verschieben?",
+    "linked_success": "Unterkunft erfolgreich verknüpft",
+    "linked_error": "Unterkunft konnte nicht verknüpft werden"
   },
   "google_maps": {
     "google_maps_integration_desc": "Verbinden Sie Ihr Google Maps-Konto, um hochwertige Suchergebnisse und Empfehlungen für Standort zu erhalten.",

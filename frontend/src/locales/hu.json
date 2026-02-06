@@ -198,6 +198,8 @@
     "update_visited_regions": "Látogatott régiók frissítése",
     "link_new": "Új összekapcsolása...",
     "add_new": "Új hozzáadása...",
+    "link_transportation": "Közlekedés összekapcsolása",
+    "link_lodging": "Szállás összekapcsolása",
     "transportation": "Közlekedés",
     "note": "Jegyzet",
     "checklist": "Ellenőrzőlista",
@@ -839,7 +841,12 @@
     "arrival_timezone": "Érkezési időzóna",
     "departure_code": "Indulási kód",
     "departure_date": "Indulás dátuma",
-    "departure_timezone": "Indulási időzóna"
+    "departure_timezone": "Indulási időzóna",
+    "public_transportation": "Nyilvános közlekedés",
+    "public_transportation_description": "Engedélyezze más felhasználóknak, hogy megtekinthessék ezt a közlekedést",
+    "move_to_collection_confirm": "Ez a közlekedés már egy másik gyűjteményben van. Áthelyezi ebbe a gyűjteménybe?",
+    "linked_success": "Közlekedés sikeresen összekapcsolva",
+    "linked_error": "Nem sikerült összekapcsolni a közlekedést"
   },
   "lodging": {
     "new_lodging": "Új szállás",
@@ -863,7 +870,12 @@
     "update_lodging_details": "Szállásadatok frissítése",
     "create_new_lodging": "Új szállás létrehozása",
     "enter_lodging_name": "Add meg a szállás nevét",
-    "enter_reservation_number": "Add meg a foglalási számot"
+    "enter_reservation_number": "Add meg a foglalási számot",
+    "public_lodging": "Nyilvános szállás",
+    "public_lodging_description": "Engedélyezze más felhasználóknak, hogy megtekinthessék ezt a szállást",
+    "move_to_collection_confirm": "Ez a szállás már egy másik gyűjteményben van. Áthelyezi ebbe a gyűjteménybe?",
+    "linked_success": "Szállás sikeresen összekapcsolva",
+    "linked_error": "Nem sikerült összekapcsolni a szállást"
   },
   "search": {
     "result": "Találat",

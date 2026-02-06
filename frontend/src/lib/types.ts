@@ -245,6 +245,7 @@ export type Transportation = {
 	images: ContentImage[]; // Array of images associated with the transportation
 	attachments: Attachment[]; // Array of attachments associated with the transportation
 	travel_duration_minutes?: number | null;
+	visits?: Visit[]; // Array of visits associated with the transportation
 };
 
 export type Note = {
@@ -379,6 +380,7 @@ export type Lodging = {
 	updated_at: string; // ISO 8601 date string
 	images: ContentImage[]; // Array of images associated with the lodging
 	attachments: Attachment[]; // Array of attachments associated with the lodging
+	visits?: Visit[]; // Array of visits associated with the lodging
 };
 
 export type CollectionInvite = {
@@ -495,7 +497,9 @@ export type Visit = {
 	notes: string;
 	timezone: string | null;
 	activities: Activity[];
-	location: string;
+	location?: string | null;
+	transportation?: string | null;
+	lodging?: string | null;
 	created_at: string;
 	updated_at: string;
 	user_username?: string | null;

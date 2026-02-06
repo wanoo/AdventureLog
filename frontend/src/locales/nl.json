@@ -94,6 +94,8 @@
     "regions_updated": "regio's bijgewerkt",
     "update_visited_regions": "Werk bezochte regio's bij",
     "add_new": "Nieuw toevoegen...",
+    "link_transportation": "Vervoer koppelen",
+    "link_lodging": "Accommodatie koppelen",
     "checklist": "Checklist",
     "checklists": "Checklists",
     "days": "dagen",
@@ -839,7 +841,12 @@
     "arrival_timezone": "Aankomst tijdzone",
     "departure_code": "Vertrekcode",
     "departure_date": "Vertrekdatum",
-    "departure_timezone": "Vertrektijdzone"
+    "departure_timezone": "Vertrektijdzone",
+    "public_transportation": "Openbaar vervoer",
+    "public_transportation_description": "Andere gebruikers toestaan dit vervoer te bekijken",
+    "move_to_collection_confirm": "Dit vervoer zit al in een andere collectie. Naar deze collectie verplaatsen?",
+    "linked_success": "Vervoer succesvol gekoppeld",
+    "linked_error": "Koppelen van vervoer mislukt"
   },
   "search": {
     "cities": "Steden",
@@ -1008,7 +1015,12 @@
     "create_new_lodging": "Nieuwe accommodatie",
     "enter_lodging_name": "Voer een accommodatie in",
     "enter_reservation_number": "Voer het reserveringsnummer in",
-    "update_lodging_details": "Update Lodging -details"
+    "update_lodging_details": "Update Lodging -details",
+    "public_lodging": "Openbare accommodatie",
+    "public_lodging_description": "Andere gebruikers toestaan deze accommodatie te bekijken",
+    "move_to_collection_confirm": "Deze accommodatie zit al in een andere collectie. Naar deze collectie verplaatsen?",
+    "linked_success": "Accommodatie succesvol gekoppeld",
+    "linked_error": "Koppelen van accommodatie mislukt"
   },
   "google_maps": {
     "google_maps_integration_desc": "Sluit uw Google Maps-account aan om zoekresultaten en aanbevelingen van hoge kwaliteit te krijgen.",

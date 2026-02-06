@@ -20,6 +20,8 @@
     "add": "Adicionar",
     "add_a_tag": "Adicione um Marcador",
     "add_new": "Adicionar Novo ...",
+    "link_transportation": "Vincular transporte",
+    "link_lodging": "Vincular hospedagem",
     "add_to_collection": "Adicione à Coleção",
     "adventure_not_found": "Nenhuma aventura para exibir. Toque no botão + no canto inferior direito para adicionar uma nova ou tente ajustar os filtros!",
     "all": "Todos",
@@ -659,7 +661,12 @@
     "create_new_lodging": "Nova Hospedagem",
     "enter_lodging_name": "Digite o nome da Hospedagem",
     "enter_reservation_number": "Digite o número de Reserva",
-    "update_lodging_details": "Atualizar detalhes da Hospedagem"
+    "update_lodging_details": "Atualizar detalhes da Hospedagem",
+    "public_lodging": "Hospedagem pública",
+    "public_lodging_description": "Permitir que outros usuários vejam esta hospedagem",
+    "move_to_collection_confirm": "Esta hospedagem já está em outra coleção. Mover para esta coleção?",
+    "linked_success": "Hospedagem vinculada com sucesso",
+    "linked_error": "Falha ao vincular hospedagem"
   },
   "map": {
     "add_location": "Adicionar Nova Localização",
@@ -987,7 +994,12 @@
     "arrival_timezone": "Fuso horário de chegada",
     "departure_code": "Código de partida",
     "departure_date": "Data de partida",
-    "departure_timezone": "Fuso horário de partida"
+    "departure_timezone": "Fuso horário de partida",
+    "public_transportation": "Transporte público",
+    "public_transportation_description": "Permitir que outros usuários vejam este transporte",
+    "move_to_collection_confirm": "Este transporte já está em outra coleção. Mover para esta coleção?",
+    "linked_success": "Transporte vinculado com sucesso",
+    "linked_error": "Falha ao vincular transporte"
   },
   "users": {
     "no_users_found": "Não foram encontrados usuários com perfis públicos."

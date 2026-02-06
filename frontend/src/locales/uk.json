@@ -32,6 +32,8 @@
     "add_activity": "Додати активність",
     "add_first_trail": "Додайте свій перший трейл за допомогою кнопки вище",
     "add_new": "Додати новий...",
+    "link_transportation": "Зв'язати транспорт",
+    "link_lodging": "Зв'язати житло",
     "add_new_activity": "Додати нову діяльність",
     "add_new_trail": "Додати новий слід",
     "add_to_collection": "Додати до колекції",
@@ -659,7 +661,12 @@
     "reservation_number": "Номер бронювання",
     "resort": "курорт",
     "update_lodging_details": "Оновити дані про проживання",
-    "villa": "Вілла"
+    "villa": "Вілла",
+    "public_lodging": "Публічне житло",
+    "public_lodging_description": "Дозволити іншим користувачам переглядати це житло",
+    "move_to_collection_confirm": "Це житло вже знаходиться в іншій колекції. Перемістити до цієї колекції?",
+    "linked_success": "Житло успішно зв'язано",
+    "linked_error": "Не вдалося зв'язати житло"
   },
   "map": {
     "add_location": "Додати нове місце",
@@ -987,7 +994,12 @@
     "arrival_timezone": "Часовий пояс прибуття",
     "departure_code": "Код відправлення",
     "departure_date": "Дата відправлення",
-    "departure_timezone": "Часовий пояс відправлення"
+    "departure_timezone": "Часовий пояс відправлення",
+    "public_transportation": "Публічний транспорт",
+    "public_transportation_description": "Дозволити іншим користувачам переглядати цей транспорт",
+    "move_to_collection_confirm": "Цей транспорт вже знаходиться в іншій колекції. Перемістити до цієї колекції?",
+    "linked_success": "Транспорт успішно зв'язано",
+    "linked_error": "Не вдалося зв'язати транспорт"
   },
   "users": {
     "no_users_found": "Не знайдено користувачів із загальнодоступними профілями."

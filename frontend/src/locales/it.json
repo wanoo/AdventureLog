@@ -94,6 +94,8 @@
     "regions_updated": "regioni aggiornate",
     "update_visited_regions": "Aggiorna le regioni visitate",
     "add_new": "Aggiungi nuovo...",
+    "link_transportation": "Collega trasporto",
+    "link_lodging": "Collega alloggio",
     "checklist": "Lista di controllo",
     "checklists": "Liste di controllo",
     "days": "giorni",
@@ -839,7 +841,12 @@
     "arrival_timezone": "Fuso orario di arrivo",
     "departure_code": "Codice di partenza",
     "departure_date": "Data di partenza",
-    "departure_timezone": "Fuso orario di partenza"
+    "departure_timezone": "Fuso orario di partenza",
+    "public_transportation": "Trasporto pubblico",
+    "public_transportation_description": "Consenti ad altri utenti di visualizzare questo trasporto",
+    "move_to_collection_confirm": "Questo trasporto è già in un'altra collezione. Spostarlo in questa collezione?",
+    "linked_success": "Trasporto collegato con successo",
+    "linked_error": "Impossibile collegare il trasporto"
   },
   "search": {
     "cities": "Città",
@@ -1008,7 +1015,12 @@
     "create_new_lodging": "Nuovo alloggio",
     "enter_lodging_name": "Immettere il nome di alloggio",
     "enter_reservation_number": "Immettere il numero di prenotazione",
-    "update_lodging_details": "Aggiorna i dettagli di alloggio"
+    "update_lodging_details": "Aggiorna i dettagli di alloggio",
+    "public_lodging": "Alloggio pubblico",
+    "public_lodging_description": "Consenti ad altri utenti di visualizzare questo alloggio",
+    "move_to_collection_confirm": "Questo alloggio è già in un'altra collezione. Spostarlo in questa collezione?",
+    "linked_success": "Alloggio collegato con successo",
+    "linked_error": "Impossibile collegare l'alloggio"
   },
   "google_maps": {
     "google_maps_integration_desc": "Collega il tuo account Google Maps per ottenere risultati e consigli di ricerca sulla posizione di alta qualità.",

@@ -172,6 +172,8 @@
     "update_visited_regions": "Обновить посещённые регионы",
     "link_new": "Связать новое...",
     "add_new": "Добавить новое...",
+    "link_transportation": "Связать транспорт",
+    "link_lodging": "Связать жильё",
     "transportation": "Транспорт",
     "note": "Заметка",
     "checklist": "Контрольный список",
@@ -839,7 +841,12 @@
     "arrival_timezone": "Часовой пояс прибытия",
     "departure_code": "Код отправления",
     "departure_date": "Дата отъезда",
-    "departure_timezone": "Часовой пояс отправления"
+    "departure_timezone": "Часовой пояс отправления",
+    "public_transportation": "Публичный транспорт",
+    "public_transportation_description": "Разрешить другим пользователям видеть этот транспорт",
+    "move_to_collection_confirm": "Этот транспорт уже находится в другой коллекции. Переместить в эту коллекцию?",
+    "linked_success": "Транспорт успешно связан",
+    "linked_error": "Не удалось связать транспорт"
   },
   "lodging": {
     "new_lodging": "Новое жилье",
@@ -863,7 +870,12 @@
     "create_new_lodging": "Новое жилье",
     "enter_lodging_name": "Введите имя жилья",
     "enter_reservation_number": "Введите номер бронирования",
-    "update_lodging_details": "Обновить детали жилья"
+    "update_lodging_details": "Обновить детали жилья",
+    "public_lodging": "Публичное жильё",
+    "public_lodging_description": "Разрешить другим пользователям видеть это жильё",
+    "move_to_collection_confirm": "Это жильё уже находится в другой коллекции. Переместить в эту коллекцию?",
+    "linked_success": "Жильё успешно связано",
+    "linked_error": "Не удалось связать жильё"
   },
   "search": {
     "cities": "Города",

@@ -161,6 +161,8 @@
     "update_visited_regions": "Oppdater besøkte regioner",
     "link_new": "Lenk ny...",
     "add_new": "Legg til ny...",
+    "link_transportation": "Koble transport",
+    "link_lodging": "Koble overnatting",
     "transportation": "Transport",
     "note": "Notat",
     "checklist": "Sjekkliste",
@@ -839,7 +841,12 @@
     "arrival_timezone": "Tidssone for ankomst",
     "departure_code": "Avreisekode",
     "departure_date": "Avreisedato",
-    "departure_timezone": "Tidssone for avgang"
+    "departure_timezone": "Tidssone for avgang",
+    "public_transportation": "Offentlig transport",
+    "public_transportation_description": "Tillat andre brukere å se denne transporten",
+    "move_to_collection_confirm": "Denne transporten er allerede i en annen samling. Flytte til denne samlingen?",
+    "linked_success": "Transport koblet vellykket",
+    "linked_error": "Kunne ikke koble transport"
   },
   "lodging": {
     "new_lodging": "Ny overnatting",
@@ -863,7 +870,12 @@
     "create_new_lodging": "Ny losji",
     "enter_lodging_name": "Skriv inn losji -navn",
     "enter_reservation_number": "Angi reservasjonsnummer",
-    "update_lodging_details": "Oppdater innleveringsdetaljer"
+    "update_lodging_details": "Oppdater innleveringsdetaljer",
+    "public_lodging": "Offentlig overnatting",
+    "public_lodging_description": "Tillat andre brukere å se denne overnattingen",
+    "move_to_collection_confirm": "Denne overnattingen er allerede i en annen samling. Flytte til denne samlingen?",
+    "linked_success": "Overnatting koblet vellykket",
+    "linked_error": "Kunne ikke koble overnatting"
   },
   "search": {
     "cities": "Byer",

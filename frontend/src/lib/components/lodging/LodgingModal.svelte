@@ -6,6 +6,7 @@
 	import Bed from '~icons/mdi/bed';
 	import LodgingDetails from './LodgingDetails.svelte';
 	import MediaStep from '../shared/MediaStep.svelte';
+	import LodgingVisits from './LodgingVisits.svelte';
 
 	export let user: User | null = null;
 	export let collection: Collection | null = null;
@@ -26,6 +27,11 @@
 			name: $t('adventures.details'),
 			selected: true,
 			requires_id: false
+		},
+		{
+			name: $t('adventures.visits'),
+			selected: false,
+			requires_id: true
 		},
 		{
 			name: $t('settings.media'),
@@ -109,6 +115,7 @@
 				// Reset steps to details when creating a new lodging
 				steps = [
 					{ name: $t('adventures.details'), selected: true, requires_id: false },
+					{ name: $t('adventures.visits'), selected: false, requires_id: true },
 					{ name: $t('settings.media'), selected: false, requires_id: true }
 				];
 			}
@@ -276,10 +283,11 @@
 					// Mark that a save occurred so close() will notify parent
 					didSave = true;
 
-					// Only allow moving to Media once we have a persisted id.
+					// Only allow moving to next steps once we have a persisted id.
 					if (!lodging?.id) {
 						addToast('error', $t('adventures.lodging_save_error'));
 						steps[1].selected = false;
+						steps[2].selected = false;
 						steps[0].selected = true;
 						return;
 					}
@@ -291,13 +299,34 @@
 			/>
 		{/if}
 		{#if steps[1].selected}
+			<LodgingVisits
+				{collection}
+				visits={lodging.visits || []}
+				lodgingId={lodging.id}
+				initialVisitDate={storedInitialVisitDate}
+				currentUserUsername={user?.username || null}
+				on:back={() => {
+					steps[1].selected = false;
+					steps[0].selected = true;
+				}}
+				on:close={() => {
+					steps[1].selected = false;
+					steps[2].selected = true;
+				}}
+				on:visitAdded={(e) => {
+					// Update the visits array
+					lodging.visits = [...(lodging.visits || []), e.detail];
+				}}
+			/>
+		{/if}
+		{#if steps[2].selected}
 			<MediaStep
 				bind:images={lodging.images}
 				bind:attachments={lodging.attachments}
 				itemName={lodging.name}
 				on:back={() => {
-					steps[1].selected = false;
-					steps[0].selected = true;
+					steps[2].selected = false;
+					steps[1].selected = true;
 				}}
 				on:close={() => close()}
 				itemId={lodging.id}

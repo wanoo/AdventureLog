@@ -20,6 +20,8 @@
     "add": "追加",
     "add_a_tag": "タグを追加します",
     "add_new": "新しい追加...",
+    "link_transportation": "交通機関をリンク",
+    "link_lodging": "宿泊施設をリンク",
     "add_to_collection": "コレクションに追加します",
     "adventure_not_found": "展示する冒険はありません。\n右下のプラスボタンを使用していくつかを追加するか、フィルターを変更してみてください！",
     "all": "全て",
@@ -659,7 +661,12 @@
     "create_new_lodging": "新しい宿泊",
     "enter_lodging_name": "宿泊名を入力します",
     "enter_reservation_number": "予約番号を入力します",
-    "update_lodging_details": "宿泊の詳細を更新します"
+    "update_lodging_details": "宿泊の詳細を更新します",
+    "public_lodging": "公開宿泊施設",
+    "public_lodging_description": "他のユーザーがこの宿泊施設を表示できるようにする",
+    "move_to_collection_confirm": "この宿泊施設は既に別のコレクションにあります。このコレクションに移動しますか？",
+    "linked_success": "宿泊施設を正常にリンクしました",
+    "linked_error": "宿泊施設のリンクに失敗しました"
   },
   "map": {
     "add_location": "新しい場所を追加します",
@@ -987,7 +994,12 @@
     "arrival_timezone": "到着時間帯",
     "departure_code": "出発コード",
     "departure_date": "出発日",
-    "departure_timezone": "出発時間帯"
+    "departure_timezone": "出発時間帯",
+    "public_transportation": "公開交通機関",
+    "public_transportation_description": "他のユーザーがこの交通機関を表示できるようにする",
+    "move_to_collection_confirm": "この交通機関は既に別のコレクションにあります。このコレクションに移動しますか？",
+    "linked_success": "交通機関を正常にリンクしました",
+    "linked_error": "交通機関のリンクに失敗しました"
   },
   "users": {
     "no_users_found": "パブリックプロファイルで見つかったユーザーは見つかりませんでした。"
