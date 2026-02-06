@@ -2,8 +2,49 @@
 
 import uuid
 from django.conf import settings
-from django.db import migrations, models
+from django.db import migrations, models, connection
 import django.db.models.deletion
+
+
+def create_auditlog_if_not_exists(apps, schema_editor):
+    """Create AuditLog table only if it doesn't exist."""
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables
+                WHERE table_name = 'adventures_auditlog'
+            );
+        """)
+        exists = cursor.fetchone()[0]
+
+        if not exists:
+            cursor.execute("""
+                CREATE TABLE adventures_auditlog (
+                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    action VARCHAR(10) NOT NULL,
+                    object_id UUID NOT NULL,
+                    object_repr VARCHAR(200) NOT NULL,
+                    changes JSONB DEFAULT '{}',
+                    timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    content_type_id INTEGER NOT NULL REFERENCES django_content_type(id) ON DELETE CASCADE,
+                    user_id INTEGER REFERENCES users_customuser(id) ON DELETE SET NULL
+                );
+            """)
+            # Create indexes
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS adventures__content_cbc498_idx
+                ON adventures_auditlog (content_type_id, object_id);
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS adventures__user_id_e35e7e_idx
+                ON adventures_auditlog (user_id, timestamp);
+            """)
+
+
+def reverse_migration(apps, schema_editor):
+    """Drop the AuditLog table."""
+    with connection.cursor() as cursor:
+        cursor.execute("DROP TABLE IF EXISTS adventures_auditlog CASCADE;")
 
 
 class Migration(migrations.Migration):
@@ -15,28 +56,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='AuditLog',
-            fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('action', models.CharField(choices=[('create', 'Created'), ('update', 'Updated'), ('delete', 'Deleted')], max_length=10)),
-                ('object_id', models.UUIDField()),
-                ('object_repr', models.CharField(max_length=200)),
-                ('changes', models.JSONField(default=dict)),
-                ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('content_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contenttypes.contenttype')),
-                ('user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
-            ],
-            options={
-                'ordering': ['-timestamp'],
-            },
-        ),
-        migrations.AddIndex(
-            model_name='auditlog',
-            index=models.Index(fields=['content_type', 'object_id'], name='adventures__content_cbc498_idx'),
-        ),
-        migrations.AddIndex(
-            model_name='auditlog',
-            index=models.Index(fields=['user', 'timestamp'], name='adventures__user_id_e35e7e_idx'),
-        ),
+        migrations.RunPython(create_auditlog_if_not_exists, reverse_migration),
     ]
