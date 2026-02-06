@@ -933,6 +933,43 @@
 						</div>
 					</div>
 				{/if}
+
+				<!-- Visits -->
+				{#if transportation.visits && transportation.visits.length > 0}
+					<div class="card bg-base-200 shadow-xl">
+						<div class="card-body">
+							<h2 class="card-title text-xl mb-4">📅 {$t('adventures.visits')} ({transportation.visits.length})</h2>
+							<div class="space-y-3">
+								{#each transportation.visits as visit}
+									<div class="bg-base-100 p-4 rounded-lg border border-base-300">
+										<div class="flex items-center gap-2 mb-2">
+											{#if isAllDay(visit.start_date)}
+												<span class="badge badge-outline badge-sm">{$t('adventures.all_day')}</span>
+											{/if}
+											{#if visit.timezone && !isAllDay(visit.start_date)}
+												<span class="badge badge-outline badge-sm">{visit.timezone}</span>
+											{/if}
+										</div>
+										<div class="text-sm font-medium">
+											{#if isAllDay(visit.start_date)}
+												{visit.start_date.split('T')[0]} - {visit.end_date.split('T')[0]}
+											{:else if visit.timezone}
+												{formatDateInTimezone(visit.start_date, visit.timezone)} - {formatDateInTimezone(visit.end_date, visit.timezone)}
+											{:else}
+												{new Date(visit.start_date).toLocaleString()} - {new Date(visit.end_date).toLocaleString()}
+											{/if}
+										</div>
+										{#if visit.notes}
+											<p class="text-xs text-base-content/70 mt-2 bg-base-200/50 p-2 rounded">
+												"{visit.notes}"
+											</p>
+										{/if}
+									</div>
+								{/each}
+							</div>
+						</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>

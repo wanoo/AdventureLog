@@ -970,7 +970,9 @@
     "view_all": "View All",
     "welcome_text_1": "You've been on",
     "welcome_text_2": "adventures so far",
-    "welcome_text_3": "Keep exploring and documenting your travels!"
+    "welcome_text_3": "Keep exploring and documenting your travels!",
+    "recent_travel_plans": "Your recent travel plans",
+    "recent_accommodations": "Your recent accommodations"
   },
   "immich": {
     "immich": "Immich",
