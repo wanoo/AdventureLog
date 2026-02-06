@@ -1149,7 +1149,8 @@
     "by": "by",
     "no_history": "No history available",
     "view_history": "View History",
-    "changes": "Changes"
+    "changes": "Changes",
+    "revert": "Revert"
   },
   "collaborative": {
     "mode_enabled": "Collaborative Mode",

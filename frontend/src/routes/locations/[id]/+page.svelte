@@ -920,7 +920,20 @@
 
 				<!-- History Panel (Collaborative Mode) -->
 				{#if data.collaborativeMode && history.length > 0}
-					<HistoryPanel {history} />
+					<HistoryPanel
+						{history}
+						locationId={adventure.id}
+						canRevert={true}
+						on:reverted={async () => {
+							// Refresh history and location data after revert
+							const historyRes = await fetch(`/api/locations/${adventure.id}/history/`);
+							if (historyRes.ok) {
+								history = await historyRes.json();
+							}
+							// Reload the page to reflect reverted changes
+							window.location.reload();
+						}}
+					/>
 				{/if}
 			</div>
 		</div>
