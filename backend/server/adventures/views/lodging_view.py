@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Q
 from django.db.models.functions import Lower
+from django.utils import timezone
 from adventures.models import Lodging, LODGING_TYPES
 from adventures.serializers import LodgingSerializer
 from rest_framework.exceptions import PermissionDenied
@@ -68,11 +69,47 @@ class LodgingViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    def _apply_visit_filtering(self, queryset, request):
+        """Apply visit status filtering to queryset."""
+        is_visited_param = request.query_params.get('is_visited')
+        if is_visited_param is None or is_visited_param == 'all':
+            return queryset
+
+        # Convert parameter to boolean
+        if is_visited_param.lower() == 'true':
+            is_visited_bool = True
+        elif is_visited_param.lower() == 'false':
+            is_visited_bool = False
+        else:
+            return queryset
+
+        # Apply visit filtering
+        now = timezone.now().date()
+        if is_visited_bool:
+            queryset = queryset.filter(visits__start_date__lte=now).distinct()
+        else:
+            queryset = queryset.exclude(visits__start_date__lte=now).distinct()
+
+        return queryset
+
+    def _apply_public_filtering(self, queryset, request):
+        """Apply public/private filtering to queryset."""
+        is_public_param = request.query_params.get('is_public')
+        if is_public_param is None or is_public_param == 'all':
+            return queryset
+
+        if is_public_param.lower() == 'true':
+            queryset = queryset.filter(is_public=True)
+        elif is_public_param.lower() == 'false':
+            queryset = queryset.filter(is_public=False)
+
+        return queryset
+
     # ==================== CUSTOM ACTIONS ====================
 
     @action(detail=False, methods=['get'])
     def filtered(self, request):
-        """Filter lodging by type."""
+        """Filter lodging by type, visit status, and visibility."""
         if not request.user.is_authenticated:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
@@ -97,6 +134,10 @@ class LodgingViewSet(viewsets.ModelViewSet):
                 user=request.user,
                 type__in=filtered_types
             )
+
+        # Apply visit and public filters
+        queryset = self._apply_visit_filtering(queryset, request)
+        queryset = self._apply_public_filtering(queryset, request)
 
         queryset = self.apply_sorting(queryset)
         return self.paginate_and_respond(queryset, request)

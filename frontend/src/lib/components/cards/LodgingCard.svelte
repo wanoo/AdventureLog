@@ -23,6 +23,7 @@
 	import Globe from '~icons/mdi/globe';
 	import { goto } from '$app/navigation';
 	import Calendar from '~icons/mdi/calendar';
+	import Clock from '~icons/mdi/clock-outline';
 	import type { CollectionItineraryItem } from '$lib/types';
 
 	let isActionsMenuOpen = false;
@@ -160,6 +161,24 @@
 	<div class="relative overflow-hidden rounded-t-2xl">
 		<CardCarousel images={lodging.images} icon={getLodgingIcon(lodging.type)} name={lodging.name} />
 
+		<!-- Status Overlay (icon-only) -->
+		<div class="absolute top-2 left-4 flex items-center gap-3">
+			<div
+				class="tooltip tooltip-right"
+				data-tip={lodging.is_visited ? $t('adventures.visited') : $t('adventures.not_visited')}
+			>
+				{#if lodging.is_visited}
+					<div class="badge badge-sm badge-success p-1 rounded-full shadow-sm">
+						<Calendar class="w-4 h-4" />
+					</div>
+				{:else}
+					<div class="badge badge-sm badge-warning p-1 rounded-full shadow-sm">
+						<Clock class="w-4 h-4" />
+					</div>
+				{/if}
+			</div>
+		</div>
+
 		<!-- Privacy Indicator -->
 		<div class="absolute top-2 right-4">
 			<div
@@ -189,19 +208,6 @@
 				</div>
 			</div>
 		{/if}
-
-		<!-- Visited Badge -->
-		<div class="absolute bottom-4 right-4">
-			{#if lodging.is_visited}
-				<div class="badge badge-success shadow-lg font-medium">
-					✅ {$t('adventures.visited')}
-				</div>
-			{:else}
-				<div class="badge badge-warning shadow-lg font-medium">
-					⏳ {$t('adventures.planned')}
-				</div>
-			{/if}
-		</div>
 	</div>
 	<div class="card-body p-4 space-y-3 min-w-0">
 		<!-- Header -->
