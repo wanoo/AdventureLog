@@ -325,7 +325,7 @@
 						<div class="card bg-base-200/50 p-4">
 							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
 								<Tag class="w-5 h-5" />
-								Categories
+								{$t('adventures.categories')}
 							</h3>
 							<CategoryFilterDropdown bind:types={typeString} />
 							<button

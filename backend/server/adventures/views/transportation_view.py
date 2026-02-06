@@ -1,15 +1,106 @@
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Q
-from adventures.models import Transportation
+from django.db.models.functions import Lower
+from adventures.models import Transportation, TRANSPORTATION_TYPES
 from adventures.serializers import TransportationSerializer
 from rest_framework.exceptions import PermissionDenied
 from adventures.permissions import IsOwnerOrSharedWithFullAccess
+from adventures.utils import pagination
 
 class TransportationViewSet(viewsets.ModelViewSet):
     queryset = Transportation.objects.all()
     serializer_class = TransportationSerializer
     permission_classes = [IsOwnerOrSharedWithFullAccess]
+    pagination_class = pagination.StandardResultsSetPagination
+
+    # ==================== SORTING & FILTERING ====================
+
+    def apply_sorting(self, queryset):
+        """Apply sorting to queryset."""
+        order_by = self.request.query_params.get('order_by', 'updated_at')
+        order_direction = self.request.query_params.get('order_direction', 'asc')
+
+        # Validate parameters
+        valid_order_by = ['name', 'date', 'rating', 'updated_at']
+        if order_by not in valid_order_by:
+            order_by = 'updated_at'
+
+        if order_direction not in ['asc', 'desc']:
+            order_direction = 'asc'
+
+        return self._apply_ordering(queryset, order_by, order_direction)
+
+    def _apply_ordering(self, queryset, order_by, order_direction):
+        """Apply ordering to queryset based on field type."""
+        if order_by == 'date':
+            ordering = 'date'
+        elif order_by == 'name':
+            queryset = queryset.annotate(lower_name=Lower('name'))
+            ordering = 'lower_name'
+        elif order_by == 'rating':
+            queryset = queryset.filter(rating__isnull=False)
+            ordering = 'rating'
+        elif order_by == 'updated_at':
+            # Special handling for updated_at (reverse default order)
+            ordering = '-updated_at' if order_direction == 'asc' else 'updated_at'
+            return queryset.order_by(ordering)
+        else:
+            ordering = order_by
+
+        # Apply direction
+        if order_direction == 'desc':
+            ordering = f'-{ordering}'
+
+        return queryset.order_by(ordering)
+
+    def paginate_and_respond(self, queryset, request):
+        """Paginate queryset and return response."""
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(queryset, request)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    # ==================== CUSTOM ACTIONS ====================
+
+    @action(detail=False, methods=['get'])
+    def filtered(self, request):
+        """Filter transportations by type."""
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        types_param = request.query_params.get('types', '')
+        types = types_param.split(',') if types_param else []
+
+        # Get valid transportation types
+        valid_types = [t[0] for t in TRANSPORTATION_TYPES]
+
+        # Handle 'all' types
+        if 'all' in types or not types:
+            queryset = Transportation.objects.filter(user=request.user)
+        else:
+            # Filter by valid types only
+            filtered_types = [t for t in types if t in valid_types]
+            if not filtered_types:
+                return Response(
+                    {"error": "Invalid transportation type provided"},
+                    status=400
+                )
+            queryset = Transportation.objects.filter(
+                user=request.user,
+                type__in=filtered_types
+            )
+
+        queryset = self.apply_sorting(queryset)
+        return self.paginate_and_respond(queryset, request)
+
+    # ==================== CRUD OPERATIONS ====================
 
     def list(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
