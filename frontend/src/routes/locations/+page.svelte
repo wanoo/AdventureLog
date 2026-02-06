@@ -58,8 +58,8 @@
 	let isLocationModalOpen: boolean = false;
 	let sidebarOpen = false;
 
-	// Ownership filter for collaborative mode
-	let ownershipFilter: 'all' | 'mine' | 'public' = 'all';
+	// Visibility filter for collaborative mode
+	let visibilityFilter: 'all' | 'true' | 'false' = 'all';
 
 	// Reactive statements - Only read from URL, don't write
 	$: {
@@ -156,16 +156,16 @@
 		return adventures.filter((a) => !a.is_visited).length;
 	}
 
-	// Filter adventures by ownership (for collaborative mode)
-	$: filteredByOwnership = (() => {
-		if (!data.collaborativeMode || ownershipFilter === 'all') {
+	// Filter adventures by visibility (for collaborative mode)
+	$: filteredByVisibility = (() => {
+		if (!data.collaborativeMode || visibilityFilter === 'all') {
 			return adventures;
 		}
-		if (ownershipFilter === 'mine') {
-			return adventures.filter((a) => (a as Location).is_owned === true);
+		if (visibilityFilter === 'true') {
+			return adventures.filter((a) => (a as Location).is_public === true);
 		}
-		if (ownershipFilter === 'public') {
-			return adventures.filter((a) => (a as Location).is_owned === false);
+		if (visibilityFilter === 'false') {
+			return adventures.filter((a) => (a as Location).is_public === false);
 		}
 		return adventures;
 	})();
@@ -248,7 +248,7 @@
 
 			<!-- Main Content -->
 			<div class="container mx-auto px-6 py-8">
-				{#if filteredByOwnership.length === 0}
+				{#if filteredByVisibility.length === 0}
 					<div class="flex flex-col items-center justify-center py-16">
 						<div class="p-6 bg-base-200/50 rounded-2xl mb-6">
 							<Compass class="w-16 h-16 text-base-content/30" />
@@ -275,7 +275,7 @@
 					<div
 						class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6"
 					>
-						{#each filteredByOwnership as adventure}
+						{#each filteredByVisibility as adventure}
 							<LocationCard
 								user={data.user}
 								{adventure}
@@ -510,32 +510,32 @@
 									<input
 										class="join-item btn btn-sm flex-1"
 										type="radio"
-										name="ownership"
-										id="all_ownership"
+										name="visibility"
+										id="all_visibility"
 										value="all"
 										aria-label={$t('adventures.all')}
-										checked={ownershipFilter === 'all'}
-										on:change={() => (ownershipFilter = 'all')}
+										checked={visibilityFilter === 'all'}
+										on:change={() => (visibilityFilter = 'all')}
 									/>
 									<input
 										class="join-item btn btn-sm flex-1"
 										type="radio"
-										name="ownership"
-										id="mine_ownership"
-										value="mine"
-										aria-label={$t('adventures.my_locations')}
-										checked={ownershipFilter === 'mine'}
-										on:change={() => (ownershipFilter = 'mine')}
-									/>
-									<input
-										class="join-item btn btn-sm flex-1"
-										type="radio"
-										name="ownership"
-										id="public_ownership"
-										value="public"
+										name="visibility"
+										id="public_visibility"
+										value="true"
 										aria-label={$t('adventures.public')}
-										checked={ownershipFilter === 'public'}
-										on:change={() => (ownershipFilter = 'public')}
+										checked={visibilityFilter === 'true'}
+										on:change={() => (visibilityFilter = 'true')}
+									/>
+									<input
+										class="join-item btn btn-sm flex-1"
+										type="radio"
+										name="visibility"
+										id="private_visibility"
+										value="false"
+										aria-label={$t('adventures.private')}
+										checked={visibilityFilter === 'false'}
+										on:change={() => (visibilityFilter = 'false')}
 									/>
 								</div>
 							</div>

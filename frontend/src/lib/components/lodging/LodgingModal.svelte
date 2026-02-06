@@ -316,8 +316,9 @@
 					steps[2].selected = true;
 				}}
 				on:visitAdded={(e) => {
-					// Update the visits array
-					lodging.visits = [...(lodging.visits || []), e.detail];
+					// Update or add the visit (filter out existing with same ID first)
+					const existingVisits = (lodging.visits || []).filter(v => v.id !== e.detail.id);
+					lodging.visits = [...existingVisits, e.detail];
 				}}
 			/>
 		{/if}
