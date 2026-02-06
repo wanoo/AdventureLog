@@ -319,16 +319,33 @@ class LocationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'], url_path='history')
     def history(self, request, pk=None):
-        """Get audit history for a location (collaborative mode only)."""
+        """Get audit history for a location and its related content (collaborative mode only)."""
         if not getattr(settings, 'COLLABORATIVE_MODE', False):
             return Response({"error": "History is only available in collaborative mode"}, status=400)
 
+        from adventures.models import ContentImage, ContentAttachment
+
         location = self.get_object()
-        content_type = ContentType.objects.get_for_model(Location)
-        logs = AuditLog.objects.filter(
-            content_type=content_type,
-            object_id=location.pk
-        ).select_related('user')[:50]
+
+        # Get content types for location, images, and attachments
+        location_ct = ContentType.objects.get_for_model(Location)
+        image_ct = ContentType.objects.get_for_model(ContentImage)
+        attachment_ct = ContentType.objects.get_for_model(ContentAttachment)
+
+        # Get IDs of images and attachments belonging to this location
+        image_ids = list(location.images.values_list('id', flat=True))
+        attachment_ids = list(location.attachments.values_list('id', flat=True))
+
+        # Build query for all related logs
+        logs_query = Q(content_type=location_ct, object_id=location.pk)
+
+        if image_ids:
+            logs_query |= Q(content_type=image_ct, object_id__in=image_ids)
+
+        if attachment_ids:
+            logs_query |= Q(content_type=attachment_ct, object_id__in=attachment_ids)
+
+        logs = AuditLog.objects.filter(logs_query).select_related('user').order_by('-timestamp')[:50]
         serializer = AuditLogSerializer(logs, many=True)
         return Response(serializer.data)
 

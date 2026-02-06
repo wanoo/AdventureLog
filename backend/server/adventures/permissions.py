@@ -276,13 +276,11 @@ class ContentImagePermission(IsOwnerOrSharedWithFullAccess):
             (hasattr(view, 'action') and view.action == 'image_delete')
         )
 
-        # In collaborative mode, only allow deleting your own images
+        # In collaborative mode, only allow deleting your own uploads
+        # Even location owners cannot delete files uploaded by others
         if is_delete_operation and getattr(settings, 'COLLABORATIVE_MODE', False):
-            # Image owner can always delete their own images
+            # Only the uploader can delete their own files
             if obj.user == request.user:
-                return True
-            # Content object owner can delete any image on their content
-            if hasattr(content_object, 'user') and content_object.user == request.user:
                 return True
             # Otherwise, deny deletion
             return False
