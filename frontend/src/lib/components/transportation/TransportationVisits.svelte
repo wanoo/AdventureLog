@@ -163,7 +163,8 @@
 
 			if (response.ok) {
 				const updatedVisit: Visit = await response.json();
-				visits = visits ? [...visits, updatedVisit] : [updatedVisit];
+				// Filter out any existing visit with same ID before adding updated one
+				visits = visits ? [...visits.filter(v => v.id !== updatedVisit.id), updatedVisit] : [updatedVisit];
 				dispatch('visitAdded', updatedVisit);
 				visitIdEditing = null;
 			} else {

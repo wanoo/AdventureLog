@@ -45,6 +45,8 @@
     "latitude": "Breitengrad",
     "longitude": "Längengrad",
     "my_collections": "Meine Sammlungen",
+    "ownership_filter": "Eigentümer",
+    "visibility": "Sichtbarkeit",
     "name": "Name",
     "no_image_url": "Unter dieser URL wurde kein Bild gefunden.",
     "order_by": "Sortieren nach",

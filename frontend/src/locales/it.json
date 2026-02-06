@@ -40,6 +40,8 @@
     "latitude": "Latitudine",
     "longitude": "Longitudine",
     "my_collections": "Le mie collezioni",
+    "ownership_filter": "Proprietà",
+    "visibility": "Visibilità",
     "name": "Nome",
     "open_details": "Apri Dettagli",
     "order_by": "Ordina per",

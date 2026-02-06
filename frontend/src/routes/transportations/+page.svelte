@@ -420,37 +420,34 @@
 								<Eye class="w-5 h-5" />
 								{$t('adventures.visibility')}
 							</h3>
-							<div class="space-y-2">
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="radio"
-										name="is_public"
-										value="all"
-										class="radio radio-primary radio-sm"
-										checked={currentSort.is_public === 'all'}
-									/>
-									<span class="label-text">{$t('adventures.all')}</span>
-								</label>
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="radio"
-										name="is_public"
-										value="true"
-										class="radio radio-primary radio-sm"
-										checked={currentSort.is_public === 'true'}
-									/>
-									<span class="label-text">{$t('adventures.public')}</span>
-								</label>
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="radio"
-										name="is_public"
-										value="false"
-										class="radio radio-primary radio-sm"
-										checked={currentSort.is_public === 'false'}
-									/>
-									<span class="label-text">{$t('adventures.private')}</span>
-								</label>
+							<div class="join w-full">
+								<input
+									class="join-item btn btn-sm flex-1"
+									type="radio"
+									name="is_public"
+									id="all_public"
+									value="all"
+									aria-label={$t('adventures.all')}
+									checked={currentSort.is_public === 'all'}
+								/>
+								<input
+									class="join-item btn btn-sm flex-1"
+									type="radio"
+									name="is_public"
+									id="public_true"
+									value="true"
+									aria-label={$t('adventures.public')}
+									checked={currentSort.is_public === 'true'}
+								/>
+								<input
+									class="join-item btn btn-sm flex-1"
+									type="radio"
+									name="is_public"
+									id="public_false"
+									value="false"
+									aria-label={$t('adventures.private')}
+									checked={currentSort.is_public === 'false'}
+								/>
 							</div>
 						</div>
 

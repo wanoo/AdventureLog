@@ -40,6 +40,8 @@
     "latitude": "Breedtegraad",
     "longitude": "Lengtegraad",
     "my_collections": "Mijn collecties",
+    "ownership_filter": "Eigenaar",
+    "visibility": "Zichtbaarheid",
     "name": "Naam",
     "open_details": "Details openen",
     "order_by": "Sorteer op",

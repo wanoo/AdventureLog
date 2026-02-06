@@ -96,6 +96,8 @@
     "clear": "Limpiar",
     "archived_collections": "Colecciones archivadas",
     "my_collections": "Mis colecciones",
+    "ownership_filter": "Propietario",
+    "visibility": "Visibilidad",
     "private": "Privado",
     "public": "Público",
     "archived_collection_message": "¡Colección archivada exitosamente!",

@@ -125,6 +125,8 @@
     "category": "类别",
     "clear": "清除",
     "my_collections": "我的合集",
+    "ownership_filter": "所有者",
+    "visibility": "可见性",
     "archived_collections": "已归档合集",
     "share": "分享",
     "private": "私密",

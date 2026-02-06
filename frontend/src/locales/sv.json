@@ -42,6 +42,8 @@
 		"latitude": "Latitud",
 		"longitude": "Longitud",
 		"my_collections": "Mina samlingar",
+		"ownership_filter": "Ägare",
+		"visibility": "Synlighet",
 		"name": "Namn",
 		"open_details": "Öppna detaljer",
 		"order_by": "Sortera efter",

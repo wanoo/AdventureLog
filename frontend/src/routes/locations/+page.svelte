@@ -499,44 +499,44 @@
 							</label>
 						</div>
 
-						<!-- Ownership Filter (collaborative mode only) -->
+						<!-- Visibility Filter (collaborative mode only) -->
 						{#if data.collaborativeMode}
 							<div class="card bg-base-200/50 p-4">
 								<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
 									<Eye class="w-5 h-5" />
-									{$t('adventures.ownership_filter')}
+									{$t('adventures.visibility')}
 								</h3>
-								<div class="space-y-2">
-									<label class="label cursor-pointer justify-start gap-3">
-										<input
-											type="radio"
-											name="ownership"
-											class="radio radio-primary radio-sm"
-											checked={ownershipFilter === 'all'}
-											on:change={() => (ownershipFilter = 'all')}
-										/>
-										<span class="label-text">{$t('adventures.all_locations')}</span>
-									</label>
-									<label class="label cursor-pointer justify-start gap-3">
-										<input
-											type="radio"
-											name="ownership"
-											class="radio radio-primary radio-sm"
-											checked={ownershipFilter === 'mine'}
-											on:change={() => (ownershipFilter = 'mine')}
-										/>
-										<span class="label-text">{$t('adventures.my_locations')}</span>
-									</label>
-									<label class="label cursor-pointer justify-start gap-3">
-										<input
-											type="radio"
-											name="ownership"
-											class="radio radio-primary radio-sm"
-											checked={ownershipFilter === 'public'}
-											on:change={() => (ownershipFilter = 'public')}
-										/>
-										<span class="label-text">{$t('adventures.public_locations')}</span>
-									</label>
+								<div class="join w-full">
+									<input
+										class="join-item btn btn-sm flex-1"
+										type="radio"
+										name="ownership"
+										id="all_ownership"
+										value="all"
+										aria-label={$t('adventures.all')}
+										checked={ownershipFilter === 'all'}
+										on:change={() => (ownershipFilter = 'all')}
+									/>
+									<input
+										class="join-item btn btn-sm flex-1"
+										type="radio"
+										name="ownership"
+										id="mine_ownership"
+										value="mine"
+										aria-label={$t('adventures.my_locations')}
+										checked={ownershipFilter === 'mine'}
+										on:change={() => (ownershipFilter = 'mine')}
+									/>
+									<input
+										class="join-item btn btn-sm flex-1"
+										type="radio"
+										name="ownership"
+										id="public_ownership"
+										value="public"
+										aria-label={$t('adventures.public')}
+										checked={ownershipFilter === 'public'}
+										on:change={() => (ownershipFilter = 'public')}
+									/>
 								</div>
 							</div>
 						{/if}

@@ -134,6 +134,8 @@
     "mark_visited": "マークが訪れました",
     "md_instructions": "ここにマークダウンを書いてください...",
     "my_collections": "私のコレクション",
+    "ownership_filter": "所有者",
+    "visibility": "公開設定",
     "name": "名前",
     "name_location": "名前、場所",
     "new_location": "新しい場所",
