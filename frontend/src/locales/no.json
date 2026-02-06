@@ -962,7 +962,9 @@
     "view_all": "Se alle",
     "welcome_text_1": "Du har vært på",
     "welcome_text_2": "Eventyr så langt",
-    "welcome_text_3": "Fortsett å utforske og dokumentere dine reiser!"
+    "welcome_text_3": "Fortsett å utforske og dokumentere dine reiser!",
+    "recent_travel_plans": "Dine nylige reiseplaner",
+    "recent_accommodations": "Dine nylige overnattingssteder"
   },
   "immich": {
     "immich": "Immich",

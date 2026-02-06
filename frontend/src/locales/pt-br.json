@@ -565,7 +565,9 @@
     "welcome_back": "Bem-vindo de volta",
     "welcome_text_1": "Você esteve em",
     "welcome_text_2": "aventuras até agora",
-    "welcome_text_3": "Continue explorando e registrando suas viagens!"
+    "welcome_text_3": "Continue explorando e registrando suas viagens!",
+    "recent_travel_plans": "Seus planos de viagem recentes",
+    "recent_accommodations": "Suas acomodações recentes"
   },
   "google_maps": {
     "google_maps_integration_desc": "Conecte sua conta do Google Maps para obter resultados de pesquisa de localização e recomendações de melhor qualidade.",

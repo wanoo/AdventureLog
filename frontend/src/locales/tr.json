@@ -962,7 +962,9 @@
     "view_all": "Tümünü Görüntüle",
     "welcome_text_1": "Şu kadar süredir",
     "welcome_text_2": "şu ana kadar maceralar",
-    "welcome_text_3": "Seyahatlerinizi keşfetmeye ve belgelemeye devam edin!"
+    "welcome_text_3": "Seyahatlerinizi keşfetmeye ve belgelemeye devam edin!",
+    "recent_travel_plans": "Son seyahat planlarınız",
+    "recent_accommodations": "Son konaklamalarınız"
   },
   "immich": {
     "immich": "Immich",

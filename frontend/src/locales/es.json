@@ -933,7 +933,9 @@
     "view_all": "Ver todo",
     "welcome_text_1": "Has estado en",
     "welcome_text_2": "Aventuras hasta ahora",
-    "welcome_text_3": "¡Sigue explorando y documentando tus viajes!"
+    "welcome_text_3": "¡Sigue explorando y documentando tus viajes!",
+    "recent_travel_plans": "Tus planes de viaje recientes",
+    "recent_accommodations": "Tus alojamientos recientes"
   },
   "immich": {
     "api_key": "Clave API de Immich",

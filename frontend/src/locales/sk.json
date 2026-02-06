@@ -962,7 +962,9 @@
 		"view_all": "Zobraziť všetko",
 		"welcome_text_1": "Boli ste na",
 		"welcome_text_2": "dobrodružstvách doteraz",
-		"welcome_text_3": "Pokračujte v objavovaní a dokumentovaní svojich ciest!"
+		"welcome_text_3": "Pokračujte v objavovaní a dokumentovaní svojich ciest!",
+		"recent_travel_plans": "Vaše nedávne cestovné plány",
+		"recent_accommodations": "Vaše nedávne ubytovania"
 	},
 	"immich": {
 		"immich": "Immich",

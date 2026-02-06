@@ -933,7 +933,9 @@
     "view_all": "Alle anzeigen",
     "welcome_text_1": "Du warst auf",
     "welcome_text_2": "Abenteuern bisher",
-    "welcome_text_3": "Erkunden und dokumentieren Sie Ihre Reisen!"
+    "welcome_text_3": "Erkunden und dokumentieren Sie Ihre Reisen!",
+    "recent_travel_plans": "Ihre letzten Reisepläne",
+    "recent_accommodations": "Ihre letzten Unterkünfte"
   },
   "immich": {
     "api_key": "Immich-API-Schlüssel",

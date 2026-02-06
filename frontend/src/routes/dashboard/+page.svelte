@@ -156,50 +156,6 @@
 					</div>
 				</div>
 			</div>
-
-			<!-- Transportations -->
-			<div
-				class="stat-card card bg-gradient-to-br from-warning/10 to-warning/5 shadow-xl border border-warning/20 hover:shadow-2xl transition-all duration-300"
-			>
-				<div class="card-body p-6">
-					<div class="flex items-center justify-between">
-						<div>
-							<div class="stat-title text-warning/70 font-medium">
-								{$t('navbar.transportations')}
-							</div>
-							<div class="stat-value text-3xl font-bold text-warning">
-								{stats.visited_transportation_count || 0}/{stats.transportation_count || 0}
-							</div>
-							<div class="stat-desc text-warning/60 mt-1">{$t('adventures.visited')}</div>
-						</div>
-						<div class="p-4 bg-warning/20 rounded-2xl">
-							<Airplane class="w-8 h-8 text-warning" />
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Lodgings -->
-			<div
-				class="stat-card card bg-gradient-to-br from-secondary/10 to-secondary/5 shadow-xl border border-secondary/20 hover:shadow-2xl transition-all duration-300"
-			>
-				<div class="card-body p-6">
-					<div class="flex items-center justify-between">
-						<div>
-							<div class="stat-title text-secondary/70 font-medium">
-								{$t('navbar.lodging')}
-							</div>
-							<div class="stat-value text-3xl font-bold text-secondary">
-								{stats.visited_lodging_count || 0}/{stats.lodging_count || 0}
-							</div>
-							<div class="stat-desc text-secondary/60 mt-1">{$t('adventures.visited')}</div>
-						</div>
-						<div class="p-4 bg-secondary/20 rounded-2xl">
-							<Bed class="w-8 h-8 text-secondary" />
-						</div>
-					</div>
-				</div>
-			</div>
 		</div>
 
 		<!-- Recent Adventures Section -->

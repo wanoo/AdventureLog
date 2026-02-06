@@ -552,7 +552,9 @@
     "view_all": "모두보기",
     "welcome_text_1": "당신은있었습니다",
     "welcome_text_2": "지금까지 모험",
-    "welcome_text_3": "여행을 계속 탐색하고 문서화하십시오!"
+    "welcome_text_3": "여행을 계속 탐색하고 문서화하십시오!",
+    "recent_travel_plans": "최근 여행 계획",
+    "recent_accommodations": "최근 숙소"
   },
   "home": {
     "desc_1": "쉽고 편리하게 발견하고, 계획하고, 탐험하세요",

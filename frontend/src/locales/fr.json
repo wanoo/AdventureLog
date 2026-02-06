@@ -939,7 +939,9 @@
     "view_all": "Afficher tous",
     "welcome_text_1": "Tu as été sur",
     "welcome_text_2": "Aventures jusqu'à présent",
-    "welcome_text_3": "Continuez à explorer et à documenter vos voyages!"
+    "welcome_text_3": "Continuez à explorer et à documenter vos voyages!",
+    "recent_travel_plans": "Vos récents plans de voyage",
+    "recent_accommodations": "Vos hébergements récents"
   },
   "immich": {
     "api_key": "Clé d'API Immich",

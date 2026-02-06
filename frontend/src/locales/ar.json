@@ -565,7 +565,9 @@
     "welcome_back": "مرحبًا بعودتك",
     "welcome_text_1": "لقد كنت على",
     "welcome_text_2": "مغامرات حتى الآن",
-    "welcome_text_3": "استمر في استكشاف وتوثيق رحلاتك!"
+    "welcome_text_3": "استمر في استكشاف وتوثيق رحلاتك!",
+    "recent_travel_plans": "خطط سفرك الأخيرة",
+    "recent_accommodations": "أماكن إقامتك الأخيرة"
   },
   "google_maps": {
     "google_maps_integration_desc": "قم بتوصيل حساب خرائط Google الخاص بك للحصول على نتائج وتوصيات بحث عالية الجودة.",

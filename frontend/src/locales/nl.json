@@ -933,7 +933,9 @@
     "view_all": "Bekijk alles",
     "welcome_text_1": "Je bent op",
     "welcome_text_2": "Avonturen tot nu toe",
-    "welcome_text_3": "Blijf je reizen verkennen en documenteren!"
+    "welcome_text_3": "Blijf je reizen verkennen en documenteren!",
+    "recent_travel_plans": "Je recente reisplannen",
+    "recent_accommodations": "Je recente accommodaties"
   },
   "immich": {
     "api_key": "Immich API-sleutel",

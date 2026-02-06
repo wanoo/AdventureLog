@@ -45,7 +45,9 @@
 
 	let currentSort = {
 		order_by: 'updated_at',
-		order: 'asc'
+		order: 'asc',
+		is_visited: 'all',
+		is_public: 'all'
 	};
 
 	// Get type options from the icons with localized labels
@@ -90,6 +92,16 @@
 		let url = new URL($page.url);
 		currentSort.order_by = url.searchParams.get('order_by') || 'updated_at';
 		currentSort.order = url.searchParams.get('order_direction') || 'asc';
+		currentSort.is_visited = url.searchParams.get('is_visited') || 'all';
+		currentSort.is_public = url.searchParams.get('is_public') || 'all';
+	}
+
+	function getVisitedCount() {
+		return lodgingItems.filter((l) => l.is_visited).length;
+	}
+
+	function getPlannedCount() {
+		return lodgingItems.filter((l) => !l.is_visited).length;
 	}
 
 	function handleChangePage(pageNumber: number) {
@@ -167,6 +179,14 @@
 									</div>
 									<div class="stat-title text-xs">{$t('adventures.total') || 'Total'}</div>
 									<div class="stat-value text-lg">{count}</div>
+								</div>
+								<div class="stat py-2 px-4">
+									<div class="stat-title text-xs">{$t('adventures.visited')}</div>
+									<div class="stat-value text-lg text-success">{getVisitedCount()}</div>
+								</div>
+								<div class="stat py-2 px-4">
+									<div class="stat-title text-xs">{$t('adventures.planned')}</div>
+									<div class="stat-value text-lg text-warning">{getPlannedCount()}</div>
 								</div>
 							</div>
 						</div>
@@ -349,6 +369,74 @@
 										</label>
 									</div>
 								</div>
+							</div>
+						</div>
+
+						<!-- Visited Filter -->
+						<div class="card bg-base-200/50 p-4">
+							<h3 class="font-semibold text-lg mb-4">{$t('adventures.visited')}</h3>
+							<div class="join w-full">
+								<input
+									class="join-item btn btn-sm flex-1"
+									type="radio"
+									name="is_visited"
+									id="all_visited"
+									value="all"
+									aria-label={$t('adventures.all')}
+									checked={currentSort.is_visited === 'all'}
+								/>
+								<input
+									class="join-item btn btn-sm flex-1"
+									type="radio"
+									name="is_visited"
+									id="visited_true"
+									value="true"
+									aria-label={$t('adventures.visited')}
+									checked={currentSort.is_visited === 'true'}
+								/>
+								<input
+									class="join-item btn btn-sm flex-1"
+									type="radio"
+									name="is_visited"
+									id="visited_false"
+									value="false"
+									aria-label={$t('adventures.not_visited')}
+									checked={currentSort.is_visited === 'false'}
+								/>
+							</div>
+						</div>
+
+						<!-- Public/Private Filter -->
+						<div class="card bg-base-200/50 p-4">
+							<h3 class="font-semibold text-lg mb-4">{$t('adventures.visibility')}</h3>
+							<div class="join w-full">
+								<input
+									class="join-item btn btn-sm flex-1"
+									type="radio"
+									name="is_public"
+									id="all_public"
+									value="all"
+									aria-label={$t('adventures.all')}
+									checked={currentSort.is_public === 'all'}
+								/>
+								<input
+									class="join-item btn btn-sm flex-1"
+									type="radio"
+									name="is_public"
+									id="public_true"
+									value="true"
+									aria-label={$t('adventures.public')}
+									checked={currentSort.is_public === 'true'}
+								/>
+								<input
+									class="join-item btn btn-sm flex-1"
+									type="radio"
+									name="is_public"
+									id="public_false"
+									value="false"
+									aria-label={$t('adventures.private')}
+									checked={currentSort.is_public === 'false'}
+								/>
 							</div>
 						</div>
 

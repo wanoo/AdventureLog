@@ -565,7 +565,9 @@
     "welcome_back": "おかえり",
     "welcome_text_1": "あなたはオンになっています",
     "welcome_text_2": "これまでのところ冒険",
-    "welcome_text_3": "旅行を探索し、文書化し続けてください！"
+    "welcome_text_3": "旅行を探索し、文書化し続けてください！",
+    "recent_travel_plans": "最近の旅行計画",
+    "recent_accommodations": "最近の宿泊施設"
   },
   "google_maps": {
     "google_maps_integration_desc": "Googleマップアカウントを接続して、高品質のロケーション検索結果と推奨事項を取得します。",

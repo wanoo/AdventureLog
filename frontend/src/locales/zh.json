@@ -933,7 +933,9 @@
     "view_all": "查看全部",
     "welcome_text_1": "你去过",
     "welcome_text_2": "到目前为止的冒险",
-    "welcome_text_3": "继续探索和记录您的旅行！"
+    "welcome_text_3": "继续探索和记录您的旅行！",
+    "recent_travel_plans": "您最近的旅行计划",
+    "recent_accommodations": "您最近的住宿"
   },
   "immich": {
     "api_key": "Immich API 密钥",

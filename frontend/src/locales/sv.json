@@ -933,7 +933,9 @@
 		"view_all": "Se alla",
 		"welcome_text_1": "Du har varit på",
 		"welcome_text_2": "Äventyr hittills",
-		"welcome_text_3": "Fortsätt utforska och dokumentera dina resor!"
+		"welcome_text_3": "Fortsätt utforska och dokumentera dina resor!",
+		"recent_travel_plans": "Dina senaste reseplaner",
+		"recent_accommodations": "Dina senaste boenden"
 	},
 	"immich": {
 		"api_key": "Immich API-nyckel",

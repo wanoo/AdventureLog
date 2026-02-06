@@ -441,6 +441,15 @@
 								🔒 {$t('adventures.private')}
 							</div>
 						{/if}
+						{#if transportation.is_visited}
+							<div class="badge badge-lg badge-success font-semibold px-4 py-3">
+								✅ {$t('adventures.visited')}
+							</div>
+						{:else}
+							<div class="badge badge-lg badge-warning font-semibold px-4 py-3">
+								⏳ {$t('adventures.not_visited')}
+							</div>
+						{/if}
 					</div>
 
 					<!-- Image Navigation (only shown when multiple images exist) -->

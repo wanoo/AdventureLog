@@ -189,6 +189,19 @@
 				</div>
 			</div>
 		{/if}
+
+		<!-- Visited Badge -->
+		<div class="absolute bottom-4 right-4">
+			{#if lodging.is_visited}
+				<div class="badge badge-success shadow-lg font-medium">
+					✅ {$t('adventures.visited')}
+				</div>
+			{:else}
+				<div class="badge badge-warning shadow-lg font-medium">
+					⏳ {$t('adventures.planned')}
+				</div>
+			{/if}
+		</div>
 	</div>
 	<div class="card-body p-4 space-y-3 min-w-0">
 		<!-- Header -->

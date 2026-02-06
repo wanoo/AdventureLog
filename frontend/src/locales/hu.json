@@ -962,7 +962,9 @@
     "view_all": "Összes megtekintése",
     "welcome_text_1": "Eddig ennyi kalandban voltál:",
     "welcome_text_2": "kaland",
-    "welcome_text_3": "Folytasd a felfedezést és az utazásaid dokumentálását!"
+    "welcome_text_3": "Folytasd a felfedezést és az utazásaid dokumentálását!",
+    "recent_travel_plans": "Legutóbbi utazási terveid",
+    "recent_accommodations": "Legutóbbi szállásaid"
   },
   "immich": {
     "immich": "Immich",
