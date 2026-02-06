@@ -12,6 +12,7 @@
 	import Filter from '~icons/mdi/filter-variant';
 	import Sort from '~icons/mdi/sort';
 	import Bed from '~icons/mdi/bed';
+	import Eye from '~icons/mdi/eye';
 
 	export let data: any;
 
@@ -374,7 +375,10 @@
 
 						<!-- Visited Filter -->
 						<div class="card bg-base-200/50 p-4">
-							<h3 class="font-semibold text-lg mb-4">{$t('adventures.visited')}</h3>
+							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+								<Eye class="w-5 h-5" />
+								{$t('adventures.visited')}
+							</h3>
 							<div class="join w-full">
 								<input
 									class="join-item btn btn-sm flex-1"
@@ -406,37 +410,43 @@
 							</div>
 						</div>
 
-						<!-- Public/Private Filter -->
+						<!-- Visibility Filter -->
 						<div class="card bg-base-200/50 p-4">
-							<h3 class="font-semibold text-lg mb-4">{$t('adventures.visibility')}</h3>
-							<div class="join w-full">
-								<input
-									class="join-item btn btn-sm flex-1"
-									type="radio"
-									name="is_public"
-									id="all_public"
-									value="all"
-									aria-label={$t('adventures.all')}
-									checked={currentSort.is_public === 'all'}
-								/>
-								<input
-									class="join-item btn btn-sm flex-1"
-									type="radio"
-									name="is_public"
-									id="public_true"
-									value="true"
-									aria-label={$t('adventures.public')}
-									checked={currentSort.is_public === 'true'}
-								/>
-								<input
-									class="join-item btn btn-sm flex-1"
-									type="radio"
-									name="is_public"
-									id="public_false"
-									value="false"
-									aria-label={$t('adventures.private')}
-									checked={currentSort.is_public === 'false'}
-								/>
+							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+								<Eye class="w-5 h-5" />
+								{$t('adventures.visibility')}
+							</h3>
+							<div class="space-y-2">
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="is_public"
+										value="all"
+										class="radio radio-primary radio-sm"
+										checked={currentSort.is_public === 'all'}
+									/>
+									<span class="label-text">{$t('adventures.all')}</span>
+								</label>
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="is_public"
+										value="true"
+										class="radio radio-primary radio-sm"
+										checked={currentSort.is_public === 'true'}
+									/>
+									<span class="label-text">{$t('adventures.public')}</span>
+								</label>
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="is_public"
+										value="false"
+										class="radio radio-primary radio-sm"
+										checked={currentSort.is_public === 'false'}
+									/>
+									<span class="label-text">{$t('adventures.private')}</span>
+								</label>
 							</div>
 						</div>
 

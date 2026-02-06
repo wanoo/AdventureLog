@@ -129,9 +129,13 @@ class IsOwnerOrSharedWithFullAccess(permissions.BasePermission):
 
         
         if type(obj).__name__ == 'Visit':
-            # If the object is a Visit, get its location
-            if hasattr(obj, 'location'):
+            # If the object is a Visit, get its parent (location, transportation, or lodging)
+            if obj.location:
                 obj = obj.location
+            elif obj.transportation:
+                obj = obj.transportation
+            elif obj.lodging:
+                obj = obj.lodging
 
         if type(obj).__name__ == 'CollectionItineraryItem':
             if hasattr(obj, 'object_id') and hasattr(obj, 'content_type'):
