@@ -180,7 +180,7 @@
 							<div class="stat-value text-lg text-info">{totalLodgings}</div>
 						</div>
 						<div class="stat py-2 px-4">
-							<div class="stat-title text-xs">Unlinked</div>
+							<div class="stat-title text-xs">{$t('adventures.unlinked')}</div>
 							<div class="stat-value text-lg text-success">{unlinkedLodgings}</div>
 						</div>
 					</div>
@@ -238,7 +238,7 @@
 						on:click={() => (filterOption = 'unlinked')}
 					>
 						<Check class="w-3 h-3" />
-						Unlinked
+						{$t('adventures.unlinked')}
 					</button>
 					<button
 						class="tab tab-sm gap-2 {filterOption === 'public' ? 'tab-active' : ''}"
@@ -286,10 +286,10 @@
 							</button>
 						{:else}
 							<h3 class="text-xl font-semibold text-base-content/70 mb-2">
-								No lodging available
+								{$t('adventures.no_lodging_available')}
 							</h3>
 							<p class="text-base-content/50 text-center max-w-md">
-								All lodging is already linked to collections.
+								{$t('adventures.all_lodging_linked')}
 							</p>
 						{/if}
 					</div>
