@@ -246,6 +246,7 @@ export type Transportation = {
 	attachments: Attachment[]; // Array of attachments associated with the transportation
 	travel_duration_minutes?: number | null;
 	visits?: Visit[]; // Array of visits associated with the transportation
+	is_visited?: boolean; // Whether this transportation has been visited
 };
 
 export type Note = {
@@ -381,6 +382,7 @@ export type Lodging = {
 	images: ContentImage[]; // Array of images associated with the lodging
 	attachments: Attachment[]; // Array of attachments associated with the lodging
 	visits?: Visit[]; // Array of visits associated with the lodging
+	is_visited?: boolean; // Whether this lodging has been visited
 };
 
 export type CollectionInvite = {

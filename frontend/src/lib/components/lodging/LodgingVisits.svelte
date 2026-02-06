@@ -146,7 +146,6 @@
 	}
 
 	async function addVisit(isAuto: boolean = false) {
-		console.log('addVisit called with lodgingId:', lodgingId);
 		// If editing an existing visit, patch instead of creating new
 		if (visitIdEditing) {
 			const response = await fetch(`/api/visits/${visitIdEditing}/`, {
@@ -168,8 +167,7 @@
 				dispatch('visitAdded', updatedVisit);
 				visitIdEditing = null;
 			} else {
-				const errorText = await response.text();
-				console.error('Failed to update visit:', errorText);
+				console.error('Failed to update visit');
 			}
 		} else {
 			// post to /api/visits for new visit
@@ -180,7 +178,6 @@
 				timezone: selectedStartTimezone,
 				lodging: lodgingId
 			};
-			console.log('Creating visit with payload:', JSON.stringify(payload));
 
 			const response = await fetch('/api/visits/', {
 				method: 'POST',
@@ -190,15 +187,13 @@
 				body: JSON.stringify(payload)
 			});
 
-			console.log('Visit response status:', response.status);
 			if (response.ok) {
 				const newVisit: Visit = await response.json();
-				console.log('Visit created successfully:', newVisit);
 				visits = visits ? [...visits, newVisit] : [newVisit];
 				dispatch('visitAdded', newVisit);
 			} else {
 				const errorText = await response.text();
-				console.error('Failed to create visit:', response.status, errorText);
+				console.error('Failed to create visit:', errorText);
 				alert(`Failed to add visit: ${errorText}`);
 			}
 		}

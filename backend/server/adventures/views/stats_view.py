@@ -2,11 +2,12 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from adventures.utils.sports_types import SPORT_CATEGORIES
 from adventures.utils.get_is_visited import is_location_visited
 from django.db.models import Sum, Avg, Max, Count
 from worldtravel.models import City, Region, Country, VisitedCity, VisitedRegion
-from adventures.models import Location, Collection, Activity
+from adventures.models import Location, Collection, Activity, Transportation, Lodging
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -19,14 +20,50 @@ class StatsViewSet(viewsets.ViewSet):
     def _get_visited_locations_count(self, user):
         """Calculate count of visited locations for a user"""
         visited_count = 0
-        
+
         # Get all locations for this user
         user_locations = Location.objects.filter(user=user).prefetch_related('visits')
-        
+
         for location in user_locations:
             if is_location_visited(location):
                 visited_count += 1
-        
+
+        return visited_count
+
+    def _get_visited_transportation_count(self, user):
+        """Calculate count of visited transportations for a user"""
+        visited_count = 0
+        current_date = timezone.now().date()
+
+        # Get all transportations for this user
+        user_transportations = Transportation.objects.filter(user=user).prefetch_related('visits')
+
+        for transportation in user_transportations:
+            for visit in transportation.visits.all():
+                if visit.start_date:
+                    start_date = visit.start_date.date() if hasattr(visit.start_date, 'date') else visit.start_date
+                    if start_date <= current_date:
+                        visited_count += 1
+                        break
+
+        return visited_count
+
+    def _get_visited_lodging_count(self, user):
+        """Calculate count of visited lodgings for a user"""
+        visited_count = 0
+        current_date = timezone.now().date()
+
+        # Get all lodgings for this user
+        user_lodgings = Lodging.objects.filter(user=user).prefetch_related('visits')
+
+        for lodging in user_lodgings:
+            for visit in lodging.visits.all():
+                if visit.start_date:
+                    start_date = visit.start_date.date() if hasattr(visit.start_date, 'date') else visit.start_date
+                    if start_date <= current_date:
+                        visited_count += 1
+                        break
+
         return visited_count
 
     def _get_activity_stats_by_category(self, user_activities):
@@ -148,14 +185,20 @@ class StatsViewSet(viewsets.ViewSet):
         visited_country_count = VisitedRegion.objects.filter(
             user=user.id).values('region__country').distinct().count()
         total_countries = Country.objects.count()
-        
+
+        # get transportation and lodging counts
+        transportation_count = Transportation.objects.filter(user=user.id).count()
+        visited_transportation_count = self._get_visited_transportation_count(user)
+        lodging_count = Lodging.objects.filter(user=user.id).count()
+        visited_lodging_count = self._get_visited_lodging_count(user)
+
         # get activity data
         user_activities = Activity.objects.filter(user=user.id)
-        
+
         # Get enhanced activity statistics
         overall_activity_stats = self._get_overall_activity_stats(user_activities)
         activity_stats_by_category = self._get_activity_stats_by_category(user_activities)
-        
+
         return Response({
             # Travel stats
             'location_count': location_count,
@@ -167,13 +210,19 @@ class StatsViewSet(viewsets.ViewSet):
             'total_regions': total_regions,
             'visited_country_count': visited_country_count,
             'total_countries': total_countries,
-            
+
+            # Transportation and lodging stats
+            'transportation_count': transportation_count,
+            'visited_transportation_count': visited_transportation_count,
+            'lodging_count': lodging_count,
+            'visited_lodging_count': visited_lodging_count,
+
             # Overall activity stats
             'activities_overall': overall_activity_stats,
-            
+
             # Detailed activity stats by category
             'activities_by_category': activity_stats_by_category,
-            
+
             # Legacy fields (for backward compatibility)
             'activity_distance': overall_activity_stats['total_distance'],
             'activity_moving_time': overall_activity_stats['total_moving_time'],

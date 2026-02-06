@@ -726,6 +726,7 @@ class TransportationSerializer(CustomModelSerializer):
     attachments = serializers.SerializerMethodField()
     travel_duration_minutes = serializers.SerializerMethodField()
     visits = VisitSerializer(many=True, read_only=True)
+    is_visited = serializers.SerializerMethodField()
 
     class Meta:
         model = Transportation
@@ -735,9 +736,9 @@ class TransportationSerializer(CustomModelSerializer):
             'is_public', 'collection', 'created_at', 'updated_at', 'end_date',
             'origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude',
             'start_timezone', 'end_timezone', 'distance', 'images', 'attachments', 'start_code', 'end_code',
-            'travel_duration_minutes', 'visits'
+            'travel_duration_minutes', 'visits', 'is_visited'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'distance', 'travel_duration_minutes']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'distance', 'travel_duration_minutes', 'is_visited']
 
     def get_images(self, obj):
         serializer = ContentImageSerializer(obj.images.filter(is_deleted=False), many=True, context=self.context)
@@ -828,19 +829,43 @@ class TransportationSerializer(CustomModelSerializer):
             and dt_value.time().microsecond == 0
         )
 
+    def get_is_visited(self, obj):
+        """Check if this transportation has any visits with a start date in the past."""
+        from django.utils import timezone
+        current_date = timezone.now().date()
+
+        # In collaborative mode, only count the current user's visits
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            request = self.context.get('request')
+            if request and request.user.is_authenticated:
+                user_visits = obj.visits.filter(user=request.user)
+                for visit in user_visits:
+                    start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
+                    if start_date and start_date <= current_date:
+                        return True
+                return False
+
+        # Normal mode: check all visits
+        for visit in obj.visits.all():
+            start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
+            if start_date and start_date <= current_date:
+                return True
+        return False
+
 class LodgingSerializer(CustomModelSerializer):
     images = serializers.SerializerMethodField()
     attachments = serializers.SerializerMethodField()
     visits = VisitSerializer(many=True, read_only=True)
+    is_visited = serializers.SerializerMethodField()
 
     class Meta:
         model = Lodging
         fields = [
             'id', 'user', 'name', 'description', 'rating', 'link', 'check_in', 'check_out',
             'reservation_number', 'price', 'price_currency', 'latitude', 'longitude', 'location', 'is_public',
-            'collection', 'created_at', 'updated_at', 'type', 'timezone', 'images', 'attachments', 'visits'
+            'collection', 'created_at', 'updated_at', 'type', 'timezone', 'images', 'attachments', 'visits', 'is_visited'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited']
 
     def get_images(self, obj):
         serializer = ContentImageSerializer(obj.images.filter(is_deleted=False), many=True, context=self.context)
@@ -851,6 +876,29 @@ class LodgingSerializer(CustomModelSerializer):
         serializer = AttachmentSerializer(obj.attachments.filter(is_deleted=False), many=True, context=self.context)
         # Filter out None values from the serialized data
         return [attachment for attachment in serializer.data if attachment is not None]
+
+    def get_is_visited(self, obj):
+        """Check if this lodging has any visits with a start date in the past."""
+        from django.utils import timezone
+        current_date = timezone.now().date()
+
+        # In collaborative mode, only count the current user's visits
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            request = self.context.get('request')
+            if request and request.user.is_authenticated:
+                user_visits = obj.visits.filter(user=request.user)
+                for visit in user_visits:
+                    start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
+                    if start_date and start_date <= current_date:
+                        return True
+                return False
+
+        # Normal mode: check all visits
+        for visit in obj.visits.all():
+            start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
+            if start_date and start_date <= current_date:
+                return True
+        return False
 
 class NoteSerializer(CustomModelSerializer):
 
