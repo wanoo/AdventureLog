@@ -22,6 +22,8 @@
 	import CollectionMap from '$lib/components/collections/CollectionMap.svelte';
 	import CollectionStats from '$lib/components/collections/CollectionStats.svelte';
 	import LocationLink from '$lib/components/LocationLink.svelte';
+	import TransportationLink from '$lib/components/TransportationLink.svelte';
+	import LodgingLink from '$lib/components/LodgingLink.svelte';
 	import { getBasemapUrl } from '$lib';
 	import { formatMoney, toMoneyValue, DEFAULT_CURRENCY } from '$lib/money';
 	import FolderMultiple from '~icons/mdi/folder-multiple';
@@ -63,6 +65,8 @@
 	let modalInitialIndex: number = 0;
 	let isImageModalOpen: boolean = false;
 	let isLocationLinkModalOpen: boolean = false;
+	let isTransportationLinkModalOpen: boolean = false;
+	let isLodgingLinkModalOpen: boolean = false;
 	let showCalendarModal = false;
 	let selectedCalendarEvent: any = null;
 	let calendarLocation = '';
@@ -713,6 +717,14 @@
 		isLocationLinkModalOpen = false;
 	}
 
+	function closeTransportationLinkModal() {
+		isTransportationLinkModalOpen = false;
+	}
+
+	function closeLodgingLinkModal() {
+		isLodgingLinkModalOpen = false;
+	}
+
 	function handleOpenEdit(event: CustomEvent<{ type: CollectionArrayKey; item: any }>) {
 		const { type, item } = event.detail;
 
@@ -791,6 +803,28 @@
 			);
 		}
 	}
+
+	function handleTransportationAdded(event: CustomEvent<any>) {
+		const transportation = event.detail;
+		// Update local collection state
+		if (!collection.transportations) collection.transportations = [];
+		const exists = collection.transportations.some((t) => String(t.id) === String(transportation.id));
+		if (!exists) {
+			collection.transportations = [...collection.transportations, transportation];
+		}
+		addToast('success', $t('transportation.linked_success') || 'Transportation linked successfully');
+	}
+
+	function handleLodgingAdded(event: CustomEvent<any>) {
+		const lodging = event.detail;
+		// Update local collection state
+		if (!collection.lodging) collection.lodging = [];
+		const exists = collection.lodging.some((l) => String(l.id) === String(lodging.id));
+		if (!exists) {
+			collection.lodging = [...collection.lodging, lodging];
+		}
+		addToast('success', $t('lodging.linked_success') || 'Lodging linked successfully');
+	}
 </script>
 
 {#if notFound}
@@ -822,6 +856,24 @@
 		collectionId={collection.id}
 		on:close={closeLocationLinkModal}
 		on:add={handleLocationAdded}
+	/>
+{/if}
+
+{#if isTransportationLinkModalOpen && collection}
+	<TransportationLink
+		user={data.user}
+		collectionId={collection.id}
+		on:close={closeTransportationLinkModal}
+		on:add={handleTransportationAdded}
+	/>
+{/if}
+
+{#if isLodgingLinkModalOpen && collection}
+	<LodgingLink
+		user={data.user}
+		collectionId={collection.id}
+		on:close={closeLodgingLinkModal}
+		on:add={handleLodgingAdded}
 	/>
 {/if}
 
@@ -1547,6 +1599,22 @@
 					}}
 				>
 					{$t('locations.location')}
+				</button>
+				<button
+					class="btn btn-primary"
+					on:click={() => {
+						isTransportationLinkModalOpen = true;
+					}}
+				>
+					{$t('adventures.transportation')}
+				</button>
+				<button
+					class="btn btn-primary"
+					on:click={() => {
+						isLodgingLinkModalOpen = true;
+					}}
+				>
+					{$t('adventures.lodging')}
 				</button>
 
 				<p class="text-center font-bold text-lg">{$t('adventures.add_new')}</p>

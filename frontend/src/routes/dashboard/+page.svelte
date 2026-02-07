@@ -1,11 +1,14 @@
 <script lang="ts">
 	import LocationCard from '$lib/components/cards/LocationCard.svelte';
+	import TransportationCard from '$lib/components/cards/TransportationCard.svelte';
+	import LodgingCard from '$lib/components/cards/LodgingCard.svelte';
 	import type { PageData } from './$types';
 	import { t } from 'svelte-i18n';
 
 	// Icons
 	import FlagCheckeredVariantIcon from '~icons/mdi/flag-checkered-variant';
 	import Airplane from '~icons/mdi/airplane';
+	import Bed from '~icons/mdi/bed';
 	import CityVariantOutline from '~icons/mdi/city-variant-outline';
 	import MapMarkerStarOutline from '~icons/mdi/map-marker-star-outline';
 	import CalendarClock from '~icons/mdi/calendar-clock';
@@ -15,6 +18,8 @@
 
 	const user = data.user;
 	const recentAdventures = data.props.adventures;
+	const recentTransportations = data.props.transportations || [];
+	const recentLodgings = data.props.lodgings || [];
 	const stats = data.props.stats;
 
 	// Calculate completion percentage
@@ -176,6 +181,64 @@
 					{#each recentAdventures as adventure}
 						<div class="adventure-card">
 							<LocationCard {adventure} readOnly user={null} />
+						</div>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
+		<!-- Recent Transportations Section -->
+		{#if recentTransportations.length > 0}
+			<div class="mb-8">
+				<div class="flex items-center justify-between mb-6">
+					<div class="flex items-center gap-3">
+						<div class="p-2 bg-warning/10 rounded-xl">
+							<Airplane class="w-6 h-6 text-warning" />
+						</div>
+						<div>
+							<h2 class="text-3xl font-bold">{$t('navbar.transportations')}</h2>
+							<p class="text-base-content/60">{$t('dashboard.recent_travel_plans')}</p>
+						</div>
+					</div>
+					<a href="/transportations" class="btn btn-ghost gap-2">
+						{$t('dashboard.view_all')}
+						<span class="badge badge-warning">{stats.transportation_count || 0}</span>
+					</a>
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+					{#each recentTransportations as transportation}
+						<div class="adventure-card">
+							<TransportationCard {transportation} />
+						</div>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
+		<!-- Recent Lodgings Section -->
+		{#if recentLodgings.length > 0}
+			<div class="mb-8">
+				<div class="flex items-center justify-between mb-6">
+					<div class="flex items-center gap-3">
+						<div class="p-2 bg-secondary/10 rounded-xl">
+							<Bed class="w-6 h-6 text-secondary" />
+						</div>
+						<div>
+							<h2 class="text-3xl font-bold">{$t('navbar.lodging')}</h2>
+							<p class="text-base-content/60">{$t('dashboard.recent_accommodations')}</p>
+						</div>
+					</div>
+					<a href="/lodging" class="btn btn-ghost gap-2">
+						{$t('dashboard.view_all')}
+						<span class="badge badge-secondary">{stats.lodging_count || 0}</span>
+					</a>
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+					{#each recentLodgings as lodging}
+						<div class="adventure-card">
+							<LodgingCard {lodging} />
 						</div>
 					{/each}
 				</div>

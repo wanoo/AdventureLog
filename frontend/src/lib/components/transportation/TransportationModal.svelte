@@ -6,6 +6,7 @@
 	import Plane from '~icons/mdi/airplane';
 	import MediaStep from '../shared/MediaStep.svelte';
 	import TransportationDetails from './TransportationDetails.svelte';
+	import TransportationVisits from './TransportationVisits.svelte';
 
 	export let user: User | null = null;
 	export let collection: Collection | null = null;
@@ -26,6 +27,11 @@
 			name: $t('adventures.details'),
 			selected: true,
 			requires_id: false
+		},
+		{
+			name: $t('adventures.visits'),
+			selected: false,
+			requires_id: true
 		},
 		{
 			name: $t('settings.media'),
@@ -60,11 +66,13 @@
 			distance: null,
 			price: null,
 			price_currency: 'USD',
-			collection: null,
+			collections: [],
 			created_at: '',
 			updated_at: '',
 			images: [],
-			attachments: []
+			attachments: [],
+			visits: [],
+			tags: null
 		};
 	}
 
@@ -110,11 +118,13 @@
 					distance: transportationToEdit.distance || null,
 					price: transportationToEdit.price ?? null,
 					price_currency: transportationToEdit.price_currency || 'USD',
-					collection: transportationToEdit.collection || null,
+					collections: transportationToEdit.collections || [],
 					created_at: transportationToEdit.created_at || '',
 					updated_at: transportationToEdit.updated_at || '',
 					images: transportationToEdit.images || [],
-					attachments: transportationToEdit.attachments || []
+					attachments: transportationToEdit.attachments || [],
+					visits: transportationToEdit.visits || [],
+					tags: transportationToEdit.tags || null
 				};
 			} else if (!transportation?.id) {
 				// Only reset to empty if we don't already have a saved transportation with an ID
@@ -123,6 +133,7 @@
 				// Reset steps to details when creating a new transportation
 				steps = [
 					{ name: $t('adventures.details'), selected: true, requires_id: false },
+					{ name: $t('adventures.visits'), selected: false, requires_id: true },
 					{ name: $t('settings.media'), selected: false, requires_id: true }
 				];
 			}
@@ -268,10 +279,11 @@
 					// Mark that a save occurred so close() will notify parent
 					didSave = true;
 
-					// Only allow moving to Media once we have a persisted id.
+					// Only allow moving to next steps once we have a persisted id.
 					if (!transportation?.id) {
 						addToast('error', $t('adventures.lodging_save_error'));
 						steps[1].selected = false;
+						steps[2].selected = false;
 						steps[0].selected = true;
 						return;
 					}
@@ -283,13 +295,39 @@
 			/>
 		{/if}
 		{#if steps[1].selected}
+			<TransportationVisits
+				{collection}
+				visits={transportation.visits || []}
+				transportationId={transportation.id}
+				initialVisitDate={storedInitialVisitDate}
+				currentUserUsername={user?.username || null}
+				on:back={() => {
+					steps[1].selected = false;
+					steps[0].selected = true;
+				}}
+				on:close={() => {
+					steps[1].selected = false;
+					steps[2].selected = true;
+				}}
+				on:visitAdded={(e) => {
+					// Update or add the visit (filter out existing with same ID first)
+					const existingVisits = (transportation.visits || []).filter(v => v.id !== e.detail.id);
+					transportation.visits = [...existingVisits, e.detail];
+				}}
+				on:visitDeleted={(e) => {
+					// Remove the visit from the array
+					transportation.visits = (transportation.visits || []).filter(v => v.id !== e.detail);
+				}}
+			/>
+		{/if}
+		{#if steps[2].selected}
 			<MediaStep
 				bind:images={transportation.images}
 				bind:attachments={transportation.attachments}
 				itemName={transportation.name}
 				on:back={() => {
-					steps[1].selected = false;
-					steps[0].selected = true;
+					steps[2].selected = false;
+					steps[1].selected = true;
 				}}
 				on:close={() => close()}
 				itemId={transportation.id}
