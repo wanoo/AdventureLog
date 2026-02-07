@@ -732,7 +732,7 @@ class TransportationSerializer(CustomModelSerializer):
         model = Transportation
         fields = [
             'id', 'user', 'type', 'name', 'description', 'rating', 'price', 'price_currency',
-            'link', 'date', 'flight_number', 'from_location', 'to_location',
+            'link', 'date', 'flight_number', 'from_location', 'to_location', 'tags',
             'is_public', 'collection', 'created_at', 'updated_at', 'end_date',
             'origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude',
             'start_timezone', 'end_timezone', 'distance', 'images', 'attachments', 'start_code', 'end_code',
@@ -862,7 +862,7 @@ class LodgingSerializer(CustomModelSerializer):
         model = Lodging
         fields = [
             'id', 'user', 'name', 'description', 'rating', 'link', 'check_in', 'check_out',
-            'reservation_number', 'price', 'price_currency', 'latitude', 'longitude', 'location', 'is_public',
+            'reservation_number', 'price', 'price_currency', 'latitude', 'longitude', 'location', 'tags', 'is_public',
             'collection', 'created_at', 'updated_at', 'type', 'timezone', 'images', 'attachments', 'visits', 'is_visited'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited']

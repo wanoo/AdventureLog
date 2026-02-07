@@ -64,7 +64,8 @@
 			updated_at: '',
 			images: [],
 			attachments: [],
-			visits: []
+			visits: [],
+			tags: null
 		};
 	}
 
@@ -108,7 +109,8 @@
 					updated_at: lodgingToEdit.updated_at || '',
 					images: lodgingToEdit.images || [],
 					attachments: lodgingToEdit.attachments || [],
-					visits: lodgingToEdit.visits || []
+					visits: lodgingToEdit.visits || [],
+					tags: lodgingToEdit.tags || null
 				};
 			} else if (!lodging?.id) {
 				// Only reset to empty if we don't already have a saved lodging with an ID

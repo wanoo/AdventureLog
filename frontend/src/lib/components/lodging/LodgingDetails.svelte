@@ -15,6 +15,7 @@
 	import type { Category, User } from '$lib/types';
 	import MarkdownEditor from '../MarkdownEditor.svelte';
 	import TimezoneSelector from '../TimezoneSelector.svelte';
+	import TagComplete from '../TagComplete.svelte';
 	import MoneyInput from '../shared/MoneyInput.svelte';
 	import { DEFAULT_CURRENCY, normalizeMoneyPayload, toMoneyValue } from '$lib/money';
 	// @ts-ignore
@@ -59,6 +60,7 @@
 		category?: Category | null;
 		collection?: string;
 		is_public?: boolean;
+		tags?: string[];
 	} = {
 		name: '',
 		type: '',
@@ -76,7 +78,8 @@
 		location: '',
 		category: null,
 		collection: collection?.id,
-		is_public: true
+		is_public: true,
+		tags: []
 	};
 
 	let selectedTimezone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -415,6 +418,11 @@
 			if (initialLodging.user) {
 				ownerUser = initialLodging.user;
 			}
+
+			// Populate tags
+			if (initialLodging.tags && Array.isArray(initialLodging.tags)) {
+				lodging.tags = initialLodging.tags;
+			}
 		}
 
 		// If adding from itinerary, pre-fill all-day stay with next-day checkout
@@ -745,6 +753,29 @@
 							<TimezoneSelector bind:selectedTimezone />
 						{/if}
 					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Tags Section -->
+		<div class="card bg-base-100 border border-base-300 shadow-lg">
+			<div class="card-body p-6">
+				<div class="flex items-center gap-3 mb-6">
+					<div class="p-2 bg-warning/10 rounded-lg">
+						<svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+							/>
+						</svg>
+					</div>
+					<h2 class="text-xl font-bold">{$t('adventures.tags')} ({lodging.tags?.length || 0})</h2>
+				</div>
+				<div class="space-y-4">
+					<input type="text" id="tags" name="tags" hidden bind:value={lodging.tags} />
+					<TagComplete bind:tags={lodging.tags} />
 				</div>
 			</div>
 		</div>

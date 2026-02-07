@@ -237,6 +237,7 @@ export type Transportation = {
 	destination_longitude: number | null;
 	start_code: string | null; // Could be airport code, station code, etc.
 	end_code: string | null; // Could be airport code, station code, etc.
+	tags: string[] | null;
 	is_public: boolean;
 	distance: number | null; // in kilometers
 	collection: Collection | null | string;
@@ -375,6 +376,7 @@ export type Lodging = {
 	latitude: number | null;
 	longitude: number | null;
 	location: string | null;
+	tags: string[] | null;
 	is_public: boolean;
 	collection: string | null;
 	created_at: string; // ISO 8601 date string

@@ -71,7 +71,8 @@
 			updated_at: '',
 			images: [],
 			attachments: [],
-			visits: []
+			visits: [],
+			tags: null
 		};
 	}
 
@@ -122,7 +123,8 @@
 					updated_at: transportationToEdit.updated_at || '',
 					images: transportationToEdit.images || [],
 					attachments: transportationToEdit.attachments || [],
-					visits: transportationToEdit.visits || []
+					visits: transportationToEdit.visits || [],
+					tags: transportationToEdit.tags || null
 				};
 			} else if (!transportation?.id) {
 				// Only reset to empty if we don't already have a saved transportation with an ID
