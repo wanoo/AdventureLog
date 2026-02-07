@@ -727,13 +727,18 @@ class TransportationSerializer(CustomModelSerializer):
     travel_duration_minutes = serializers.SerializerMethodField()
     visits = VisitSerializer(many=True, read_only=True)
     is_visited = serializers.SerializerMethodField()
+    collections = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Collection.objects.all(),
+        required=False
+    )
 
     class Meta:
         model = Transportation
         fields = [
             'id', 'user', 'type', 'name', 'description', 'rating', 'price', 'price_currency',
             'link', 'date', 'flight_number', 'from_location', 'to_location', 'tags',
-            'is_public', 'collection', 'created_at', 'updated_at', 'end_date',
+            'is_public', 'collections', 'created_at', 'updated_at', 'end_date',
             'origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude',
             'start_timezone', 'end_timezone', 'distance', 'images', 'attachments', 'start_code', 'end_code',
             'travel_duration_minutes', 'visits', 'is_visited'
@@ -857,13 +862,18 @@ class LodgingSerializer(CustomModelSerializer):
     attachments = serializers.SerializerMethodField()
     visits = VisitSerializer(many=True, read_only=True)
     is_visited = serializers.SerializerMethodField()
+    collections = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Collection.objects.all(),
+        required=False
+    )
 
     class Meta:
         model = Lodging
         fields = [
             'id', 'user', 'name', 'description', 'rating', 'link', 'check_in', 'check_out',
             'reservation_number', 'price', 'price_currency', 'latitude', 'longitude', 'location', 'tags', 'is_public',
-            'collection', 'created_at', 'updated_at', 'type', 'timezone', 'images', 'attachments', 'visits', 'is_visited'
+            'collections', 'created_at', 'updated_at', 'type', 'timezone', 'images', 'attachments', 'visits', 'is_visited'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited']
 
@@ -1085,7 +1095,7 @@ class CollectionSerializer(CustomModelSerializer):
         # Only include transportations if not in nested context
         if self.context.get('nested', False):
             return []
-        return TransportationSerializer(obj.transportation_set.all(), many=True, context=self.context).data
+        return TransportationSerializer(obj.transportations.all(), many=True, context=self.context).data
 
     def get_notes(self, obj):
         # Only include notes if not in nested context
@@ -1103,7 +1113,7 @@ class CollectionSerializer(CustomModelSerializer):
         # Only include lodging if not in nested context
         if self.context.get('nested', False):
             return []
-        return LodgingSerializer(obj.lodging_set.all(), many=True, context=self.context).data
+        return LodgingSerializer(obj.lodgings.all(), many=True, context=self.context).data
 
     def get_status(self, obj):
         """Calculate the status of the collection based on dates"""

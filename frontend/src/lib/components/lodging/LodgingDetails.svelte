@@ -58,7 +58,7 @@
 		longitude: number | null;
 		location: string;
 		category?: Category | null;
-		collection?: string;
+		collections?: string[];
 		is_public?: boolean;
 		tags?: string[];
 	} = {
@@ -77,7 +77,7 @@
 		longitude: null,
 		location: '',
 		category: null,
-		collection: collection?.id,
+		collections: collection?.id ? [collection.id] : [],
 		is_public: true,
 		tags: []
 	};
@@ -286,10 +286,14 @@
 			lodging.longitude = parseFloat(lodging.longitude.toFixed(6));
 		}
 		if (collection && collection.id) {
-			lodging.collection = collection.id;
+			if (!lodging.collections || lodging.collections.length === 0) {
+				lodging.collections = [collection.id];
+			} else if (!lodging.collections.includes(collection.id)) {
+				lodging.collections = [...lodging.collections, collection.id];
+			}
 		}
 
-		// Build payload and avoid sending an empty `collection` array when editing
+		// Build payload and avoid sending an empty `collections` array when editing
 		let payload: any = { ...lodging };
 
 		// Normalize price and currency consistently, but send explicit nulls when cleared
@@ -305,16 +309,16 @@
 			delete payload.link;
 		}
 
-		// If we're editing and the original location had collection, but the form's collection
-		// is empty (i.e. user didn't modify collection), omit collection from payload so the
+		// If we're editing and the original had collections, but the form's collections
+		// is empty (i.e. user didn't modify collections), omit collections from payload so the
 		// server doesn't clear them unintentionally.
 		if (lodgingToEdit && lodgingToEdit.id) {
 			if (
-				(!payload.collection || payload.collection.length === 0) &&
-				lodgingToEdit.collection &&
-				lodgingToEdit.collection.length > 0
+				(!payload.collections || payload.collections.length === 0) &&
+				lodgingToEdit.collections &&
+				lodgingToEdit.collections.length > 0
 			) {
-				delete payload.collection;
+				delete payload.collections;
 			}
 
 			let res = await fetch(`/api/lodging/${lodgingToEdit.id}`, {

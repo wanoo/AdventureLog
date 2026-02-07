@@ -65,7 +65,7 @@
 		start_code: null,
 		end_code: null,
 		distance: null,
-		collection: collection?.id,
+		collections: collection?.id ? [collection.id] : [],
 		is_public: true,
 		price: null,
 		price_currency: DEFAULT_CURRENCY,
@@ -395,10 +395,14 @@
 			);
 		}
 		if (collection && collection.id) {
-			transportation.collection = collection.id;
+			if (!transportation.collections || transportation.collections.length === 0) {
+				transportation.collections = [collection.id];
+			} else if (!transportation.collections.includes(collection.id)) {
+				transportation.collections = [...transportation.collections, collection.id];
+			}
 		}
 
-		// Build payload and avoid sending an empty `collection` array when editing
+		// Build payload and avoid sending an empty `collections` array when editing
 		let payload: any = { ...transportation };
 
 		// Normalize price and currency
@@ -415,15 +419,15 @@
 			delete payload.link;
 		}
 
-		// If we're editing and the original location had collection, but the form's collection
-		// is empty (i.e. user didn't modify collection), omit collection from payload so the
+		// If we're editing and the original had collections, but the form's collections
+		// is empty (i.e. user didn't modify collections), omit collections from payload so the
 		// server doesn't clear them unintentionally.
 		if (transportationToEdit && transportationToEdit.id) {
 			if (
-				(!payload.collection || payload.collection.length === 0) &&
-				transportationToEdit.collection
+				(!payload.collections || payload.collections.length === 0) &&
+				transportationToEdit.collections && transportationToEdit.collections.length > 0
 			) {
-				delete payload.collection;
+				delete payload.collections;
 			}
 
 			let res = await fetch(`/api/transportations/${transportationToEdit.id}`, {

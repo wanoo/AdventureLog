@@ -351,7 +351,7 @@ class Transportation(models.Model):
     to_location = models.CharField(max_length=200, blank=True, null=True)
     tags = ArrayField(models.CharField(max_length=100), blank=True, null=True)
     is_public = models.BooleanField(default=False)
-    collection = models.ForeignKey('Collection', on_delete=models.CASCADE, blank=True, null=True)
+    collections = models.ManyToManyField('Collection', blank=True, related_name='transportations')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -362,12 +362,6 @@ class Transportation(models.Model):
     def clean(self):
         if self.date and self.end_date and self.date > self.end_date:
             raise ValidationError('The start date must be before the end date. Start date: ' + str(self.date) + ' End date: ' + str(self.end_date))
-        
-        if self.collection:
-            if self.collection.is_public and not self.is_public:
-                raise ValidationError('Transportations associated with a public collection must be public. Collection: ' + self.collection.name + ' Transportation: ' + self.name)
-            if self.user != self.collection.user:
-                raise ValidationError('Transportations must be associated with collections owned by the same user. Collection owner: ' + self.collection.user.username + ' Transportation owner: ' + self.user.username)
 
     def delete(self, *args, **kwargs):
         # Delete all associated images and attachments
@@ -656,7 +650,7 @@ class Lodging(models.Model):
     location = models.CharField(max_length=200, blank=True, null=True)
     tags = ArrayField(models.CharField(max_length=100), blank=True, null=True)
     is_public = models.BooleanField(default=False)
-    collection = models.ForeignKey('Collection', on_delete=models.CASCADE, blank=True, null=True)
+    collections = models.ManyToManyField('Collection', blank=True, related_name='lodgings')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -667,12 +661,6 @@ class Lodging(models.Model):
     def clean(self):
         if self.check_in and self.check_out and self.check_in > self.check_out:
             raise ValidationError('The start date must be before the end date. Start date: ' + str(self.check_in) + ' End date: ' + str(self.check_out))
-        
-        if self.collection:
-            if self.collection.is_public and not self.is_public:
-                raise ValidationError('Lodging associated with a public collection must be public. Collection: ' + self.collection.name + ' Lodging: ' + self.name)
-            if self.user != self.collection.user:
-                raise ValidationError('Lodging must be associated with collections owned by the same user. Collection owner: ' + self.collection.user.username + ' Lodging owner: ' + self.user.username)
 
     def delete(self, *args, **kwargs):
         # Delete all associated images and attachments

@@ -240,7 +240,7 @@ export type Transportation = {
 	tags: string[] | null;
 	is_public: boolean;
 	distance: number | null; // in kilometers
-	collection: Collection | null | string;
+	collections: string[]; // Array of collection IDs
 	created_at: string; // ISO 8601 date string
 	updated_at: string; // ISO 8601 date string
 	images: ContentImage[]; // Array of images associated with the transportation
@@ -378,7 +378,7 @@ export type Lodging = {
 	location: string | null;
 	tags: string[] | null;
 	is_public: boolean;
-	collection: string | null;
+	collections: string[]; // Array of collection IDs
 	created_at: string; // ISO 8601 date string
 	updated_at: string; // ISO 8601 date string
 	images: ContentImage[]; // Array of images associated with the lodging
