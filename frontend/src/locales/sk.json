@@ -100,6 +100,9 @@
 		"coordinates": "Súradnice",
 		"copy_coordinates": "Kopírovať súradnice",
 		"visits": "Návštevy",
+		"last_edited_by": "Naposledy upravil",
+		"contributors": "Prispievatelia",
+		"added_by": "Pridal",
 		"create_new": "Vytvoriť nové",
 		"sort": "Zoradiť",
 		"order_by": "Zoradiť podľa",
@@ -144,9 +147,12 @@
 		"collection_locations": "Zahrnúť miesta zo zbierky",
 		"filter": "Filter",
 		"category_filter": "Filter kategórií",
+		"filter_by_type": "Filtrovať podľa Typu",
 		"category": "Kategória",
 		"clear": "Vyčistiť",
 		"my_collections": "Moje zbierky",
+		"ownership_filter": "Vlastník",
+		"visibility": "Viditeľnosť",
 		"archived_collections": "Archivované zbierky",
 		"share": "Zdieľať",
 		"private": "Súkromné",
@@ -194,6 +200,13 @@
 		"update_visited_regions": "Aktualizovať navštívené regióny",
 		"link_new": "Prepojiť nové...",
 		"add_new": "Pridať nové...",
+		"link_transportation": "Prepojiť dopravu",
+		"link_lodging": "Prepojiť ubytovanie",
+		"unlinked": "Neprepojené",
+		"no_transportations_available": "Žiadna doprava nie je k dispozícii",
+		"all_transportations_linked": "Všetka doprava je už prepojená so zbierkami.",
+		"no_lodging_available": "Žiadne ubytovanie nie je k dispozícii",
+		"all_lodging_linked": "Všetko ubytovanie je už prepojené so zbierkami.",
 		"transportation": "Doprava",
 		"note": "Poznámka",
 		"checklist": "Checklist",
@@ -804,6 +817,9 @@
 		"transportation_delete_error": "Chyba pri odstraňovaní dopravy",
 		"type": "Typ",
 		"new_transportation": "Nová doprava",
+		"my_transportations": "Moja Doprava",
+		"no_transportations_found": "Nenašla sa žiadna doprava",
+		"create_transportation": "Vytvoriť Dopravu",
 		"flight_number": "Číslo letu",
 		"from_location": "Miesto odletu",
 		"to_location": "Miesto príletu",
@@ -832,12 +848,20 @@
 		"arrival_timezone": "Časové pásmo príchodu",
 		"departure_code": "Kód odchodu",
 		"departure_date": "Dátum odchodu",
-		"departure_timezone": "Časové pásmo odletu"
+		"departure_timezone": "Časové pásmo odletu",
+		"public_transportation": "Verejná doprava",
+		"public_transportation_description": "Povoliť ostatným používateľom zobraziť túto dopravu",
+		"move_to_collection_confirm": "Táto doprava sa už nachádza v inej zbierke. Presunúť do tejto zbierky?",
+		"linked_success": "Doprava úspešne prepojená",
+		"linked_error": "Prepojenie dopravy zlyhalo"
 	},
 	"lodging": {
 		"new_lodging": "Nové ubytovanie",
 		"edit": "Upraviť",
 		"edit_lodging": "Upraviť ubytovanie",
+		"my_lodging": "Moje Ubytovanie",
+		"no_lodging_found": "Nenašlo sa žiadne ubytovanie",
+		"create_lodging": "Vytvoriť Ubytovanie",
 		"hotel": "Hotel",
 		"hostel": "Hostel",
 		"resort": "Rezort",
@@ -853,7 +877,12 @@
 		"update_lodging_details": "Aktualizovať detaily ubytovania",
 		"create_new_lodging": "Nové ubytovanie",
 		"enter_lodging_name": "Zadajte názov ubytovania",
-		"enter_reservation_number": "Zadajte číslo rezervácie"
+		"enter_reservation_number": "Zadajte číslo rezervácie",
+		"public_lodging": "Verejné ubytovanie",
+		"public_lodging_description": "Povoliť ostatným používateľom zobraziť toto ubytovanie",
+		"move_to_collection_confirm": "Toto ubytovanie sa už nachádza v inej zbierke. Presunúť do tejto zbierky?",
+		"linked_success": "Ubytovanie úspešne prepojené",
+		"linked_error": "Prepojenie ubytovania zlyhalo"
 	},
 	"search": {
 		"result": "Výsledok",
@@ -935,7 +964,9 @@
 		"view_all": "Zobraziť všetko",
 		"welcome_text_1": "Boli ste na",
 		"welcome_text_2": "dobrodružstvách doteraz",
-		"welcome_text_3": "Pokračujte v objavovaní a dokumentovaní svojich ciest!"
+		"welcome_text_3": "Pokračujte v objavovaní a dokumentovaní svojich ciest!",
+		"recent_travel_plans": "Vaše nedávne cestovné plány",
+		"recent_accommodations": "Vaše nedávne ubytovania"
 	},
 	"immich": {
 		"immich": "Immich",
@@ -1128,5 +1159,21 @@
 		"trip_context_info": "Kontextové položky cesty sa vzťahujú na celú cestu – napríklad miesta, ktoré sú samotným cieľom, všeobecné poznámky alebo zoznamy balíkov, ktoré sú dôležité pre celú cestu.",
 		"unscheduled_items": "Neplánované položky",
 		"unscheduled_items_desc": "Tieto položky sú spojené s touto cestou, ale zatiaľ neboli pridané ku konkrétnemu dňu."
+	},
+	"history": {
+		"title": "História",
+		"created": "Vytvorené",
+		"updated": "Aktualizované",
+		"deleted": "Vymazané",
+		"by": "od",
+		"no_history": "Žiadna história",
+		"view_history": "Zobraziť históriu",
+		"changes": "Zmeny",
+		"revert": "Vrátiť späť"
+	},
+	"collaborative": {
+		"mode_enabled": "Režim spolupráce",
+		"public_content": "Verejný obsah",
+		"can_edit": "Môžete upravovať"
 	}
 }
