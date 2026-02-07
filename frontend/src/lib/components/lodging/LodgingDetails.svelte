@@ -15,6 +15,7 @@
 	import type { Category, User } from '$lib/types';
 	import MarkdownEditor from '../MarkdownEditor.svelte';
 	import TimezoneSelector from '../TimezoneSelector.svelte';
+	import TagComplete from '../TagComplete.svelte';
 	import MoneyInput from '../shared/MoneyInput.svelte';
 	import { DEFAULT_CURRENCY, normalizeMoneyPayload, toMoneyValue } from '$lib/money';
 	// @ts-ignore
@@ -57,8 +58,9 @@
 		longitude: number | null;
 		location: string;
 		category?: Category | null;
-		collection?: string;
+		collections?: string[];
 		is_public?: boolean;
+		tags?: string[];
 	} = {
 		name: '',
 		type: '',
@@ -75,8 +77,9 @@
 		longitude: null,
 		location: '',
 		category: null,
-		collection: collection?.id,
-		is_public: true
+		collections: collection?.id ? [collection.id] : [],
+		is_public: true,
+		tags: []
 	};
 
 	let selectedTimezone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -283,10 +286,14 @@
 			lodging.longitude = parseFloat(lodging.longitude.toFixed(6));
 		}
 		if (collection && collection.id) {
-			lodging.collection = collection.id;
+			if (!lodging.collections || lodging.collections.length === 0) {
+				lodging.collections = [collection.id];
+			} else if (!lodging.collections.includes(collection.id)) {
+				lodging.collections = [...lodging.collections, collection.id];
+			}
 		}
 
-		// Build payload and avoid sending an empty `collection` array when editing
+		// Build payload and avoid sending an empty `collections` array when editing
 		let payload: any = { ...lodging };
 
 		// Normalize price and currency consistently, but send explicit nulls when cleared
@@ -302,16 +309,16 @@
 			delete payload.link;
 		}
 
-		// If we're editing and the original location had collection, but the form's collection
-		// is empty (i.e. user didn't modify collection), omit collection from payload so the
+		// If we're editing and the original had collections, but the form's collections
+		// is empty (i.e. user didn't modify collections), omit collections from payload so the
 		// server doesn't clear them unintentionally.
 		if (lodgingToEdit && lodgingToEdit.id) {
 			if (
-				(!payload.collection || payload.collection.length === 0) &&
-				lodgingToEdit.collection &&
-				lodgingToEdit.collection.length > 0
+				(!payload.collections || payload.collections.length === 0) &&
+				lodgingToEdit.collections &&
+				lodgingToEdit.collections.length > 0
 			) {
-				delete payload.collection;
+				delete payload.collections;
 			}
 
 			let res = await fetch(`/api/lodging/${lodgingToEdit.id}`, {
@@ -414,6 +421,11 @@
 
 			if (initialLodging.user) {
 				ownerUser = initialLodging.user;
+			}
+
+			// Populate tags
+			if (initialLodging.tags && Array.isArray(initialLodging.tags)) {
+				lodging.tags = initialLodging.tags;
 			}
 		}
 
@@ -745,6 +757,51 @@
 							<TimezoneSelector bind:selectedTimezone />
 						{/if}
 					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Tags Section -->
+		<div class="card bg-base-100 border border-base-300 shadow-lg">
+			<div class="card-body p-6">
+				<div class="flex items-center gap-3 mb-6">
+					<div class="p-2 bg-warning/10 rounded-lg">
+						<svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+							/>
+						</svg>
+					</div>
+					<h2 class="text-xl font-bold">{$t('adventures.tags')} ({lodging.tags?.length || 0})</h2>
+				</div>
+				<div class="space-y-4">
+					<input type="text" id="tags" name="tags" hidden bind:value={lodging.tags} />
+					<TagComplete bind:tags={lodging.tags} />
+				</div>
+			</div>
+		</div>
+
+		<!-- Visibility Section -->
+		<div class="card bg-base-100 border border-base-300 shadow-lg">
+			<div class="card-body p-6">
+				<div class="form-control">
+					<label class="label cursor-pointer justify-start gap-4" for="is_public">
+						<input
+							type="checkbox"
+							class="toggle toggle-primary"
+							id="is_public"
+							bind:checked={lodging.is_public}
+						/>
+						<div>
+							<span class="label-text font-medium">{$t('lodging.public_lodging')}</span>
+							<p class="text-sm text-base-content/60">
+								{$t('lodging.public_lodging_description')}
+							</p>
+						</div>
+					</label>
 				</div>
 			</div>
 		</div>

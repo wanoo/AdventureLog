@@ -1,4 +1,4 @@
-# Generated manually for collaborative mode user tracking
+# Add user field to Visit model for tracking who created each visit
 
 from django.conf import settings
 from django.db import migrations, models

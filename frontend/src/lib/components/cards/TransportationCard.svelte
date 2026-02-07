@@ -18,6 +18,7 @@
 	import Star from '~icons/mdi/star';
 	import StarOutline from '~icons/mdi/star-outline';
 	import Calendar from '~icons/mdi/calendar';
+	import Clock from '~icons/mdi/clock-outline';
 	import DotsHorizontal from '~icons/mdi/dots-horizontal';
 	import CalendarRemove from '~icons/mdi/calendar-remove';
 	import Launch from '~icons/mdi/launch';
@@ -191,6 +192,24 @@
 				name={transportation.name}
 			/>
 		{/if}
+
+		<!-- Status Overlay (icon-only) -->
+		<div class="absolute top-2 left-4 flex items-center gap-3">
+			<div
+				class="tooltip tooltip-right"
+				data-tip={transportation.is_visited ? $t('adventures.visited') : $t('adventures.not_visited')}
+			>
+				{#if transportation.is_visited}
+					<div class="badge badge-sm badge-success p-1 rounded-full shadow-sm">
+						<Calendar class="w-4 h-4" />
+					</div>
+				{:else}
+					<div class="badge badge-sm badge-warning p-1 rounded-full shadow-sm">
+						<Clock class="w-4 h-4" />
+					</div>
+				{/if}
+			</div>
+		</div>
 
 		<!-- Privacy Indicator -->
 		<div class="absolute top-2 right-4">

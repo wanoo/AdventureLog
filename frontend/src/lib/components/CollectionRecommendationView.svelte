@@ -136,11 +136,13 @@
 			longitude: result.longitude ?? null,
 			location: result.address || result.description || null,
 			is_public: false,
-			collection: collection.id,
+			collections: [collection.id],
 			created_at: '',
 			updated_at: '',
 			images: mapPhotosToContentImages(result.photos || []),
-			attachments: []
+			attachments: [],
+			visits: [],
+			tags: null
 		} as Lodging;
 
 		showLodgingModal = true;

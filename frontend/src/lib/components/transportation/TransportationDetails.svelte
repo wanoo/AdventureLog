@@ -16,6 +16,7 @@
 	import { TRANSPORTATION_TYPES_ICONS } from '$lib';
 	import MarkdownEditor from '../MarkdownEditor.svelte';
 	import TimezoneSelector from '../TimezoneSelector.svelte';
+	import TagComplete from '../TagComplete.svelte';
 	import MoneyInput from '../shared/MoneyInput.svelte';
 	import { DEFAULT_CURRENCY, normalizeMoneyPayload, toMoneyValue } from '$lib/money';
 	// @ts-ignore
@@ -64,10 +65,11 @@
 		start_code: null,
 		end_code: null,
 		distance: null,
-		collection: collection?.id,
+		collections: collection?.id ? [collection.id] : [],
 		is_public: true,
 		price: null,
-		price_currency: DEFAULT_CURRENCY
+		price_currency: DEFAULT_CURRENCY,
+		tags: []
 	};
 	const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 	let selectedStartTimezone: string = browserTimezone;
@@ -393,10 +395,14 @@
 			);
 		}
 		if (collection && collection.id) {
-			transportation.collection = collection.id;
+			if (!transportation.collections || transportation.collections.length === 0) {
+				transportation.collections = [collection.id];
+			} else if (!transportation.collections.includes(collection.id)) {
+				transportation.collections = [...transportation.collections, collection.id];
+			}
 		}
 
-		// Build payload and avoid sending an empty `collection` array when editing
+		// Build payload and avoid sending an empty `collections` array when editing
 		let payload: any = { ...transportation };
 
 		// Normalize price and currency
@@ -413,15 +419,15 @@
 			delete payload.link;
 		}
 
-		// If we're editing and the original location had collection, but the form's collection
-		// is empty (i.e. user didn't modify collection), omit collection from payload so the
+		// If we're editing and the original had collections, but the form's collections
+		// is empty (i.e. user didn't modify collections), omit collections from payload so the
 		// server doesn't clear them unintentionally.
 		if (transportationToEdit && transportationToEdit.id) {
 			if (
-				(!payload.collection || payload.collection.length === 0) &&
-				transportationToEdit.collection
+				(!payload.collections || payload.collections.length === 0) &&
+				transportationToEdit.collections && transportationToEdit.collections.length > 0
 			) {
-				delete payload.collection;
+				delete payload.collections;
 			}
 
 			let res = await fetch(`/api/transportations/${transportationToEdit.id}`, {
@@ -532,6 +538,11 @@
 			transportation.destination_longitude = initialTransportation.destination_longitude || null;
 			startCodeField = transportation.start_code || '';
 			endCodeField = transportation.end_code || '';
+
+			// Populate tags
+			if (initialTransportation.tags && Array.isArray(initialTransportation.tags)) {
+				transportation.tags = initialTransportation.tags;
+			}
 
 			if (initialTransportation.user) {
 				ownerUser = initialTransportation.user;
@@ -923,6 +934,51 @@
 							/>
 						{/if}
 					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Tags Section -->
+		<div class="card bg-base-100 border border-base-300 shadow-lg">
+			<div class="card-body p-6">
+				<div class="flex items-center gap-3 mb-6">
+					<div class="p-2 bg-warning/10 rounded-lg">
+						<svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+							/>
+						</svg>
+					</div>
+					<h2 class="text-xl font-bold">{$t('adventures.tags')} ({transportation.tags?.length || 0})</h2>
+				</div>
+				<div class="space-y-4">
+					<input type="text" id="tags" name="tags" hidden bind:value={transportation.tags} />
+					<TagComplete bind:tags={transportation.tags} />
+				</div>
+			</div>
+		</div>
+
+		<!-- Visibility Section -->
+		<div class="card bg-base-100 border border-base-300 shadow-lg">
+			<div class="card-body p-6">
+				<div class="form-control">
+					<label class="label cursor-pointer justify-start gap-4" for="is_public">
+						<input
+							type="checkbox"
+							class="toggle toggle-primary"
+							id="is_public"
+							bind:checked={transportation.is_public}
+						/>
+						<div>
+							<span class="label-text font-medium">{$t('transportation.public_transportation')}</span>
+							<p class="text-sm text-base-content/60">
+								{$t('transportation.public_transportation_description')}
+							</p>
+						</div>
+					</label>
 				</div>
 			</div>
 		</div>
