@@ -250,10 +250,6 @@
 	}
 
 	function removeVisit(visitId: string) {
-		if (visits) {
-			visits = visits.filter((v) => v.id !== visitId);
-		}
-
 		// make the DELETE request
 		fetch(`/api/visits/${visitId}/`, {
 			method: 'DELETE'
@@ -261,7 +257,12 @@
 			if (!response.ok) {
 				console.error('Error deleting visit:', response.statusText);
 			} else {
-				visits = visits?.filter((v) => v.id !== visitId) ?? null;
+				// Remove from local array
+				if (visits) {
+					visits = visits.filter((v) => v.id !== visitId);
+				}
+				// Notify parent to update its array
+				dispatch('visitDeleted', visitId);
 			}
 		});
 	}

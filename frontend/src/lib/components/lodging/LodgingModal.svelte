@@ -320,6 +320,10 @@
 					const existingVisits = (lodging.visits || []).filter(v => v.id !== e.detail.id);
 					lodging.visits = [...existingVisits, e.detail];
 				}}
+				on:visitDeleted={(e) => {
+					// Remove the visit from the array
+					lodging.visits = (lodging.visits || []).filter(v => v.id !== e.detail);
+				}}
 			/>
 		{/if}
 		{#if steps[2].selected}

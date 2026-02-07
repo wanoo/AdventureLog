@@ -312,6 +312,10 @@
 					const existingVisits = (transportation.visits || []).filter(v => v.id !== e.detail.id);
 					transportation.visits = [...existingVisits, e.detail];
 				}}
+				on:visitDeleted={(e) => {
+					// Remove the visit from the array
+					transportation.visits = (transportation.visits || []).filter(v => v.id !== e.detail);
+				}}
 			/>
 		{/if}
 		{#if steps[2].selected}
