@@ -600,6 +600,18 @@
 									</div>
 								</div>
 							{/if}
+
+							<!-- Tags -->
+							{#if lodging.tags && lodging.tags.length > 0}
+								<div>
+									<div class="text-sm opacity-70 mb-1">{$t('adventures.tags')}</div>
+									<div class="flex flex-wrap gap-1">
+										{#each lodging.tags as tag}
+											<span class="badge badge-sm badge-outline">{tag}</span>
+										{/each}
+									</div>
+								</div>
+							{/if}
 						</div>
 					</div>
 				</div>
