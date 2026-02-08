@@ -381,24 +381,22 @@
 						</div>
 
 						<!-- Public Toggle -->
-						{#if !locationToEdit || (locationToEdit.collections && locationToEdit.collections.length === 0)}
-							<div class="form-control">
-								<label class="label cursor-pointer justify-start gap-4" for="is_public">
-									<input
-										type="checkbox"
-										class="toggle toggle-primary"
-										id="is_public"
-										bind:checked={location.is_public}
-									/>
-									<div>
-										<span class="label-text font-medium">{$t('adventures.public_location')}</span>
-										<p class="text-sm text-base-content/60">
-											{$t('adventures.public_location_description')}
-										</p>
-									</div>
-								</label>
+					<div class="form-control">
+						<label class="label cursor-pointer justify-start gap-4" for="is_public">
+							<input
+								type="checkbox"
+								class="toggle toggle-primary"
+								id="is_public"
+								bind:checked={location.is_public}
+							/>
+							<div>
+								<span class="label-text font-medium">{$t('adventures.public_location')}</span>
+								<p class="text-sm text-base-content/60">
+									{$t('adventures.public_location_description')}
+								</p>
 							</div>
-						{/if}
+						</label>
+					</div>
 
 						<!-- Description Field -->
 						<div class="form-control">
