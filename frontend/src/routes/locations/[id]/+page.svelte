@@ -172,6 +172,19 @@
 {#if isEditModalOpen}
 	<NewLocationModal
 		on:close={() => (isEditModalOpen = false)}
+		on:save={async () => {
+			// Refresh history after save in collaborative mode
+			if (data.collaborativeMode && adventure.id) {
+				try {
+					const res = await fetch(`/api/locations/${adventure.id}/history/`);
+					if (res.ok) {
+						history = await res.json();
+					}
+				} catch (e) {
+					console.error('Failed to refresh history:', e);
+				}
+			}
+		}}
 		user={data.user}
 		locationToEdit={adventure}
 		bind:location={adventure}
