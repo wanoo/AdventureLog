@@ -73,7 +73,7 @@ class Command(BaseCommand):
         visits_with_coords = 0
         visits_with_changes = 0
 
-        for visit in visits_queryset.iterator():
+        for visit in visits_queryset:
             visits_processed += 1
 
             lat, lon = _get_visit_coordinates(visit)
