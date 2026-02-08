@@ -809,14 +809,20 @@ class TransportationSerializer(CustomModelSerializer):
         return None
 
     def get_travel_duration_minutes(self, obj):
-        if not obj.date or not obj.end_date:
+        """Calculate travel duration from the first visit's start and end dates."""
+        # Get the first visit with both start and end dates
+        visit = obj.visits.filter(start_date__isnull=False, end_date__isnull=False).first()
+        if not visit:
             return None
 
-        if self._is_all_day(obj.date) and self._is_all_day(obj.end_date):
+        start_date = visit.start_date
+        end_date = visit.end_date
+
+        if self._is_all_day(start_date) and self._is_all_day(end_date):
             return None
 
         try:
-            total_minutes = int((obj.end_date - obj.date).total_seconds() // 60)
+            total_minutes = int((end_date - start_date).total_seconds() // 60)
             return total_minutes if total_minutes >= 0 else None
         except Exception:
             logger.warning(
