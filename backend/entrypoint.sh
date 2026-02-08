@@ -38,8 +38,7 @@ done
 # run sql commands
 # psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" -f /app/backend/init-postgis.sql
 
-# Create and apply Django migrations
-python manage.py makemigrations --noinput
+# Apply Django migrations
 python manage.py migrate
 
 # Create superuser if environment variables are set and there are no users present at all.
