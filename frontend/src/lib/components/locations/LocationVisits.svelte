@@ -895,28 +895,33 @@
 					<!-- Rating -->
 					<div class="mt-4">
 						<label class="label-text text-sm font-medium" for="visit-rating"
-							>{$t('adventures.rating')}</label
+							>{$t('adventures.rating')} (0-5)</label
 						>
-						<div class="rating rating-lg mt-1">
-							{#each [1, 2, 3, 4, 5] as star}
-								<input
-									type="radio"
-									name="visit-rating"
-									class="mask mask-star-2 bg-warning"
-									checked={visitRating === star}
-									on:click={() => visitRating = visitRating === star ? null : star}
-								/>
-							{/each}
+						<div class="flex items-center gap-2 mt-1">
+							<input
+								id="visit-rating"
+								type="number"
+								step="0.1"
+								min="0"
+								max="5"
+								class="input input-bordered w-24"
+								placeholder="3.5"
+								bind:value={visitRating}
+							/>
+							{#if visitRating !== null && visitRating !== undefined}
+								<div class="rating rating-sm">
+									{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
+										<input
+											type="radio"
+											name="visit-rating-preview"
+											class="mask mask-star-2 bg-warning"
+											checked={star <= Math.round(visitRating ?? 0)}
+											disabled
+										/>
+									{/each}
+								</div>
+							{/if}
 						</div>
-						{#if visitRating}
-							<button
-								type="button"
-								class="btn btn-ghost btn-xs ml-2"
-								on:click={() => visitRating = null}
-							>
-								{$t('adventures.clear')}
-							</button>
-						{/if}
 					</div>
 
 					<!-- Add Visit Button -->
@@ -1015,11 +1020,12 @@
 																type="radio"
 																name="rating-list-{visit.id}"
 																class="mask mask-star-2 bg-warning"
-																checked={star <= (visit.rating ?? 0)}
+																checked={star <= Math.round(visit.rating ?? 0)}
 																disabled
 															/>
 														{/each}
 													</div>
+													<span class="text-xs text-base-content/70">({visit.rating})</span>
 												</div>
 											{/if}
 
