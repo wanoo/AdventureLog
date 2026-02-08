@@ -314,7 +314,7 @@ class VisitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Visit
-        fields = ['id', 'start_date', 'end_date', 'timezone', 'notes', 'activities', 'location', 'transportation', 'lodging', 'created_at', 'updated_at', 'user', 'user_username']
+        fields = ['id', 'start_date', 'end_date', 'timezone', 'notes', 'rating', 'activities', 'location', 'transportation', 'lodging', 'created_at', 'updated_at', 'user', 'user_username']
         read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'user_username']
 
     def create(self, validated_data):

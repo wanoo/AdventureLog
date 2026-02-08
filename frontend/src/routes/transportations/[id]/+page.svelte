@@ -571,8 +571,35 @@
 											<div class="card bg-base-100 shadow">
 												<div class="card-body p-4">
 													{#if visit.user_username}
-														<div class="text-xs opacity-60 mb-2">
-															{$t('adventures.added_by')} <a href="/profile/{visit.user_username}" class="font-semibold link link-hover link-primary">{visit.user_username}</a>
+														<div class="flex items-center justify-between mb-2">
+															<div class="text-xs opacity-60">
+																{$t('adventures.added_by')} <a href="/profile/{visit.user_username}" class="font-semibold link link-hover link-primary">{visit.user_username}</a>
+															</div>
+															{#if visit.rating !== null && visit.rating !== undefined}
+																<div class="rating rating-sm">
+																	{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
+																		<input
+																			type="radio"
+																			class="mask mask-star-2 bg-warning"
+																			checked={star <= (visit.rating ?? 0)}
+																			disabled
+																		/>
+																	{/each}
+																</div>
+															{/if}
+														</div>
+													{:else if visit.rating !== null && visit.rating !== undefined}
+														<div class="flex justify-end mb-2">
+															<div class="rating rating-sm">
+																{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
+																	<input
+																		type="radio"
+																		class="mask mask-star-2 bg-warning"
+																		checked={star <= (visit.rating ?? 0)}
+																		disabled
+																	/>
+																{/each}
+															</div>
 														</div>
 													{/if}
 													{#if isAllDay(visit.start_date)}

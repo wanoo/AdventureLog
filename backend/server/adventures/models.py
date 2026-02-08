@@ -132,6 +132,7 @@ class Visit(models.Model):
     end_date = models.DateTimeField(null=True, blank=True)
     timezone = models.CharField(max_length=50, choices=[(tz, tz) for tz in TIMEZONES], null=True, blank=True)
     notes = models.TextField(blank=True, null=True)
+    rating = models.FloatField(blank=True, null=True)  # User's rating for this visit
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

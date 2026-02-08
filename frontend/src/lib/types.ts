@@ -495,6 +495,7 @@ export type Visit = {
 	end_date: string;
 	notes: string;
 	timezone: string | null;
+	rating?: number | null;
 	activities: Activity[];
 	location?: string | null;
 	transportation?: string | null;
