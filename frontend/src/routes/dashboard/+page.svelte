@@ -13,6 +13,9 @@
 	import MapMarkerStarOutline from '~icons/mdi/map-marker-star-outline';
 	import CalendarClock from '~icons/mdi/calendar-clock';
 	import Plus from '~icons/mdi/plus';
+	import Road from '~icons/mdi/road-variant';
+	import Moon from '~icons/mdi/moon-waning-crescent';
+	import MapMarkerCheck from '~icons/mdi/map-marker-check';
 
 	export let data: PageData;
 
@@ -158,6 +161,74 @@
 			</div>
 		</div>
 
+		<!-- Second Stats Row -->
+		<div
+			class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 mb-12"
+		>
+			<!-- Places Visited -->
+			<div
+				class="stat-card card bg-gradient-to-br from-secondary/10 to-secondary/5 shadow-xl border border-secondary/20 hover:shadow-2xl transition-all duration-300"
+			>
+				<div class="card-body p-6">
+					<div class="flex items-center justify-between">
+						<div>
+							<div class="stat-title text-secondary/70 font-medium">
+								{$t('dashboard.places_visited')}
+							</div>
+							<div class="stat-value text-3xl font-bold text-secondary">
+								{stats.visited_location_count || 0}
+							</div>
+						</div>
+						<div class="p-4 bg-secondary/20 rounded-2xl">
+							<MapMarkerCheck class="w-8 h-8 text-secondary" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Total Transportation KM -->
+			<div
+				class="stat-card card bg-gradient-to-br from-warning/10 to-warning/5 shadow-xl border border-warning/20 hover:shadow-2xl transition-all duration-300"
+			>
+				<div class="card-body p-6">
+					<div class="flex items-center justify-between">
+						<div>
+							<div class="stat-title text-warning/70 font-medium">
+								{$t('dashboard.total_transportation_km')}
+							</div>
+							<div class="stat-value text-3xl font-bold text-warning">
+								{stats.total_transportation_km?.toLocaleString() || 0} km
+							</div>
+						</div>
+						<div class="p-4 bg-warning/20 rounded-2xl">
+							<Road class="w-8 h-8 text-warning" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Total Lodging Nights -->
+			<div
+				class="stat-card card bg-gradient-to-br from-accent/10 to-accent/5 shadow-xl border border-accent/20 hover:shadow-2xl transition-all duration-300"
+			>
+				<div class="card-body p-6">
+					<div class="flex items-center justify-between">
+						<div>
+							<div class="stat-title text-accent/70 font-medium">
+								{$t('dashboard.total_lodging_nights')}
+							</div>
+							<div class="stat-value text-3xl font-bold text-accent">
+								{stats.total_lodging_nights || 0}
+							</div>
+						</div>
+						<div class="p-4 bg-accent/20 rounded-2xl">
+							<Moon class="w-8 h-8 text-accent" />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- Recent Adventures Section -->
 		{#if recentAdventures.length > 0}
 			<div class="mb-8">
@@ -196,7 +267,7 @@
 							<Airplane class="w-6 h-6 text-warning" />
 						</div>
 						<div>
-							<h2 class="text-3xl font-bold">{$t('navbar.transportations')}</h2>
+							<h2 class="text-3xl font-bold">{$t('adventures.transportations')}</h2>
 							<p class="text-base-content/60">{$t('dashboard.recent_travel_plans')}</p>
 						</div>
 					</div>
@@ -225,7 +296,7 @@
 							<Bed class="w-6 h-6 text-secondary" />
 						</div>
 						<div>
-							<h2 class="text-3xl font-bold">{$t('navbar.lodging')}</h2>
+							<h2 class="text-3xl font-bold">{$t('adventures.lodging')}</h2>
 							<p class="text-base-content/60">{$t('dashboard.recent_accommodations')}</p>
 						</div>
 					</div>

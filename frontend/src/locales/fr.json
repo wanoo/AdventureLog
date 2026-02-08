@@ -946,7 +946,10 @@
 		"welcome_text_2": "Aventures jusqu'à présent",
 		"welcome_text_3": "Continuez à explorer et à documenter vos voyages!",
 		"recent_travel_plans": "Vos récents plans de voyage",
-		"recent_accommodations": "Vos hébergements récents"
+		"recent_accommodations": "Vos hébergements récents",
+		"places_visited": "Lieux visités",
+		"total_transportation_km": "Distance parcourue",
+		"total_lodging_nights": "Nuits passées"
 	},
 	"immich": {
 		"api_key": "Clé d'API Immich",
