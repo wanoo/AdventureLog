@@ -3,8 +3,11 @@ from django.dispatch import receiver
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from threading import local
+import logging
 
-from adventures.models import Location
+from adventures.models import Location, Visit
+
+logger = logging.getLogger(__name__)
 
 # Thread-local storage for current user (used by audit logging)
 _thread_locals = local()
@@ -179,3 +182,92 @@ def log_delete_to_audit(sender, instance, **kwargs):
         object_repr=str(instance)[:200],
         changes={}
     )
+
+
+# ---------------------------------------------------------------------------
+# Auto-mark cities/regions as visited when a Visit is created
+# ---------------------------------------------------------------------------
+
+def _get_visit_coordinates(visit):
+    """
+    Get lat/lon from the visit's parent (location, transportation, or lodging).
+    For transportation, uses destination coordinates.
+    """
+    if visit.location:
+        return visit.location.latitude, visit.location.longitude
+    elif visit.transportation:
+        # Use destination as the "visited" place
+        return visit.transportation.destination_latitude, visit.transportation.destination_longitude
+    elif visit.lodging:
+        return visit.lodging.latitude, visit.lodging.longitude
+    return None, None
+
+
+def mark_city_region_visited(user, lat, lon):
+    """
+    Given coordinates, find the city/region and mark them as visited for the user.
+    Returns tuple of (city_marked, region_marked) booleans.
+    """
+    from worldtravel.models import VisitedCity, VisitedRegion
+    from adventures.geocoding import reverse_geocode
+
+    if lat is None or lon is None:
+        return False, False
+
+    try:
+        geo_data = reverse_geocode(float(lat), float(lon), user)
+    except Exception as e:
+        logger.warning(f"Reverse geocode failed for ({lat}, {lon}): {e}")
+        return False, False
+
+    if 'error' in geo_data:
+        logger.debug(f"Reverse geocode returned error: {geo_data['error']}")
+        return False, False
+
+    city_marked = False
+    region_marked = False
+
+    # Mark region as visited
+    region_id = geo_data.get('region_id')
+    if region_id:
+        from worldtravel.models import Region
+        try:
+            region = Region.objects.get(id=region_id)
+            if not VisitedRegion.objects.filter(user=user, region=region).exists():
+                VisitedRegion.objects.create(user=user, region=region)
+                region_marked = True
+                logger.info(f"Auto-marked region {region.name} as visited for user {user.username}")
+        except Region.DoesNotExist:
+            pass
+
+    # Mark city as visited
+    city_id = geo_data.get('city_id')
+    if city_id:
+        from worldtravel.models import City
+        try:
+            city = City.objects.get(id=city_id)
+            if not VisitedCity.objects.filter(user=user, city=city).exists():
+                VisitedCity.objects.create(user=user, city=city)
+                city_marked = True
+                logger.info(f"Auto-marked city {city.name} as visited for user {user.username}")
+        except City.DoesNotExist:
+            pass
+
+    return city_marked, region_marked
+
+
+@receiver(post_save, sender=Visit)
+def auto_mark_visited_on_visit_create(sender, instance, created, **kwargs):
+    """
+    When a Visit is created, automatically mark the corresponding city/region as visited.
+    """
+    if not created:
+        return
+
+    user = instance.user
+    if not user:
+        return
+
+    lat, lon = _get_visit_coordinates(instance)
+    if lat is not None and lon is not None:
+        mark_city_region_visited(user, lat, lon)
