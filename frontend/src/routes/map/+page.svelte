@@ -155,6 +155,7 @@
 		name: string;
 		icon: string;
 		subInfo?: string;
+		direction?: 'departure' | 'arrival'; // For mixed transport groups
 	};
 
 	// Unified pin type for clustering
@@ -184,7 +185,7 @@
 				name: pin.name,
 				latitude: pin.latitude,
 				longitude: pin.longitude,
-				is_visited: pin.is_visited,
+				is_visited: pin.is_visited ?? false,
 				icon: pin.category?.icon || '📍',
 				pinType: 'location',
 				pinColor: 'blue'
@@ -207,116 +208,78 @@
 			}
 		}
 
-		// Group transportation pins by coordinates
-		const departureGroups: Map<string, { locationName: string; transports: typeof filteredTransportationPins }> = new Map();
-		const arrivalGroups: Map<string, { locationName: string; transports: typeof filteredTransportationPins }> = new Map();
+		// Group ALL transportation pins by coordinates (departures and arrivals together)
+		type TransportEntry = {
+			transport: typeof filteredTransportationPins[0];
+			direction: 'departure' | 'arrival';
+			routeInfo: string;
+		};
+		const transportGroups: Map<string, { locationName: string; entries: TransportEntry[] }> = new Map();
 
 		for (const transport of filteredTransportationPins) {
+			// Add departure point
 			if (transport.origin_latitude && transport.origin_longitude) {
 				const key = `${transport.origin_latitude},${transport.origin_longitude}`;
-				if (!departureGroups.has(key)) {
-					departureGroups.set(key, { locationName: transport.from_location || '', transports: [] });
+				if (!transportGroups.has(key)) {
+					transportGroups.set(key, { locationName: transport.from_location || '', entries: [] });
 				}
-				departureGroups.get(key)!.transports.push(transport);
+				const routeInfo = transport.to_location ? `→ ${transport.to_location}` : '';
+				transportGroups.get(key)!.entries.push({ transport, direction: 'departure', routeInfo });
 			}
+			// Add arrival point
 			if (transport.destination_latitude && transport.destination_longitude) {
 				const key = `${transport.destination_latitude},${transport.destination_longitude}`;
-				if (!arrivalGroups.has(key)) {
-					arrivalGroups.set(key, { locationName: transport.to_location || '', transports: [] });
+				if (!transportGroups.has(key)) {
+					transportGroups.set(key, { locationName: transport.to_location || '', entries: [] });
 				}
-				arrivalGroups.get(key)!.transports.push(transport);
+				const routeInfo = transport.from_location ? `${transport.from_location} →` : '';
+				transportGroups.get(key)!.entries.push({ transport, direction: 'arrival', routeInfo });
 			}
 		}
 
-		// Add grouped departure pins
-		for (const [coordKey, group] of departureGroups) {
+		// Add transport pins (grouped or single)
+		for (const [coordKey, group] of transportGroups) {
 			const [lat, lng] = coordKey.split(',');
-			const transports = group.transports;
-			const hasVisited = transports.some(t => t.is_visited);
+			const entries = group.entries;
+			const hasVisited = entries.some(e => e.transport.is_visited);
 
-			if (transports.length === 1) {
-				// Single transport - show as before
-				const transport = transports[0];
+			if (entries.length === 1) {
+				// Single transport at this location
+				const entry = entries[0];
+				const transport = entry.transport;
 				const routeInfo = transport.from_location && transport.to_location
 					? `${transport.from_location} → ${transport.to_location}`
 					: transport.from_location || transport.to_location || '';
 				unified.push({
-					id: `${transport.id}-dep`,
+					id: `${transport.id}-${entry.direction === 'departure' ? 'dep' : 'arr'}`,
 					name: transport.name,
 					latitude: lat,
 					longitude: lng,
 					is_visited: transport.is_visited,
 					icon: getTransportationIcon(transport.type),
-					pinType: 'transport-departure',
+					pinType: entry.direction === 'departure' ? 'transport-departure' : 'transport-arrival',
 					pinColor: 'amber',
 					subInfo: routeInfo
 				});
 			} else {
-				// Multiple transports at same location
-				const groupedItems: GroupedItem[] = transports.map(t => ({
-					id: t.id,
-					name: t.name,
-					icon: getTransportationIcon(t.type),
-					subInfo: t.to_location ? `→ ${t.to_location}` : ''
+				// Multiple transports at same location (mix of departures and arrivals)
+				const groupedItems: GroupedItem[] = entries.map(e => ({
+					id: e.transport.id,
+					name: e.transport.name,
+					icon: getTransportationIcon(e.transport.type),
+					subInfo: e.routeInfo,
+					direction: e.direction
 				}));
-				// Use the most common transport type icon, or first one
-				const primaryIcon = getTransportationIcon(transports[0].type);
+				// Use the first transport's icon
+				const primaryIcon = getTransportationIcon(entries[0].transport.type);
 				unified.push({
-					id: `dep-group-${coordKey}`,
-					name: group.locationName || $t('transportation.departure'),
+					id: `transport-group-${coordKey}`,
+					name: group.locationName || $t('navbar.transportation'),
 					latitude: lat,
 					longitude: lng,
 					is_visited: hasVisited,
 					icon: primaryIcon,
-					pinType: 'transport-departure',
-					pinColor: 'amber',
-					locationName: group.locationName,
-					groupedItems
-				});
-			}
-		}
-
-		// Add grouped arrival pins
-		for (const [coordKey, group] of arrivalGroups) {
-			const [lat, lng] = coordKey.split(',');
-			const transports = group.transports;
-			const hasVisited = transports.some(t => t.is_visited);
-
-			if (transports.length === 1) {
-				// Single transport - show as before
-				const transport = transports[0];
-				const routeInfo = transport.from_location && transport.to_location
-					? `${transport.from_location} → ${transport.to_location}`
-					: transport.from_location || transport.to_location || '';
-				unified.push({
-					id: `${transport.id}-arr`,
-					name: transport.name,
-					latitude: lat,
-					longitude: lng,
-					is_visited: transport.is_visited,
-					icon: getTransportationIcon(transport.type),
-					pinType: 'transport-arrival',
-					pinColor: 'amber',
-					subInfo: routeInfo
-				});
-			} else {
-				// Multiple transports at same location
-				const groupedItems: GroupedItem[] = transports.map(t => ({
-					id: t.id,
-					name: t.name,
-					icon: getTransportationIcon(t.type),
-					subInfo: t.from_location ? `${t.from_location} →` : ''
-				}));
-				// Use the most common transport type icon, or first one
-				const primaryIcon = getTransportationIcon(transports[0].type);
-				unified.push({
-					id: `arr-group-${coordKey}`,
-					name: group.locationName || $t('transportation.arrival'),
-					latitude: lat,
-					longitude: lng,
-					is_visited: hasVisited,
-					icon: primaryIcon,
-					pinType: 'transport-arrival',
+					pinType: 'transport-departure', // Use departure as default type for grouped
 					pinColor: 'amber',
 					locationName: group.locationName,
 					groupedItems
@@ -1181,6 +1144,9 @@
 																				class="flex items-center gap-2 text-xs py-1.5 px-1 -mx-1 w-full text-left rounded hover:bg-base-200 transition-colors cursor-pointer border-b border-base-200 last:border-0"
 																				on:click|stopPropagation={() => goto(`/transportations/${item.id}`)}
 																			>
+																				<span class="text-base-content/50" title={item.direction === 'departure' ? $t('transportation.departure') : $t('transportation.arrival')}>
+																					{item.direction === 'departure' ? '↗' : '↙'}
+																				</span>
 																				<span>{item.icon}</span>
 																				<span class="flex-1 truncate font-medium">{item.name}</span>
 																				{#if item.subInfo}
