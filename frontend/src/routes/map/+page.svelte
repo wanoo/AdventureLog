@@ -22,7 +22,10 @@
 	import ActivityIcon from '~icons/mdi/run-fast';
 	import SearchIcon from '~icons/mdi/magnify';
 	import HotelIcon from '~icons/mdi/bed';
+	import CategoryIcon from '~icons/mdi/tag';
 	import TransportIcon from '~icons/mdi/airplane';
+	import ChevronDown from '~icons/mdi/chevron-down';
+	import ChevronUp from '~icons/mdi/chevron-up';
 	import FullMap from '$lib/components/map/FullMap.svelte';
 
 	export let data;
@@ -49,15 +52,37 @@
 	let transportationPins: TransportationPin[] = data.props.transportationPins || [];
 	let activities: Activity[] = [];
 
-	// Display toggles for new item types
+	// Display toggles
 	let showLodging: boolean = true;
+	let showLocations: boolean = true;
 	let showTransportation: boolean = true;
 
+	// Sub-filter expansion toggles
+	let expandLocationFilters: boolean = false;
+	let expandLodgingFilters: boolean = false;
+	let expandTransportationFilters: boolean = false;
+
+	// Category and type filters
+	let selectedCategories: Set<string> = new Set(); // Empty = all categories
+	let selectedLodgingTypes: Set<string> = new Set(); // Empty = all types
+	let selectedTransportationTypes: Set<string> = new Set(); // Empty = all types
+
 	let filteredPins = pins;
+	let filteredLodgingPins = lodgingPins;
+	let filteredTransportationPins = transportationPins;
 
 	let showVisited: boolean = true;
 	let showPlanned: boolean = true;
 	let searchQuery: string = '';
+
+	// Get unique categories from pins
+	$: availableCategories = [...new Set(pins.map((pin) => pin.category?.display_name).filter(Boolean))] as string[];
+
+	// Get unique lodging types
+	$: availableLodgingTypes = [...new Set(lodgingPins.map((l) => l.type).filter(Boolean))] as string[];
+
+	// Get unique transportation types
+	$: availableTransportationTypes = [...new Set(transportationPins.map((t) => t.type).filter(Boolean))] as string[];
 
 	let newMarker: { lngLat: any } | null = null;
 	let newLongitude: number | null = null;
@@ -138,25 +163,39 @@
 		return feature && feature.properties ? feature.properties : null;
 	}
 
+	// Location pins are blue with border indicating visited status
 	function getVisitStatusClass(status: VisitStatus): string {
+		// All location pins are blue, border style indicates visited status
+		const baseClass = 'bg-gradient-to-br from-blue-400 to-blue-600';
 		switch (status) {
 			case 'visited':
-				return 'bg-gradient-to-br from-emerald-400 to-emerald-600';
+				return `${baseClass} border-[3px] border-white`;
 			case 'planned':
-				return 'bg-gradient-to-br from-blue-400 to-blue-600';
+				return `${baseClass} border-[3px] border-dashed border-white/60`;
 			default:
-				return 'bg-gray-200';
+				return baseClass;
 		}
 	}
 
 	function markerClassResolver(props: { visitStatus?: string } | null): string {
-		if (!props?.visitStatus) return '';
+		if (!props?.visitStatus) return 'bg-gradient-to-br from-blue-400 to-blue-600';
 		return getVisitStatusClass(props.visitStatus as VisitStatus);
 	}
 
 	function markerLabelResolver(props: { categoryIcon?: string } | null): string {
 		if (!props) return '📍';
 		return props.categoryIcon || '📍';
+	}
+
+	// Helper functions to safely get icons with type checking
+	function getLodgingIcon(type: string | null | undefined): string {
+		if (!type) return '🏨';
+		return (LODGING_TYPES_ICONS as Record<string, string>)[type] || '🏨';
+	}
+
+	function getTransportationIcon(type: string | null | undefined): string {
+		if (!type) return '🚗';
+		return (TRANSPORTATION_TYPES_ICONS as Record<string, string>)[type] || '🚗';
 	}
 
 	async function handleViewDetails(pinId: string) {
@@ -167,19 +206,76 @@
 	$: totalAdventures = pins.length;
 	$: visitedAdventures = pins.filter((pin) => pin.is_visited).length;
 	$: plannedAdventures = pins.filter((pin) => !pin.is_visited).length;
+	$: totalLodging = lodgingPins.length;
+	$: visitedLodging = lodgingPins.filter((l) => l.is_visited).length;
+	$: plannedLodging = lodgingPins.filter((l) => !l.is_visited).length;
 	$: totalRegions = visitedRegions.length;
 
 	// Get unique categories for filtering
 	$: categories = [...new Set(pins.map((pin) => pin.category?.display_name).filter(Boolean))];
 
-	// Updates the filtered pins based on the checkboxes and search query
+	// Toggle category selection
+	function toggleCategory(category: string) {
+		if (selectedCategories.has(category)) {
+			selectedCategories.delete(category);
+		} else {
+			selectedCategories.add(category);
+		}
+		selectedCategories = selectedCategories; // Trigger reactivity
+	}
+
+	// Toggle lodging type selection
+	function toggleLodgingType(type: string) {
+		if (selectedLodgingTypes.has(type)) {
+			selectedLodgingTypes.delete(type);
+		} else {
+			selectedLodgingTypes.add(type);
+		}
+		selectedLodgingTypes = selectedLodgingTypes; // Trigger reactivity
+	}
+
+	// Toggle transportation type selection
+	function toggleTransportationType(type: string) {
+		if (selectedTransportationTypes.has(type)) {
+			selectedTransportationTypes.delete(type);
+		} else {
+			selectedTransportationTypes.add(type);
+		}
+		selectedTransportationTypes = selectedTransportationTypes; // Trigger reactivity
+	}
+
+	// Clear all category filters
+	function clearCategoryFilters() {
+		selectedCategories = new Set();
+	}
+
+	// Clear all lodging type filters
+	function clearLodgingTypeFilters() {
+		selectedLodgingTypes = new Set();
+	}
+
+	// Clear all transportation type filters
+	function clearTransportationTypeFilters() {
+		selectedTransportationTypes = new Set();
+	}
+
+	// Updates the filtered pins based on the checkboxes, categories, and search query
 	$: {
 		const query = searchQuery.toLowerCase().trim();
 		filteredPins = pins.filter((pin) => {
+			// Filter by show locations toggle
+			if (!showLocations) return false;
+
 			// Filter by visited/planned status
 			const statusMatch =
 				(showVisited && pin.is_visited === true) || (showPlanned && pin.is_visited !== true);
 			if (!statusMatch) return false;
+
+			// Filter by selected categories (if any selected)
+			if (selectedCategories.size > 0) {
+				const categoryName = pin.category?.display_name;
+				if (!categoryName || !selectedCategories.has(categoryName)) return false;
+			}
 
 			// Filter by search query
 			if (!query) return true;
@@ -193,6 +289,57 @@
 		if (query && filteredPins.length > 0 && typeof window !== 'undefined') {
 			zoomToFilteredPins();
 		}
+	}
+
+	// Filter lodging pins
+	$: {
+		const query = searchQuery.toLowerCase().trim();
+		filteredLodgingPins = lodgingPins.filter((lodging) => {
+			// Filter by show lodging toggle
+			if (!showLodging) return false;
+
+			// Filter by visited/planned status
+			const statusMatch =
+				(showVisited && lodging.is_visited === true) || (showPlanned && lodging.is_visited !== true);
+			if (!statusMatch) return false;
+
+			// Filter by selected lodging types (if any selected)
+			if (selectedLodgingTypes.size > 0) {
+				if (!lodging.type || !selectedLodgingTypes.has(lodging.type)) return false;
+			}
+
+			// Filter by search query
+			if (!query) return true;
+			return lodging.name?.toLowerCase().includes(query) || lodging.type?.toLowerCase().includes(query);
+		});
+	}
+
+	// Filter transportation pins
+	$: {
+		const query = searchQuery.toLowerCase().trim();
+		filteredTransportationPins = transportationPins.filter((transport) => {
+			// Filter by show transportation toggle
+			if (!showTransportation) return false;
+
+			// Filter by visited/planned status
+			const statusMatch =
+				(showVisited && transport.is_visited === true) || (showPlanned && transport.is_visited !== true);
+			if (!statusMatch) return false;
+
+			// Filter by selected transportation types (if any selected)
+			if (selectedTransportationTypes.size > 0) {
+				if (!transport.type || !selectedTransportationTypes.has(transport.type)) return false;
+			}
+
+			// Filter by search query
+			if (!query) return true;
+			return (
+				transport.name?.toLowerCase().includes(query) ||
+				transport.type?.toLowerCase().includes(query) ||
+				transport.from_location?.toLowerCase().includes(query) ||
+				transport.to_location?.toLowerCase().includes(query)
+			);
+		});
 	}
 
 	// Reset the longitude and latitude when the newMarker is set to null
@@ -833,74 +980,107 @@
 									<DefaultMarker lngLat={newMarker.lngLat} />
 								{/if}
 
-								<!-- Lodging Pins -->
-								{#if showLodging}
-									{#each lodgingPins as lodging}
-										{#if lodging.latitude && lodging.longitude}
-											<Marker
-												lngLat={[Number(lodging.longitude), Number(lodging.latitude)]}
-												class="grid h-8 w-8 place-items-center rounded-full border-2 border-white shadow-lg cursor-pointer transition-transform hover:scale-110 {lodging.is_visited ? 'bg-gradient-to-br from-purple-400 to-purple-600' : 'bg-gradient-to-br from-purple-200 to-purple-400'}"
-											>
-												<span class="text-base">{LODGING_TYPES_ICONS[lodging.type] || '🏨'}</span>
-												<Popup openOn="click" offset={[0, -10]}>
-													<div class="space-y-2 min-w-48">
-														<div class="text-lg text-black font-bold">{lodging.name}</div>
-														<div class="flex gap-2">
-															<div class="badge {lodging.is_visited ? 'badge-success' : 'badge-info'} badge-sm">
-																{lodging.is_visited ? $t('adventures.visited') : $t('adventures.planned')}
-															</div>
-															<div class="badge badge-ghost badge-sm">{lodging.type}</div>
+								<!-- Lodging Pins (Pink) -->
+								{#each filteredLodgingPins as lodging}
+									{#if lodging.latitude && lodging.longitude}
+										<Marker
+											lngLat={[Number(lodging.longitude), Number(lodging.latitude)]}
+											class="grid h-8 w-8 place-items-center rounded-full shadow-lg cursor-pointer transition-transform hover:scale-110 bg-gradient-to-br from-pink-400 to-pink-600 {lodging.is_visited ? 'border-[3px] border-white' : 'border-[3px] border-dashed border-white/60'}"
+										>
+											<span class="text-base">{getLodgingIcon(lodging.type)}</span>
+											<Popup openOn="click" offset={[0, -10]}>
+												<div class="space-y-2 min-w-48">
+													<div class="text-lg text-black font-bold">{lodging.name}</div>
+													<div class="flex gap-2">
+														<div class="badge {lodging.is_visited ? 'badge-success' : 'badge-info'} badge-sm">
+															{lodging.is_visited ? $t('adventures.visited') : $t('adventures.planned')}
 														</div>
-														<button
-															type="button"
-															class="btn btn-primary btn-sm w-full"
-															on:click={() => goto(`/lodging/${lodging.id}`)}
-														>
-															{$t('map.view_details')}
-														</button>
+														<div class="badge badge-ghost badge-sm">{lodging.type}</div>
 													</div>
-												</Popup>
-											</Marker>
-										{/if}
-									{/each}
-								{/if}
+													<button
+														type="button"
+														class="btn btn-primary btn-sm w-full"
+														on:click={() => goto(`/lodging/${lodging.id}`)}
+													>
+														{$t('map.view_details')}
+													</button>
+												</div>
+											</Popup>
+										</Marker>
+									{/if}
+								{/each}
 
-								<!-- Transportation Pins (origin points) -->
-								{#if showTransportation}
-									{#each transportationPins as transport}
-										{#if transport.origin_latitude && transport.origin_longitude}
-											<Marker
-												lngLat={[Number(transport.origin_longitude), Number(transport.origin_latitude)]}
-												class="grid h-8 w-8 place-items-center rounded-full border-2 border-white shadow-lg cursor-pointer transition-transform hover:scale-110 {transport.is_visited ? 'bg-gradient-to-br from-orange-400 to-orange-600' : 'bg-gradient-to-br from-orange-200 to-orange-400'}"
-											>
-												<span class="text-base">{TRANSPORTATION_TYPES_ICONS[transport.type] || '🚗'}</span>
-												<Popup openOn="click" offset={[0, -10]}>
-													<div class="space-y-2 min-w-48">
-														<div class="text-lg text-black font-bold">{transport.name}</div>
-														{#if transport.from_location && transport.to_location}
-															<div class="text-sm text-gray-600">
-																{transport.from_location} → {transport.to_location}
-															</div>
-														{/if}
-														<div class="flex gap-2">
-															<div class="badge {transport.is_visited ? 'badge-success' : 'badge-info'} badge-sm">
-																{transport.is_visited ? $t('adventures.visited') : $t('adventures.planned')}
-															</div>
-															<div class="badge badge-ghost badge-sm">{transport.type}</div>
+								<!-- Transportation Pins (Yellow) - Both Departure AND Arrival -->
+								{#each filteredTransportationPins as transport}
+									<!-- Departure Pin -->
+									{#if transport.origin_latitude && transport.origin_longitude}
+										<Marker
+											lngLat={[Number(transport.origin_longitude), Number(transport.origin_latitude)]}
+											class="grid h-8 w-8 place-items-center rounded-full shadow-lg cursor-pointer transition-transform hover:scale-110 bg-gradient-to-br from-amber-400 to-amber-600 {transport.is_visited ? 'border-[3px] border-white' : 'border-[3px] border-dashed border-white/60'}"
+										>
+											<span class="text-base">{getTransportationIcon(transport.type)}</span>
+											<Popup openOn="click" offset={[0, -10]}>
+												<div class="space-y-2 min-w-48">
+													<div class="text-lg text-black font-bold">{transport.name}</div>
+													<div class="text-xs text-gray-500 font-medium">{$t('transportation.departure')}</div>
+													{#if transport.from_location}
+														<div class="text-sm text-gray-600">{transport.from_location}</div>
+													{/if}
+													{#if transport.to_location}
+														<div class="text-sm text-gray-600">→ {transport.to_location}</div>
+													{/if}
+													<div class="flex gap-2">
+														<div class="badge {transport.is_visited ? 'badge-success' : 'badge-info'} badge-sm">
+															{transport.is_visited ? $t('adventures.visited') : $t('adventures.planned')}
 														</div>
-														<button
-															type="button"
-															class="btn btn-primary btn-sm w-full"
-															on:click={() => goto(`/transportations/${transport.id}`)}
-														>
-															{$t('map.view_details')}
-														</button>
+														<div class="badge badge-ghost badge-sm">{transport.type}</div>
 													</div>
-												</Popup>
-											</Marker>
-										{/if}
-									{/each}
-								{/if}
+													<button
+														type="button"
+														class="btn btn-primary btn-sm w-full"
+														on:click={() => goto(`/transportations/${transport.id}`)}
+													>
+														{$t('map.view_details')}
+													</button>
+												</div>
+											</Popup>
+										</Marker>
+									{/if}
+									<!-- Arrival Pin -->
+									{#if transport.destination_latitude && transport.destination_longitude}
+										<Marker
+											lngLat={[Number(transport.destination_longitude), Number(transport.destination_latitude)]}
+											class="grid h-8 w-8 place-items-center rounded-full shadow-lg cursor-pointer transition-transform hover:scale-110 bg-gradient-to-br from-amber-400 to-amber-600 {transport.is_visited ? 'border-[3px] border-white' : 'border-[3px] border-dashed border-white/60'}"
+										>
+											<span class="text-base">{getTransportationIcon(transport.type)}</span>
+											<Popup openOn="click" offset={[0, -10]}>
+												<div class="space-y-2 min-w-48">
+													<div class="text-lg text-black font-bold">{transport.name}</div>
+													<div class="text-xs text-gray-500 font-medium">{$t('transportation.arrival')}</div>
+													{#if transport.from_location}
+														<div class="text-sm text-gray-600">{transport.from_location} →</div>
+													{/if}
+													{#if transport.to_location}
+														<div class="text-sm text-gray-600">{transport.to_location}</div>
+													{/if}
+													<div class="flex gap-2">
+														<div class="badge {transport.is_visited ? 'badge-success' : 'badge-info'} badge-sm">
+															{transport.is_visited ? $t('adventures.visited') : $t('adventures.planned')}
+														</div>
+														<div class="badge badge-ghost badge-sm">{transport.type}</div>
+													</div>
+													<button
+														type="button"
+														class="btn btn-primary btn-sm w-full"
+														on:click={() => goto(`/transportations/${transport.id}`)}
+													>
+														{$t('map.view_details')}
+													</button>
+												</div>
+											</Popup>
+										</Marker>
+									{/if}
+								{/each}
 
 								{#each visitedRegions as region}
 									{#if showRegions}
@@ -1023,30 +1203,204 @@
 						</h3>
 
 						<div class="space-y-3">
-							<label class="label cursor-pointer justify-start gap-3">
-								<input
-									type="checkbox"
-									bind:checked={showVisited}
-									class="checkbox checkbox-success checkbox-sm"
-								/>
-								<span class="label-text flex items-center gap-2">
-									<Eye class="w-4 h-4" />
-									{$t('adventures.visited')} ({visitedAdventures})
-								</span>
-							</label>
+							<!-- Visited/Planned Status Filters -->
+							<div class="border-b border-base-300 pb-3 mb-3">
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="checkbox"
+										bind:checked={showVisited}
+										class="checkbox checkbox-success checkbox-sm"
+									/>
+									<span class="label-text flex items-center gap-2">
+										<Eye class="w-4 h-4" />
+										{$t('adventures.visited')}
+										<span class="badge badge-success badge-xs">●</span>
+									</span>
+								</label>
 
-							<label class="label cursor-pointer justify-start gap-3">
-								<input
-									type="checkbox"
-									bind:checked={showPlanned}
-									class="checkbox checkbox-info checkbox-sm"
-								/>
-								<span class="label-text flex items-center gap-2">
-									<Calendar class="w-4 h-4" />
-									{$t('adventures.planned')} ({plannedAdventures})
-								</span>
-							</label>
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="checkbox"
+										bind:checked={showPlanned}
+										class="checkbox checkbox-info checkbox-sm"
+									/>
+									<span class="label-text flex items-center gap-2">
+										<Calendar class="w-4 h-4" />
+										{$t('adventures.planned')}
+										<span class="badge badge-info badge-xs border-dashed">○</span>
+									</span>
+								</label>
+							</div>
 
+							<!-- LOCATIONS (Blue) -->
+							<div class="border-b border-base-300 pb-3">
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="checkbox"
+										bind:checked={showLocations}
+										class="checkbox checkbox-primary checkbox-sm"
+									/>
+									<span class="label-text flex items-center gap-2 flex-1">
+										<PinIcon class="w-4 h-4 text-blue-500" />
+										{$t('navbar.locations')} ({filteredPins.length}/{pins.length})
+									</span>
+									{#if showLocations && availableCategories.length > 0}
+										<button
+											type="button"
+											class="btn btn-ghost btn-xs"
+											on:click={() => (expandLocationFilters = !expandLocationFilters)}
+										>
+											{#if expandLocationFilters}
+												<ChevronUp class="w-4 h-4" />
+											{:else}
+												<ChevronDown class="w-4 h-4" />
+											{/if}
+										</button>
+									{/if}
+								</label>
+
+								{#if showLocations && expandLocationFilters && availableCategories.length > 0}
+									<div class="ml-6 mt-2 space-y-1">
+										{#if selectedCategories.size > 0}
+											<button
+												type="button"
+												class="btn btn-ghost btn-xs text-error"
+												on:click={clearCategoryFilters}
+											>
+												<Clear class="w-3 h-3" />
+												{$t('map.clear_filters')}
+											</button>
+										{/if}
+										<div class="flex flex-wrap gap-1">
+											{#each availableCategories as category}
+												<button
+													type="button"
+													class="badge badge-sm cursor-pointer transition-all {selectedCategories.has(category)
+														? 'badge-primary'
+														: 'badge-ghost hover:badge-primary/50'}"
+													on:click={() => toggleCategory(category)}
+												>
+													{category}
+												</button>
+											{/each}
+										</div>
+									</div>
+								{/if}
+							</div>
+
+							<!-- LODGING (Pink) -->
+							<div class="border-b border-base-300 pb-3">
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="checkbox"
+										bind:checked={showLodging}
+										class="checkbox checkbox-secondary checkbox-sm"
+									/>
+									<span class="label-text flex items-center gap-2 flex-1">
+										<HotelIcon class="w-4 h-4 text-pink-500" />
+										{$t('navbar.lodging')} ({filteredLodgingPins.length}/{lodgingPins.length})
+									</span>
+									{#if showLodging && availableLodgingTypes.length > 0}
+										<button
+											type="button"
+											class="btn btn-ghost btn-xs"
+											on:click={() => (expandLodgingFilters = !expandLodgingFilters)}
+										>
+											{#if expandLodgingFilters}
+												<ChevronUp class="w-4 h-4" />
+											{:else}
+												<ChevronDown class="w-4 h-4" />
+											{/if}
+										</button>
+									{/if}
+								</label>
+
+								{#if showLodging && expandLodgingFilters && availableLodgingTypes.length > 0}
+									<div class="ml-6 mt-2 space-y-1">
+										{#if selectedLodgingTypes.size > 0}
+											<button
+												type="button"
+												class="btn btn-ghost btn-xs text-error"
+												on:click={clearLodgingTypeFilters}
+											>
+												<Clear class="w-3 h-3" />
+												{$t('map.clear_filters')}
+											</button>
+										{/if}
+										<div class="flex flex-wrap gap-1">
+											{#each availableLodgingTypes as type}
+												<button
+													type="button"
+													class="badge badge-sm cursor-pointer transition-all {selectedLodgingTypes.has(type)
+														? 'badge-secondary'
+														: 'badge-ghost hover:badge-secondary/50'}"
+													on:click={() => toggleLodgingType(type)}
+												>
+													{getLodgingIcon(type)} {type}
+												</button>
+											{/each}
+										</div>
+									</div>
+								{/if}
+							</div>
+
+							<!-- TRANSPORTATION (Yellow/Amber) -->
+							<div class="border-b border-base-300 pb-3">
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="checkbox"
+										bind:checked={showTransportation}
+										class="checkbox checkbox-warning checkbox-sm"
+									/>
+									<span class="label-text flex items-center gap-2 flex-1">
+										<TransportIcon class="w-4 h-4 text-amber-500" />
+										{$t('navbar.transportation')} ({filteredTransportationPins.length}/{transportationPins.length})
+									</span>
+									{#if showTransportation && availableTransportationTypes.length > 0}
+										<button
+											type="button"
+											class="btn btn-ghost btn-xs"
+											on:click={() => (expandTransportationFilters = !expandTransportationFilters)}
+										>
+											{#if expandTransportationFilters}
+												<ChevronUp class="w-4 h-4" />
+											{:else}
+												<ChevronDown class="w-4 h-4" />
+											{/if}
+										</button>
+									{/if}
+								</label>
+
+								{#if showTransportation && expandTransportationFilters && availableTransportationTypes.length > 0}
+									<div class="ml-6 mt-2 space-y-1">
+										{#if selectedTransportationTypes.size > 0}
+											<button
+												type="button"
+												class="btn btn-ghost btn-xs text-error"
+												on:click={clearTransportationTypeFilters}
+											>
+												<Clear class="w-3 h-3" />
+												{$t('map.clear_filters')}
+											</button>
+										{/if}
+										<div class="flex flex-wrap gap-1">
+											{#each availableTransportationTypes as type}
+												<button
+													type="button"
+													class="badge badge-sm cursor-pointer transition-all {selectedTransportationTypes.has(type)
+														? 'badge-warning'
+														: 'badge-ghost hover:badge-warning/50'}"
+													on:click={() => toggleTransportationType(type)}
+												>
+													{getTransportationIcon(type)} {type}
+												</button>
+											{/each}
+										</div>
+									</div>
+								{/if}
+							</div>
+
+							<!-- Other display options -->
 							<label class="label cursor-pointer justify-start gap-3">
 								<input
 									type="checkbox"
@@ -1063,7 +1417,7 @@
 								<input
 									type="checkbox"
 									bind:checked={showCities}
-									class="checkbox checkbox-warning checkbox-sm"
+									class="checkbox checkbox-accent checkbox-sm"
 								/>
 								<span class="label-text flex items-center gap-2">
 									<LocationIcon class="w-4 h-4" />
@@ -1083,30 +1437,6 @@
 									{$t('settings.activities')}{activities.length > 0
 										? ` (${activities.length})`
 										: ''}
-								</span>
-							</label>
-
-							<label class="label cursor-pointer justify-start gap-3">
-								<input
-									type="checkbox"
-									bind:checked={showLodging}
-									class="checkbox checkbox-secondary checkbox-sm"
-								/>
-								<span class="label-text flex items-center gap-2">
-									<HotelIcon class="w-4 h-4" />
-									{$t('navbar.lodging')} ({lodgingPins.length})
-								</span>
-							</label>
-
-							<label class="label cursor-pointer justify-start gap-3">
-								<input
-									type="checkbox"
-									bind:checked={showTransportation}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="label-text flex items-center gap-2">
-									<TransportIcon class="w-4 h-4" />
-									{$t('navbar.transportation')} ({transportationPins.length})
 								</span>
 							</label>
 						</div>
