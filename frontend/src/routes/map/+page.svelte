@@ -1222,7 +1222,7 @@
 											>
 												{#if markerProps.groupedItems && markerProps.groupedItems.length > 0}
 													<span class="flex items-center gap-0.5">
-														<span class="text-xs">{markerProps.icon}</span>
+														<span class="text-xs">{markerProps.categoryIcon || '📚'}</span>
 														<span>{markerProps.groupedItems.length}</span>
 													</span>
 												{:else}
@@ -1302,8 +1302,8 @@
 															</div>
 														</div>
 
-														<!-- Location-specific progressive content -->
-														{#if isActive && markerProps.pinType === 'location'}
+														<!-- Location-specific progressive content (not for grouped pins) -->
+														{#if isActive && markerProps.pinType === 'location' && !(markerProps.groupedItems && markerProps.groupedItems.length > 0)}
 															{#if hoveredPinId !== markerProps.id}
 																<div class="space-y-2">
 																	<div class="flex items-center gap-2">
