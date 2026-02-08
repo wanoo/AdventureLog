@@ -322,11 +322,26 @@
 					direction: item.direction
 				}));
 
-				// Determine primary color based on item types present
+				// Count item types to determine if mixed
 				const hasLocation = items.some(i => i.itemType === 'location');
 				const hasLodging = items.some(i => i.itemType === 'lodging');
-				const primaryColor = hasLocation ? 'blue' : hasLodging ? 'pink' : 'amber';
-				const primaryIcon = items[0].icon;
+				const hasTransport = items.some(i => i.itemType === 'transport');
+				const typeCount = [hasLocation, hasLodging, hasTransport].filter(Boolean).length;
+
+				// Determine color: purple if mixed, otherwise single type color
+				let primaryColor: string;
+				if (typeCount > 1) {
+					primaryColor = 'purple'; // Mixed types
+				} else if (hasLocation) {
+					primaryColor = 'blue';
+				} else if (hasLodging) {
+					primaryColor = 'pink';
+				} else {
+					primaryColor = 'amber';
+				}
+
+				// Use stack icon for grouped pins to indicate multiple items
+				const groupIcon = '📚';
 				const hasVisited = items.some(i => i.is_visited);
 
 				// Use first location name if available, or first item name
@@ -339,7 +354,7 @@
 					latitude: lat,
 					longitude: lng,
 					is_visited: hasVisited,
-					icon: primaryIcon,
+					icon: groupIcon,
 					pinType: 'location', // Use location as default for mixed groups
 					pinColor: primaryColor,
 					locationName: displayName,
@@ -404,6 +419,8 @@
 				return 'bg-gradient-to-br from-pink-400 to-pink-600';
 			case 'amber':
 				return 'bg-gradient-to-br from-amber-400 to-amber-600';
+			case 'purple':
+				return 'bg-gradient-to-br from-purple-400 to-purple-600';
 			case 'blue':
 			default:
 				return 'bg-gradient-to-br from-blue-400 to-blue-600';
