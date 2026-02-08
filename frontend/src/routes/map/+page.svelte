@@ -259,13 +259,15 @@
 					icon: getTransportationIcon(t.type),
 					subInfo: t.to_location ? `→ ${t.to_location}` : ''
 				}));
+				// Use the most common transport type icon, or first one
+				const primaryIcon = getTransportationIcon(transports[0].type);
 				unified.push({
 					id: `dep-group-${coordKey}`,
 					name: group.locationName || $t('transportation.departure'),
 					latitude: lat,
 					longitude: lng,
 					is_visited: hasVisited,
-					icon: '✈️',
+					icon: primaryIcon,
 					pinType: 'transport-departure',
 					pinColor: 'amber',
 					locationName: group.locationName,
@@ -305,13 +307,15 @@
 					icon: getTransportationIcon(t.type),
 					subInfo: t.from_location ? `${t.from_location} →` : ''
 				}));
+				// Use the most common transport type icon, or first one
+				const primaryIcon = getTransportationIcon(transports[0].type);
 				unified.push({
 					id: `arr-group-${coordKey}`,
 					name: group.locationName || $t('transportation.arrival'),
 					latitude: lat,
 					longitude: lng,
 					is_visited: hasVisited,
-					icon: '✈️',
+					icon: primaryIcon,
 					pinType: 'transport-arrival',
 					pinColor: 'amber',
 					locationName: group.locationName,
@@ -462,42 +466,44 @@
 
 	// Toggle category selection
 	function toggleCategory(category: string) {
-		// If null (initial state), initialize with all categories then toggle
+		// If null (initial state), select ONLY this category
 		if (selectedCategories === null) {
-			selectedCategories = new Set(availableCategories);
-		}
-		if (selectedCategories.has(category)) {
+			selectedCategories = new Set([category]);
+		} else if (selectedCategories.has(category)) {
+			// Already selected - deselect it
 			selectedCategories.delete(category);
+			selectedCategories = new Set(selectedCategories);
 		} else {
+			// Not selected - add it
 			selectedCategories.add(category);
+			selectedCategories = new Set(selectedCategories);
 		}
-		selectedCategories = new Set(selectedCategories); // Trigger reactivity
 	}
 
 	// Toggle lodging type selection
 	function toggleLodgingType(type: string) {
 		if (selectedLodgingTypes === null) {
-			selectedLodgingTypes = new Set(availableLodgingTypes);
-		}
-		if (selectedLodgingTypes.has(type)) {
+			selectedLodgingTypes = new Set([type]);
+		} else if (selectedLodgingTypes.has(type)) {
 			selectedLodgingTypes.delete(type);
+			selectedLodgingTypes = new Set(selectedLodgingTypes);
 		} else {
 			selectedLodgingTypes.add(type);
+			selectedLodgingTypes = new Set(selectedLodgingTypes);
 		}
-		selectedLodgingTypes = new Set(selectedLodgingTypes); // Trigger reactivity
 	}
 
 	// Toggle transportation type selection
 	function toggleTransportationType(type: string) {
 		if (selectedTransportationTypes === null) {
-			selectedTransportationTypes = new Set(availableTransportationTypes);
-		}
-		if (selectedTransportationTypes.has(type)) {
+			selectedTransportationTypes = new Set([type]);
+		} else if (selectedTransportationTypes.has(type)) {
 			selectedTransportationTypes.delete(type);
+			selectedTransportationTypes = new Set(selectedTransportationTypes);
 		} else {
 			selectedTransportationTypes.add(type);
+			selectedTransportationTypes = new Set(selectedTransportationTypes);
 		}
-		selectedTransportationTypes = new Set(selectedTransportationTypes); // Trigger reactivity
 	}
 
 	// Clear all category filters (reset to show all)
@@ -1167,16 +1173,20 @@
 																	</div>
 																{/if}
 																{#if markerProps.groupedItems && markerProps.groupedItems.length > 0}
-																	<!-- Grouped transport items list -->
-																	<div class="mt-2 space-y-1 max-h-32 overflow-y-auto">
+																	<!-- Grouped transport items list - clickable -->
+																	<div class="mt-2 space-y-0 max-h-40 overflow-y-auto">
 																		{#each markerProps.groupedItems as item}
-																			<div class="flex items-center gap-2 text-xs py-1 border-b border-base-200 last:border-0">
+																			<button
+																				type="button"
+																				class="flex items-center gap-2 text-xs py-1.5 px-1 -mx-1 w-full text-left rounded hover:bg-base-200 transition-colors cursor-pointer border-b border-base-200 last:border-0"
+																				on:click|stopPropagation={() => goto(`/transportations/${item.id}`)}
+																			>
 																				<span>{item.icon}</span>
-																				<span class="flex-1 truncate">{item.name}</span>
+																				<span class="flex-1 truncate font-medium">{item.name}</span>
 																				{#if item.subInfo}
 																					<span class="text-base-content/60">{item.subInfo}</span>
 																				{/if}
-																			</div>
+																			</button>
 																		{/each}
 																	</div>
 																{:else if markerProps.subInfo}
@@ -1277,6 +1287,7 @@
 															{/if}
 														{/if}
 
+														{#if !markerProps.groupedItems || markerProps.groupedItems.length === 0}
 														<div class="card-actions justify-end">
 															<button
 																type="button"
@@ -1289,6 +1300,7 @@
 																{$t('map.view_details')}
 															</button>
 														</div>
+													{/if}
 													</div>
 												</div>
 												<!-- Arrow pointer -->
