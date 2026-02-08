@@ -1007,6 +1007,22 @@
 												</p>
 											{/if}
 
+											{#if visit.rating !== null && visit.rating !== undefined}
+												<div class="flex items-center gap-2 mt-2">
+													<div class="rating rating-sm">
+														{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
+															<input
+																type="radio"
+																name="rating-list-{visit.id}"
+																class="mask mask-star-2 bg-warning"
+																checked={star <= (visit.rating ?? 0)}
+																disabled
+															/>
+														{/each}
+													</div>
+												</div>
+											{/if}
+
 											{#if visit.activities && visit.activities.length > 0}
 												<div class="flex items-center gap-2 mt-2">
 													<RunFastIcon class="w-3 h-3 text-success" />

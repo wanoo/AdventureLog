@@ -552,6 +552,7 @@
 																	{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
 																		<input
 																			type="radio"
+																			name="rating-visit-{visit.id}"
 																			class="mask mask-star-2 bg-warning"
 																			checked={star <= (visit.rating ?? 0)}
 																			disabled
@@ -566,6 +567,7 @@
 																{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
 																	<input
 																		type="radio"
+																		name="rating-visit-nousername-{visit.id}"
 																		class="mask mask-star-2 bg-warning"
 																		checked={star <= (visit.rating ?? 0)}
 																		disabled
