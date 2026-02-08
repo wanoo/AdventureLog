@@ -149,13 +149,14 @@
 		features: PinFeature[];
 	};
 
-	// Grouped item for transport pins at same location
+	// Grouped item for pins at same location (any type)
 	type GroupedItem = {
 		id: string;
 		name: string;
 		icon: string;
 		subInfo?: string;
-		direction?: 'departure' | 'arrival'; // For mixed transport groups
+		itemType: 'location' | 'lodging' | 'transport'; // Type for routing
+		direction?: 'departure' | 'arrival'; // For transport items
 	};
 
 	// Unified pin type for clustering
@@ -174,114 +175,174 @@
 		locationName?: string; // e.g., airport name
 	};
 
-	// Combine all filtered pins into a single array for clustering
+	// Helper to create coordinate key (rounded to ~1m precision to group nearby items)
+	function coordKey(lat: string | number, lng: string | number): string {
+		const latNum = typeof lat === 'string' ? parseFloat(lat) : lat;
+		const lngNum = typeof lng === 'string' ? parseFloat(lng) : lng;
+		// Round to 5 decimal places (~1m precision)
+		return `${latNum.toFixed(5)},${lngNum.toFixed(5)}`;
+	}
+
+	// Combine all filtered pins into a single array, grouping items at same coordinates
 	$: allFilteredPins = (() => {
-		const unified: UnifiedPin[] = [];
+		// Collect all items with their coordinates
+		type MapItem = {
+			id: string;
+			name: string;
+			lat: number;
+			lng: number;
+			is_visited: boolean;
+			icon: string;
+			pinType: PinType;
+			pinColor: string;
+			itemType: 'location' | 'lodging' | 'transport';
+			subInfo?: string;
+			direction?: 'departure' | 'arrival';
+		};
+
+		const allItems: Map<string, MapItem[]> = new Map();
+
+		// Helper to add item to coordinate group
+		const addItem = (item: MapItem) => {
+			const key = coordKey(item.lat, item.lng);
+			if (!allItems.has(key)) {
+				allItems.set(key, []);
+			}
+			allItems.get(key)!.push(item);
+		};
 
 		// Add location pins
 		for (const pin of filteredPins) {
-			unified.push({
-				id: pin.id,
-				name: pin.name,
-				latitude: pin.latitude,
-				longitude: pin.longitude,
-				is_visited: pin.is_visited ?? false,
-				icon: pin.category?.icon || '📍',
-				pinType: 'location',
-				pinColor: 'blue'
-			});
+			const lat = parseCoordinate(pin.latitude);
+			const lng = parseCoordinate(pin.longitude);
+			if (lat !== null && lng !== null) {
+				addItem({
+					id: pin.id,
+					name: pin.name,
+					lat,
+					lng,
+					is_visited: pin.is_visited ?? false,
+					icon: pin.category?.icon || '📍',
+					pinType: 'location',
+					pinColor: 'blue',
+					itemType: 'location'
+				});
+			}
 		}
 
 		// Add lodging pins
 		for (const lodging of filteredLodgingPins) {
-			if (lodging.latitude && lodging.longitude) {
-				unified.push({
+			const lat = parseCoordinate(lodging.latitude);
+			const lng = parseCoordinate(lodging.longitude);
+			if (lat !== null && lng !== null) {
+				addItem({
 					id: lodging.id,
 					name: lodging.name,
-					latitude: lodging.latitude,
-					longitude: lodging.longitude,
+					lat,
+					lng,
 					is_visited: lodging.is_visited,
 					icon: getLodgingIcon(lodging.type),
 					pinType: 'lodging',
-					pinColor: 'pink'
+					pinColor: 'pink',
+					itemType: 'lodging'
 				});
 			}
 		}
 
-		// Group ALL transportation pins by coordinates (departures and arrivals together)
-		type TransportEntry = {
-			transport: typeof filteredTransportationPins[0];
-			direction: 'departure' | 'arrival';
-			routeInfo: string;
-		};
-		const transportGroups: Map<string, { locationName: string; entries: TransportEntry[] }> = new Map();
-
+		// Add transportation pins (both departure and arrival points)
 		for (const transport of filteredTransportationPins) {
-			// Add departure point
-			if (transport.origin_latitude && transport.origin_longitude) {
-				const key = `${transport.origin_latitude},${transport.origin_longitude}`;
-				if (!transportGroups.has(key)) {
-					transportGroups.set(key, { locationName: transport.from_location || '', entries: [] });
-				}
+			// Departure point
+			const depLat = parseCoordinate(transport.origin_latitude);
+			const depLng = parseCoordinate(transport.origin_longitude);
+			if (depLat !== null && depLng !== null) {
 				const routeInfo = transport.to_location ? `→ ${transport.to_location}` : '';
-				transportGroups.get(key)!.entries.push({ transport, direction: 'departure', routeInfo });
-			}
-			// Add arrival point
-			if (transport.destination_latitude && transport.destination_longitude) {
-				const key = `${transport.destination_latitude},${transport.destination_longitude}`;
-				if (!transportGroups.has(key)) {
-					transportGroups.set(key, { locationName: transport.to_location || '', entries: [] });
-				}
-				const routeInfo = transport.from_location ? `${transport.from_location} →` : '';
-				transportGroups.get(key)!.entries.push({ transport, direction: 'arrival', routeInfo });
-			}
-		}
-
-		// Add transport pins (grouped or single)
-		for (const [coordKey, group] of transportGroups) {
-			const [lat, lng] = coordKey.split(',');
-			const entries = group.entries;
-			const hasVisited = entries.some(e => e.transport.is_visited);
-
-			if (entries.length === 1) {
-				// Single transport at this location
-				const entry = entries[0];
-				const transport = entry.transport;
-				const routeInfo = transport.from_location && transport.to_location
-					? `${transport.from_location} → ${transport.to_location}`
-					: transport.from_location || transport.to_location || '';
-				unified.push({
-					id: `${transport.id}-${entry.direction === 'departure' ? 'dep' : 'arr'}`,
+				addItem({
+					id: transport.id,
 					name: transport.name,
-					latitude: lat,
-					longitude: lng,
+					lat: depLat,
+					lng: depLng,
 					is_visited: transport.is_visited,
 					icon: getTransportationIcon(transport.type),
-					pinType: entry.direction === 'departure' ? 'transport-departure' : 'transport-arrival',
+					pinType: 'transport-departure',
 					pinColor: 'amber',
-					subInfo: routeInfo
+					itemType: 'transport',
+					subInfo: routeInfo,
+					direction: 'departure'
+				});
+			}
+			// Arrival point
+			const arrLat = parseCoordinate(transport.destination_latitude);
+			const arrLng = parseCoordinate(transport.destination_longitude);
+			if (arrLat !== null && arrLng !== null) {
+				const routeInfo = transport.from_location ? `${transport.from_location} →` : '';
+				addItem({
+					id: transport.id,
+					name: transport.name,
+					lat: arrLat,
+					lng: arrLng,
+					is_visited: transport.is_visited,
+					icon: getTransportationIcon(transport.type),
+					pinType: 'transport-arrival',
+					pinColor: 'amber',
+					itemType: 'transport',
+					subInfo: routeInfo,
+					direction: 'arrival'
+				});
+			}
+		}
+
+		// Build unified pins, grouping items at same coordinates
+		const unified: UnifiedPin[] = [];
+
+		for (const [key, items] of allItems) {
+			const [lat, lng] = key.split(',').map(Number);
+
+			if (items.length === 1) {
+				// Single item - show as individual pin
+				const item = items[0];
+				unified.push({
+					id: item.itemType === 'transport' ? `${item.id}-${item.direction === 'departure' ? 'dep' : 'arr'}` : item.id,
+					name: item.name,
+					latitude: lat,
+					longitude: lng,
+					is_visited: item.is_visited,
+					icon: item.icon,
+					pinType: item.pinType,
+					pinColor: item.pinColor,
+					subInfo: item.subInfo
 				});
 			} else {
-				// Multiple transports at same location (mix of departures and arrivals)
-				const groupedItems: GroupedItem[] = entries.map(e => ({
-					id: e.transport.id,
-					name: e.transport.name,
-					icon: getTransportationIcon(e.transport.type),
-					subInfo: e.routeInfo,
-					direction: e.direction
+				// Multiple items at same location - create grouped pin
+				const groupedItems: GroupedItem[] = items.map(item => ({
+					id: item.id,
+					name: item.name,
+					icon: item.icon,
+					subInfo: item.subInfo,
+					itemType: item.itemType,
+					direction: item.direction
 				}));
-				// Use the first transport's icon
-				const primaryIcon = getTransportationIcon(entries[0].transport.type);
+
+				// Determine primary color based on item types present
+				const hasLocation = items.some(i => i.itemType === 'location');
+				const hasLodging = items.some(i => i.itemType === 'lodging');
+				const primaryColor = hasLocation ? 'blue' : hasLodging ? 'pink' : 'amber';
+				const primaryIcon = items[0].icon;
+				const hasVisited = items.some(i => i.is_visited);
+
+				// Use first location name if available, or first item name
+				const locationItem = items.find(i => i.itemType === 'location');
+				const displayName = locationItem?.name || items[0].name;
+
 				unified.push({
-					id: `transport-group-${coordKey}`,
-					name: group.locationName || $t('navbar.transportation'),
+					id: `group-${key}`,
+					name: displayName,
 					latitude: lat,
 					longitude: lng,
 					is_visited: hasVisited,
 					icon: primaryIcon,
-					pinType: 'transport-departure', // Use departure as default type for grouped
-					pinColor: 'amber',
-					locationName: group.locationName,
+					pinType: 'location', // Use location as default for mixed groups
+					pinColor: primaryColor,
+					locationName: displayName,
 					groupedItems
 				});
 			}
@@ -383,8 +444,22 @@
 		return (TRANSPORTATION_TYPES_ICONS as Record<string, string>)[type] || '🚗';
 	}
 
+	// Get URL for a grouped item based on its type
+	function getGroupedItemUrl(item: GroupedItem): string {
+		switch (item.itemType) {
+			case 'location':
+				return `/locations/${item.id}`;
+			case 'lodging':
+				return `/lodging/${item.id}`;
+			case 'transport':
+				return `/transportations/${item.id}`;
+			default:
+				return `/locations/${item.id}`;
+		}
+	}
+
 	function getDetailUrl(props: PinFeatureProperties): string {
-		const id = props.id.replace(/-dep$/, '').replace(/-arr$/, '');
+		const id = props.id.replace(/-dep$/, '').replace(/-arr$/, '').replace(/^group-.*$/, '');
 		switch (props.pinType) {
 			case 'lodging':
 				return `/lodging/${id}`;
@@ -1060,6 +1135,12 @@
 												}}
 												on:click={(e) => {
 													e.stopPropagation();
+													// For grouped pins, just show popup - don't navigate
+													const isGrouped = markerProps.groupedItems && markerProps.groupedItems.length > 0;
+													if (isGrouped) {
+														setActive(true);
+														return;
+													}
 													if (isTouchLike) {
 														// On touch devices: first tap shows popup, second tap navigates
 														if (isActive) {
@@ -1087,6 +1168,12 @@
 												on:keydown={(e) => {
 													if (e.key !== 'Enter') return;
 													e.stopPropagation();
+													// For grouped pins, just toggle popup
+													const isGrouped = markerProps.groupedItems && markerProps.groupedItems.length > 0;
+													if (isGrouped) {
+														setActive(!isActive);
+														return;
+													}
 													handleViewDetails(markerProps);
 												}}
 											>
@@ -1115,17 +1202,19 @@
 																	</div>
 																{/if}
 																{#if markerProps.groupedItems && markerProps.groupedItems.length > 0}
-																	<!-- Grouped transport items list - clickable -->
+																	<!-- Grouped items list - clickable -->
 																	<div class="mt-2 space-y-0 max-h-40 overflow-y-auto">
 																		{#each markerProps.groupedItems as item}
 																			<button
 																				type="button"
 																				class="flex items-center gap-2 text-xs py-1.5 px-1 -mx-1 w-full text-left rounded hover:bg-base-200 transition-colors cursor-pointer border-b border-base-200 last:border-0"
-																				on:click|stopPropagation={() => goto(`/transportations/${item.id}`)}
+																				on:click|stopPropagation={() => goto(getGroupedItemUrl(item))}
 																			>
-																				<span class="text-base-content/50" title={item.direction === 'departure' ? $t('transportation.departure') : $t('transportation.arrival')}>
-																					{item.direction === 'departure' ? '↗' : '↙'}
-																				</span>
+																				{#if item.itemType === 'transport' && item.direction}
+																					<span class="text-base-content/50" title={item.direction === 'departure' ? $t('transportation.departure') : $t('transportation.arrival')}>
+																						{item.direction === 'departure' ? '↗' : '↙'}
+																					</span>
+																				{/if}
 																				<span>{item.icon}</span>
 																				<span class="flex-1 truncate font-medium">{item.name}</span>
 																				{#if item.subInfo}
