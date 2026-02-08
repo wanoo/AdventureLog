@@ -855,7 +855,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
         # Deep copy Transportation (wrapped in try/except for migration compatibility)
         try:
-            for transport in collection.transportation_set.all():
+            for transport in collection.transportations.all():
                 Transportation.objects.create(
                     user=request.user,
                     collection=new_collection,
@@ -884,7 +884,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
         # Deep copy Lodging (wrapped in try/except for migration compatibility)
         try:
-            for lodging in collection.lodging_set.all():
+            for lodging in collection.lodgings.all():
                 Lodging.objects.create(
                     user=request.user,
                     collection=new_collection,
@@ -994,7 +994,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
         # Extract transportations structure (wrapped in try/except for migration compatibility)
         try:
-            for transport in collection.transportation_set.all():
+            for transport in collection.transportations.all():
                 template_data['transportations'].append({
                     'type': transport.type,
                     'name': transport.name,
@@ -1007,7 +1007,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
         # Extract lodgings structure (wrapped in try/except for migration compatibility)
         try:
-            for lodging in collection.lodging_set.all():
+            for lodging in collection.lodgings.all():
                 template_data['lodgings'].append({
                     'type': lodging.type,
                     'name': lodging.name,
@@ -1078,10 +1078,10 @@ class CollectionViewSet(viewsets.ModelViewSet):
             if new_is_public:
                 # Collection is being made public, update all linked items to public
                 serializer.instance.locations.filter(is_public=False).update(is_public=True)
-                serializer.instance.transportation_set.filter(is_public=False).update(is_public=True)
+                serializer.instance.transportations.filter(is_public=False).update(is_public=True)
                 serializer.instance.note_set.filter(is_public=False).update(is_public=True)
                 serializer.instance.checklist_set.filter(is_public=False).update(is_public=True)
-                serializer.instance.lodging_set.filter(is_public=False).update(is_public=True)
+                serializer.instance.lodgings.filter(is_public=False).update(is_public=True)
             else:
                 # Collection is being made private, check each linked item
                 # Only set an item to private if it doesn't belong to any other public collection
@@ -1099,7 +1099,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
                 
                 # Handle transportations, notes, checklists, lodging (foreign key relationships)
                 # Transportation
-                transportations_to_check = serializer.instance.transportation_set.filter(is_public=True)
+                transportations_to_check = serializer.instance.transportations.filter(is_public=True)
                 for transportation in transportations_to_check:
                     transportation.is_public = False
                     transportation.save(update_fields=['is_public'])
@@ -1117,7 +1117,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
                     checklist.save(update_fields=['is_public'])
                 
                 # Lodging
-                lodging_to_check = serializer.instance.lodging_set.filter(is_public=True)
+                lodging_to_check = serializer.instance.lodgings.filter(is_public=True)
                 for lodging in lodging_to_check:
                     lodging.is_public = False
                     lodging.save(update_fields=['is_public'])

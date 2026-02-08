@@ -37,10 +37,10 @@
 	let transportation: Transportation;
 	let currentSlide = 0;
 
-	// Reactively update is_visited based on visits array
-	$: if (transportation && transportation.visits) {
-		transportation.is_visited = transportation.visits.length > 0;
-	}
+	// Check if current user has visited (for visited badge)
+	$: userHasVisited = transportation?.visits?.some(
+		(v) => v.user_username === data.user?.username
+	) ?? false;
 
 	function goToSlide(index: number) {
 		currentSlide = index;
@@ -452,7 +452,7 @@
 								{transportation.visits.length === 1 ? $t('adventures.visit') : $t('adventures.visits')}
 							</div>
 						{/if}
-						{#if transportation.is_visited}
+						{#if userHasVisited}
 							<div class="badge badge-lg badge-success font-semibold px-4 py-3">
 								✅ {$t('adventures.visited')}
 							</div>

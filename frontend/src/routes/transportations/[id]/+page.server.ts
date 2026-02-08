@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 const PUBLIC_SERVER_URL = process.env['PUBLIC_SERVER_URL'];
+const COLLABORATIVE_MODE = process.env['COLLABORATIVE_MODE'] === 'true';
 import type { Transportation } from '$lib/types';
 const endpoint = PUBLIC_SERVER_URL || 'http://localhost:8000';
 
@@ -16,7 +17,8 @@ export const load = (async (event) => {
 		return {
 			props: {
 				transportation: null
-			}
+			},
+			collaborativeMode: COLLABORATIVE_MODE
 		};
 	} else {
 		let transportation = (await request.json()) as Transportation;
@@ -24,7 +26,8 @@ export const load = (async (event) => {
 		return {
 			props: {
 				transportation
-			}
+			},
+			collaborativeMode: COLLABORATIVE_MODE
 		};
 	}
 }) satisfies PageServerLoad;
