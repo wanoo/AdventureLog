@@ -62,10 +62,10 @@
 	let expandLodgingFilters: boolean = false;
 	let expandTransportationFilters: boolean = false;
 
-	// Category and type filters - null means "show all" (not yet interacted), Set means explicit selection
-	let selectedCategories: Set<string> | null = null; // null = all categories, Set = explicit selection
-	let selectedLodgingTypes: Set<string> | null = null; // null = all types
-	let selectedTransportationTypes: Set<string> | null = null; // null = all types
+	// Category and type filters - Set contains HIDDEN types (empty = show all)
+	let hiddenCategories: Set<string> = new Set();
+	let hiddenLodgingTypes: Set<string> = new Set();
+	let hiddenTransportationTypes: Set<string> = new Set();
 
 	let filteredPins = pins;
 	let filteredLodgingPins = lodgingPins;
@@ -427,76 +427,64 @@
 	// Get unique categories for filtering
 	$: categories = [...new Set(pins.map((pin) => pin.category?.display_name).filter(Boolean))];
 
-	// Toggle category selection
+	// Toggle category visibility (click to hide/show)
 	function toggleCategory(category: string) {
-		// If null (initial state), select ONLY this category
-		if (selectedCategories === null) {
-			selectedCategories = new Set([category]);
-		} else if (selectedCategories.has(category)) {
-			// Already selected - deselect it
-			selectedCategories.delete(category);
-			selectedCategories = new Set(selectedCategories);
+		if (hiddenCategories.has(category)) {
+			hiddenCategories.delete(category);
 		} else {
-			// Not selected - add it
-			selectedCategories.add(category);
-			selectedCategories = new Set(selectedCategories);
+			hiddenCategories.add(category);
 		}
+		hiddenCategories = new Set(hiddenCategories); // Trigger reactivity
 	}
 
-	// Toggle lodging type selection
+	// Toggle lodging type visibility
 	function toggleLodgingType(type: string) {
-		if (selectedLodgingTypes === null) {
-			selectedLodgingTypes = new Set([type]);
-		} else if (selectedLodgingTypes.has(type)) {
-			selectedLodgingTypes.delete(type);
-			selectedLodgingTypes = new Set(selectedLodgingTypes);
+		if (hiddenLodgingTypes.has(type)) {
+			hiddenLodgingTypes.delete(type);
 		} else {
-			selectedLodgingTypes.add(type);
-			selectedLodgingTypes = new Set(selectedLodgingTypes);
+			hiddenLodgingTypes.add(type);
 		}
+		hiddenLodgingTypes = new Set(hiddenLodgingTypes);
 	}
 
-	// Toggle transportation type selection
+	// Toggle transportation type visibility
 	function toggleTransportationType(type: string) {
-		if (selectedTransportationTypes === null) {
-			selectedTransportationTypes = new Set([type]);
-		} else if (selectedTransportationTypes.has(type)) {
-			selectedTransportationTypes.delete(type);
-			selectedTransportationTypes = new Set(selectedTransportationTypes);
+		if (hiddenTransportationTypes.has(type)) {
+			hiddenTransportationTypes.delete(type);
 		} else {
-			selectedTransportationTypes.add(type);
-			selectedTransportationTypes = new Set(selectedTransportationTypes);
+			hiddenTransportationTypes.add(type);
 		}
+		hiddenTransportationTypes = new Set(hiddenTransportationTypes);
 	}
 
 	// Clear all category filters (reset to show all)
 	function clearCategoryFilters() {
-		selectedCategories = null;
+		hiddenCategories = new Set();
 	}
 
 	// Clear all lodging type filters (reset to show all)
 	function clearLodgingTypeFilters() {
-		selectedLodgingTypes = null;
+		hiddenLodgingTypes = new Set();
 	}
 
 	// Clear all transportation type filters (reset to show all)
 	function clearTransportationTypeFilters() {
-		selectedTransportationTypes = null;
+		hiddenTransportationTypes = new Set();
 	}
 
-	// Check if a category is selected (for UI)
-	function isCategorySelected(category: string): boolean {
-		return selectedCategories === null || selectedCategories.has(category);
+	// Check if a category is visible (for UI - active badge)
+	function isCategoryVisible(category: string): boolean {
+		return !hiddenCategories.has(category);
 	}
 
-	// Check if a lodging type is selected (for UI)
-	function isLodgingTypeSelected(type: string): boolean {
-		return selectedLodgingTypes === null || selectedLodgingTypes.has(type);
+	// Check if a lodging type is visible
+	function isLodgingTypeVisible(type: string): boolean {
+		return !hiddenLodgingTypes.has(type);
 	}
 
-	// Check if a transportation type is selected (for UI)
-	function isTransportationTypeSelected(type: string): boolean {
-		return selectedTransportationTypes === null || selectedTransportationTypes.has(type);
+	// Check if a transportation type is visible
+	function isTransportationTypeVisible(type: string): boolean {
+		return !hiddenTransportationTypes.has(type);
 	}
 
 	// Updates the filtered pins based on the checkboxes, categories, and search query
@@ -511,12 +499,9 @@
 				(showVisited && pin.is_visited === true) || (showPlanned && pin.is_visited !== true);
 			if (!statusMatch) return false;
 
-			// Filter by selected categories
-			// null = show all, Set = show only items in set (empty set = show nothing)
-			if (selectedCategories !== null) {
-				const categoryName = pin.category?.display_name;
-				if (!categoryName || !selectedCategories.has(categoryName)) return false;
-			}
+			// Filter by hidden categories - if category is hidden, exclude it
+			const categoryName = pin.category?.display_name;
+			if (categoryName && hiddenCategories.has(categoryName)) return false;
 
 			// Filter by search query
 			if (!query) return true;
@@ -540,11 +525,8 @@
 				(showVisited && lodging.is_visited === true) || (showPlanned && lodging.is_visited !== true);
 			if (!statusMatch) return false;
 
-			// Filter by selected lodging types
-			// null = show all, Set = show only items in set (empty set = show nothing)
-			if (selectedLodgingTypes !== null) {
-				if (!lodging.type || !selectedLodgingTypes.has(lodging.type)) return false;
-			}
+			// Filter by hidden lodging types
+			if (lodging.type && hiddenLodgingTypes.has(lodging.type)) return false;
 
 			// Filter by search query
 			if (!query) return true;
@@ -564,11 +546,8 @@
 				(showVisited && transport.is_visited === true) || (showPlanned && transport.is_visited !== true);
 			if (!statusMatch) return false;
 
-			// Filter by selected transportation types
-			// null = show all, Set = show only items in set (empty set = show nothing)
-			if (selectedTransportationTypes !== null) {
-				if (!transport.type || !selectedTransportationTypes.has(transport.type)) return false;
-			}
+			// Filter by hidden transportation types
+			if (transport.type && hiddenTransportationTypes.has(transport.type)) return false;
 
 			// Filter by search query
 			if (!query) return true;
@@ -1463,7 +1442,7 @@
 
 								{#if showLocations && expandLocationFilters && availableCategories.length > 0}
 									<div class="ml-6 mt-2 space-y-1">
-										{#if selectedCategories !== null}
+										{#if hiddenCategories.size > 0}
 											<button
 												type="button"
 												class="btn btn-ghost btn-xs text-error"
@@ -1477,7 +1456,7 @@
 											{#each availableCategories as category}
 												<button
 													type="button"
-													class="badge badge-sm cursor-pointer transition-all {isCategorySelected(category)
+													class="badge badge-sm cursor-pointer transition-all {isCategoryVisible(category)
 														? 'badge-primary'
 														: 'badge-ghost hover:badge-primary/50'}"
 													on:click={() => toggleCategory(category)}
@@ -1519,7 +1498,7 @@
 
 								{#if showLodging && expandLodgingFilters && availableLodgingTypes.length > 0}
 									<div class="ml-6 mt-2 space-y-1">
-										{#if selectedLodgingTypes !== null}
+										{#if hiddenLodgingTypes.size > 0}
 											<button
 												type="button"
 												class="btn btn-ghost btn-xs text-error"
@@ -1533,7 +1512,7 @@
 											{#each availableLodgingTypes as type}
 												<button
 													type="button"
-													class="badge badge-sm cursor-pointer transition-all {isLodgingTypeSelected(type)
+													class="badge badge-sm cursor-pointer transition-all {isLodgingTypeVisible(type)
 														? 'badge-secondary'
 														: 'badge-ghost hover:badge-secondary/50'}"
 													on:click={() => toggleLodgingType(type)}
@@ -1575,7 +1554,7 @@
 
 								{#if showTransportation && expandTransportationFilters && availableTransportationTypes.length > 0}
 									<div class="ml-6 mt-2 space-y-1">
-										{#if selectedTransportationTypes !== null}
+										{#if hiddenTransportationTypes.size > 0}
 											<button
 												type="button"
 												class="btn btn-ghost btn-xs text-error"
@@ -1589,7 +1568,7 @@
 											{#each availableTransportationTypes as type}
 												<button
 													type="button"
-													class="badge badge-sm cursor-pointer transition-all {isTransportationTypeSelected(type)
+													class="badge badge-sm cursor-pointer transition-all {isTransportationTypeVisible(type)
 														? 'badge-warning'
 														: 'badge-ghost hover:badge-warning/50'}"
 													on:click={() => toggleTransportationType(type)}
