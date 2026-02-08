@@ -37,6 +37,11 @@
 	let transportation: Transportation;
 	let currentSlide = 0;
 
+	// Reactively update is_visited based on visits array
+	$: if (transportation && transportation.visits) {
+		transportation.is_visited = transportation.visits.length > 0;
+	}
+
 	function goToSlide(index: number) {
 		currentSlide = index;
 	}
@@ -87,6 +92,15 @@
 					return 0;
 				}
 			});
+
+			// Sort visits by their start date (oldest first / chronological)
+			if (transportation.visits && transportation.visits.length > 1) {
+				transportation.visits.sort((a, b) => {
+					const aTs = DateTime.fromISO(a.start_date || a.created_at || '').toMillis() || 0;
+					const bTs = DateTime.fromISO(b.start_date || b.created_at || '').toMillis() || 0;
+					return aTs - bTs; // oldest first (chronological)
+				});
+			}
 		} else {
 			notFound = true;
 		}
@@ -343,7 +357,7 @@
 {/if}
 
 {#if transportation}
-	{#if data.user?.uuid && transportation.user && data.user.uuid === transportation.user}
+	{#if (data.user?.uuid && transportation.user && data.user.uuid === transportation.user) || (data.collaborativeMode && transportation.is_public)}
 		<div class="fixed bottom-6 right-6 z-50">
 			<button
 				class="btn btn-primary btn-circle w-16 h-16 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110"
@@ -432,8 +446,23 @@
 								✈️ {getRouteCodes(transportation)}
 							</div>
 						{/if}
-						{#if transportation.is_public}
+						{#if transportation.visits && transportation.visits.length > 0}
 							<div class="badge badge-lg badge-accent font-semibold px-4 py-3">
+								🎯 {transportation.visits.length}
+								{transportation.visits.length === 1 ? $t('adventures.visit') : $t('adventures.visits')}
+							</div>
+						{/if}
+						{#if transportation.is_visited}
+							<div class="badge badge-lg badge-success font-semibold px-4 py-3">
+								✅ {$t('adventures.visited')}
+							</div>
+						{:else}
+							<div class="badge badge-lg badge-warning font-semibold px-4 py-3">
+								⏳ {$t('adventures.not_visited')}
+							</div>
+						{/if}
+						{#if transportation.is_public}
+							<div class="badge badge-lg badge-info font-semibold px-4 py-3">
 								👁️ {$t('adventures.public')}
 							</div>
 						{:else}
@@ -520,6 +549,83 @@
 							<article class="prose max-w-none">
 								{@html DOMPurify.sanitize(renderMarkdown(transportation.description))}
 							</article>
+						</div>
+					</div>
+				{/if}
+
+				<!-- Visits Timeline -->
+				{#if transportation.visits && transportation.visits.length > 0}
+					<div class="card bg-base-200 shadow-xl">
+						<div class="card-body">
+							<h2 class="card-title text-2xl mb-6">🎯 {$t('adventures.visits')}</h2>
+							<div class="space-y-4">
+								{#each transportation.visits as visit, index}
+									<div class="flex gap-4">
+										<div class="flex flex-col items-center">
+											<div class="w-4 h-4 bg-primary rounded-full"></div>
+											{#if index < transportation.visits.length - 1}
+												<div class="w-0.5 bg-primary/30 h-full min-h-12"></div>
+											{/if}
+										</div>
+										<div class="flex-1 pb-4">
+											<div class="card bg-base-100 shadow">
+												<div class="card-body p-4">
+													{#if visit.user_username}
+														<div class="text-xs opacity-60 mb-2">
+															{$t('adventures.added_by')} <a href="/profile/{visit.user_username}" class="font-semibold link link-hover link-primary">{visit.user_username}</a>
+														</div>
+													{/if}
+													{#if isAllDay(visit.start_date)}
+														<div class="flex items-center gap-2 mb-2">
+															<span class="badge badge-primary">All Day</span>
+															<span class="font-semibold">
+																{visit.start_date ? visit.start_date.split('T')[0] : ''} – {visit.end_date
+																	? visit.end_date.split('T')[0]
+																	: ''}
+															</span>
+														</div>
+													{:else}
+														<div class="space-y-2">
+															<div class="flex items-center gap-2">
+																<span class="badge badge-primary">🕓 {$t('adventures.timed')}</span>
+																{#if visit.timezone}
+																	<span class="badge badge-outline">{visit.timezone}</span>
+																{/if}
+															</div>
+															<div class="text-sm">
+																{#if visit.timezone}
+																	<strong>{$t('adventures.start')}:</strong>
+																	{DateTime.fromISO(visit.start_date, { zone: 'utc' })
+																		.setZone(visit.timezone)
+																		.toLocaleString(DateTime.DATETIME_MED)}<br />
+																	<strong>{$t('adventures.end')}:</strong>
+																	{DateTime.fromISO(visit.end_date, { zone: 'utc' })
+																		.setZone(visit.timezone)
+																		.toLocaleString(DateTime.DATETIME_MED)}
+																{:else}
+																	<strong>{$t('adventures.start')}:</strong>
+																	{DateTime.fromISO(visit.start_date).toLocaleString(
+																		DateTime.DATETIME_MED
+																	)}<br />
+																	<strong>{$t('adventures.end')}:</strong>
+																	{DateTime.fromISO(visit.end_date).toLocaleString(
+																		DateTime.DATETIME_MED
+																	)}
+																{/if}
+															</div>
+														</div>
+													{/if}
+													{#if visit.notes}
+														<div class="mt-3 p-3 bg-base-200 rounded-lg">
+															<p class="text-sm italic">"{visit.notes}"</p>
+														</div>
+													{/if}
+												</div>
+											</div>
+										</div>
+									</div>
+								{/each}
+							</div>
 						</div>
 					</div>
 				{/if}
