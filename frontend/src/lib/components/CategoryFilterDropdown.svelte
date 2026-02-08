@@ -1,7 +1,9 @@
 <script lang="ts">
 	import type { Category } from '$lib/types';
-	import { onMount } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
+
+	const dispatch = createEventDispatcher<{ change: string }>();
 
 	let types_arr: string[] = [];
 	export let types: string;
@@ -18,6 +20,7 @@
 	function clearTypes() {
 		types = '';
 		types_arr = [];
+		dispatch('change', types);
 	}
 
 	function toggleSelect(type: string) {
@@ -29,6 +32,7 @@
 		types_arr = types_arr.filter((item) => item !== '');
 		// turn types_arr into a comma seperated list with no spaces
 		types = types_arr.join(',');
+		dispatch('change', types);
 
 		console.log(types);
 		console.log(types_arr);

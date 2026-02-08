@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { createEventDispatcher } from 'svelte';
 	import { t } from 'svelte-i18n';
+
+	const dispatch = createEventDispatcher<{ change: string }>();
 
 	export let types: string;
 	export let typeOptions: { value: string; label: string; icon: string }[];
@@ -11,6 +14,7 @@
 	function clearTypes() {
 		types = '';
 		types_arr = [];
+		dispatch('change', types);
 	}
 
 	function toggleSelect(type: string) {
@@ -21,6 +25,7 @@
 		}
 		types_arr = types_arr.filter((item) => item !== '');
 		types = types_arr.join(',');
+		dispatch('change', types);
 	}
 
 	function getCount(typeValue: string): number {

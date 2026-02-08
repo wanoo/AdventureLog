@@ -233,6 +233,24 @@
 			count = data.props.count;
 		}
 	}
+
+	async function updateCategoryFilter(event: CustomEvent<string>) {
+		const types = event.detail;
+		const url = new URL($page.url);
+		if (types) {
+			url.searchParams.set('types', types);
+		} else {
+			url.searchParams.delete('types');
+		}
+		url.searchParams.set('page', '1');
+		currentPage = 1;
+		typeString = types;
+		await goto(url.toString(), { invalidateAll: true, replaceState: true });
+		if (data.props.adventures) {
+			adventures = data.props.adventures;
+			count = data.props.count;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -391,7 +409,7 @@
 								<Tag class="w-5 h-5" />
 								{$t('adventures.categories')}
 							</h3>
-							<CategoryFilterDropdown bind:types={typeString} />
+							<CategoryFilterDropdown bind:types={typeString} on:change={updateCategoryFilter} />
 							<button
 								type="button"
 								on:click={() => (is_category_modal_open = true)}

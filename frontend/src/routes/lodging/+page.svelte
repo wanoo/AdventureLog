@@ -192,6 +192,24 @@
 			count = data.props.count;
 		}
 	}
+
+	async function updateTypeFilter(event: CustomEvent<string>) {
+		const types = event.detail;
+		const url = new URL($page.url);
+		if (types) {
+			url.searchParams.set('types', types);
+		} else {
+			url.searchParams.delete('types');
+		}
+		url.searchParams.set('page', '1');
+		currentPage = 1;
+		typeString = types;
+		await goto(url.toString(), { invalidateAll: true, replaceState: true });
+		if (data.props.lodgingItems) {
+			lodgingItems = data.props.lodgingItems;
+			count = data.props.count;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -341,7 +359,7 @@
 								<Bed class="w-5 h-5" />
 								{$t('transportation.type') || 'Type'}
 							</h3>
-							<TypeFilterDropdown bind:types={typeString} {typeOptions} />
+							<TypeFilterDropdown bind:types={typeString} {typeOptions} on:change={updateTypeFilter} />
 						</div>
 
 						<!-- Sort Options -->
