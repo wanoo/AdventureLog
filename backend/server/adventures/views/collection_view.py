@@ -100,6 +100,21 @@ class CollectionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(is_public=False)
 
         return queryset
+
+    def _apply_sharing_filter(self, queryset, request):
+        """Apply sharing filter to queryset (all, shared_with_others, not_shared)."""
+        sharing_param = request.query_params.get('sharing')
+        if sharing_param is None or sharing_param == 'all':
+            return queryset
+
+        if sharing_param.lower() == 'shared':
+            # Collections that are shared with at least one person
+            queryset = queryset.filter(shared_with__isnull=False).distinct()
+        elif sharing_param.lower() == 'not_shared':
+            # Collections not shared with anyone
+            queryset = queryset.filter(shared_with__isnull=True)
+
+        return queryset
     
     def get_serializer_context(self):
         """Override to add nested and exclusion contexts based on query parameters"""
@@ -196,6 +211,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
         
         queryset = self.apply_status_filter(queryset)
         queryset = self._apply_public_filtering(queryset, request)
+        queryset = self._apply_sharing_filter(queryset, request)
         queryset = self.apply_sorting(queryset)
         return self.paginate_and_respond(queryset, request)
     

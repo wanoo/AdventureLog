@@ -133,6 +133,69 @@
 	function getTypeCount(type: string): number {
 		return transportations.filter((t) => t.type === type).length;
 	}
+
+	// Dynamic filter functions (like collections)
+	async function updateSort(orderBy: string, orderDirection: string) {
+		const url = new URL($page.url);
+		url.searchParams.set('order_by', orderBy);
+		url.searchParams.set('order_direction', orderDirection);
+		url.searchParams.set('page', '1');
+		currentPage = 1;
+		currentSort.order_by = orderBy;
+		currentSort.order = orderDirection;
+		await goto(url.toString(), { invalidateAll: true, replaceState: true });
+		if (data.props.transportations) {
+			transportations = data.props.transportations;
+			count = data.props.count;
+		}
+	}
+
+	async function updateVisitedFilter(isVisited: string) {
+		const url = new URL($page.url);
+		url.searchParams.set('is_visited', isVisited);
+		url.searchParams.set('page', '1');
+		currentPage = 1;
+		currentSort.is_visited = isVisited;
+		await goto(url.toString(), { invalidateAll: true, replaceState: true });
+		if (data.props.transportations) {
+			transportations = data.props.transportations;
+			count = data.props.count;
+		}
+	}
+
+	async function updateVisibilityFilter(visibility: string) {
+		const url = new URL($page.url);
+		if (visibility && visibility !== 'all') {
+			url.searchParams.set('is_public', visibility);
+		} else {
+			url.searchParams.delete('is_public');
+		}
+		url.searchParams.set('page', '1');
+		currentPage = 1;
+		currentSort.is_public = visibility;
+		await goto(url.toString(), { invalidateAll: true, replaceState: true });
+		if (data.props.transportations) {
+			transportations = data.props.transportations;
+			count = data.props.count;
+		}
+	}
+
+	async function updateOwnershipFilter(ownership: string) {
+		const url = new URL($page.url);
+		if (ownership && ownership !== 'all') {
+			url.searchParams.set('ownership', ownership);
+		} else {
+			url.searchParams.delete('ownership');
+		}
+		url.searchParams.set('page', '1');
+		currentPage = 1;
+		currentSort.ownership = ownership;
+		await goto(url.toString(), { invalidateAll: true, replaceState: true });
+		if (data.props.transportations) {
+			transportations = data.props.transportations;
+			count = data.props.count;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -274,8 +337,8 @@
 						<h2 class="text-xl font-bold">{$t('adventures.filters_and_sort')}</h2>
 					</div>
 
-					<!-- Filters Form -->
-					<form method="get" class="space-y-6">
+					<!-- Filters (Dynamic like collections) -->
+					<div class="space-y-6">
 						<!-- Type Filter -->
 						<div class="card bg-base-200/50 p-4">
 							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
@@ -299,24 +362,18 @@
 										<span class="label-text font-medium">{$t('adventures.order_direction')}</span>
 									</label>
 									<div class="join w-full">
-										<input
-											class="join-item btn btn-sm flex-1"
-											type="radio"
-											name="order_direction"
-											id="asc"
-											value="asc"
-											aria-label={$t('adventures.ascending')}
-											checked={currentSort.order === 'asc'}
-										/>
-										<input
-											class="join-item btn btn-sm flex-1"
-											type="radio"
-											name="order_direction"
-											id="desc"
-											value="desc"
-											aria-label={$t('adventures.descending')}
-											checked={currentSort.order === 'desc'}
-										/>
+										<button
+											class="join-item btn btn-sm flex-1 {currentSort.order === 'asc' ? 'btn-active' : ''}"
+											on:click={() => updateSort(currentSort.order_by || 'updated_at', 'asc')}
+										>
+											{$t('adventures.ascending')}
+										</button>
+										<button
+											class="join-item btn btn-sm flex-1 {currentSort.order === 'desc' ? 'btn-active' : ''}"
+											on:click={() => updateSort(currentSort.order_by || 'updated_at', 'desc')}
+										>
+											{$t('adventures.descending')}
+										</button>
 									</div>
 								</div>
 
@@ -325,54 +382,46 @@
 									<label class="label">
 										<span class="label-text font-medium">{$t('adventures.order_by')}</span>
 									</label>
-									<div class="grid grid-cols-2 gap-2">
-										<label
-											class="label cursor-pointer justify-start gap-2 p-2 rounded-lg hover:bg-base-300/50"
-										>
+									<div class="space-y-2">
+										<label class="label cursor-pointer justify-start gap-3">
 											<input
 												type="radio"
-												name="order_by"
-												value="updated_at"
+												name="order_by_radio"
 												class="radio radio-primary radio-sm"
 												checked={currentSort.order_by === 'updated_at'}
+												on:change={() => updateSort('updated_at', currentSort.order || 'asc')}
 											/>
-											<span class="label-text text-sm">{$t('adventures.updated')}</span>
+											<span class="label-text">{$t('adventures.updated')}</span>
 										</label>
-										<label
-											class="label cursor-pointer justify-start gap-2 p-2 rounded-lg hover:bg-base-300/50"
-										>
+										<label class="label cursor-pointer justify-start gap-3">
 											<input
 												type="radio"
-												name="order_by"
-												value="name"
+												name="order_by_radio"
 												class="radio radio-primary radio-sm"
 												checked={currentSort.order_by === 'name'}
+												on:change={() => updateSort('name', currentSort.order || 'asc')}
 											/>
-											<span class="label-text text-sm">{$t('adventures.name')}</span>
+											<span class="label-text">{$t('adventures.name')}</span>
 										</label>
-										<label
-											class="label cursor-pointer justify-start gap-2 p-2 rounded-lg hover:bg-base-300/50"
-										>
+										<label class="label cursor-pointer justify-start gap-3">
 											<input
 												type="radio"
-												name="order_by"
-												value="date"
+												name="order_by_radio"
 												class="radio radio-primary radio-sm"
 												checked={currentSort.order_by === 'date'}
+												on:change={() => updateSort('date', currentSort.order || 'asc')}
 											/>
-											<span class="label-text text-sm">{$t('adventures.date')}</span>
+											<span class="label-text">{$t('adventures.date')}</span>
 										</label>
-										<label
-											class="label cursor-pointer justify-start gap-2 p-2 rounded-lg hover:bg-base-300/50"
-										>
+										<label class="label cursor-pointer justify-start gap-3">
 											<input
 												type="radio"
-												name="order_by"
-												value="rating"
+												name="order_by_radio"
 												class="radio radio-primary radio-sm"
 												checked={currentSort.order_by === 'rating'}
+												on:change={() => updateSort('rating', currentSort.order || 'asc')}
 											/>
-											<span class="label-text text-sm">{$t('adventures.rating')}</span>
+											<span class="label-text">{$t('adventures.rating')}</span>
 										</label>
 									</div>
 								</div>
@@ -385,34 +434,37 @@
 								<Eye class="w-5 h-5" />
 								{$t('adventures.visited')}
 							</h3>
-							<div class="join w-full">
-								<input
-									class="join-item btn btn-sm flex-1"
-									type="radio"
-									name="is_visited"
-									id="all_visited"
-									value="all"
-									aria-label={$t('adventures.all')}
-									checked={currentSort.is_visited === 'all'}
-								/>
-								<input
-									class="join-item btn btn-sm flex-1"
-									type="radio"
-									name="is_visited"
-									id="visited_true"
-									value="true"
-									aria-label={$t('adventures.visited')}
-									checked={currentSort.is_visited === 'true'}
-								/>
-								<input
-									class="join-item btn btn-sm flex-1"
-									type="radio"
-									name="is_visited"
-									id="visited_false"
-									value="false"
-									aria-label={$t('adventures.not_visited')}
-									checked={currentSort.is_visited === 'false'}
-								/>
+							<div class="space-y-2">
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="visited_filter"
+										class="radio radio-primary radio-sm"
+										checked={currentSort.is_visited === 'all'}
+										on:change={() => updateVisitedFilter('all')}
+									/>
+									<span class="label-text">{$t('adventures.all')}</span>
+								</label>
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="visited_filter"
+										class="radio radio-primary radio-sm"
+										checked={currentSort.is_visited === 'true'}
+										on:change={() => updateVisitedFilter('true')}
+									/>
+									<span class="label-text">{$t('adventures.visited')}</span>
+								</label>
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="visited_filter"
+										class="radio radio-primary radio-sm"
+										checked={currentSort.is_visited === 'false'}
+										on:change={() => updateVisitedFilter('false')}
+									/>
+									<span class="label-text">{$t('adventures.not_visited')}</span>
+								</label>
 							</div>
 						</div>
 
@@ -422,34 +474,37 @@
 								<Eye class="w-5 h-5" />
 								{$t('adventures.visibility')}
 							</h3>
-							<div class="join w-full">
-								<input
-									class="join-item btn btn-sm flex-1"
-									type="radio"
-									name="is_public"
-									id="all_public"
-									value="all"
-									aria-label={$t('adventures.all')}
-									checked={currentSort.is_public === 'all'}
-								/>
-								<input
-									class="join-item btn btn-sm flex-1"
-									type="radio"
-									name="is_public"
-									id="public_true"
-									value="true"
-									aria-label={$t('adventures.public')}
-									checked={currentSort.is_public === 'true'}
-								/>
-								<input
-									class="join-item btn btn-sm flex-1"
-									type="radio"
-									name="is_public"
-									id="public_false"
-									value="false"
-									aria-label={$t('adventures.private')}
-									checked={currentSort.is_public === 'false'}
-								/>
+							<div class="space-y-2">
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="visibility_filter"
+										class="radio radio-primary radio-sm"
+										checked={currentSort.is_public === 'all'}
+										on:change={() => updateVisibilityFilter('all')}
+									/>
+									<span class="label-text">{$t('adventures.all')}</span>
+								</label>
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="visibility_filter"
+										class="radio radio-primary radio-sm"
+										checked={currentSort.is_public === 'true'}
+										on:change={() => updateVisibilityFilter('true')}
+									/>
+									<span class="label-text">{$t('adventures.public')}</span>
+								</label>
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="visibility_filter"
+										class="radio radio-primary radio-sm"
+										checked={currentSort.is_public === 'false'}
+										on:change={() => updateVisibilityFilter('false')}
+									/>
+									<span class="label-text">{$t('adventures.private')}</span>
+								</label>
 							</div>
 						</div>
 
@@ -459,42 +514,40 @@
 								<Eye class="w-5 h-5" />
 								{$t('adventures.ownership_filter')}
 							</h3>
-							<div class="join w-full">
-								<input
-									class="join-item btn btn-sm flex-1"
-									type="radio"
-									name="ownership"
-									id="all_ownership"
-									value="all"
-									aria-label={$t('adventures.all')}
-									checked={currentSort.ownership === 'all'}
-								/>
-								<input
-									class="join-item btn btn-sm flex-1"
-									type="radio"
-									name="ownership"
-									id="mine_ownership"
-									value="mine"
-									aria-label={$t('adventures.my_locations')}
-									checked={currentSort.ownership === 'mine'}
-								/>
-								<input
-									class="join-item btn btn-sm flex-1"
-									type="radio"
-									name="ownership"
-									id="public_ownership"
-									value="public"
-									aria-label={$t('adventures.public_locations')}
-									checked={currentSort.ownership === 'public'}
-								/>
+							<div class="space-y-2">
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="ownership_filter"
+										class="radio radio-primary radio-sm"
+										checked={currentSort.ownership === 'all'}
+										on:change={() => updateOwnershipFilter('all')}
+									/>
+									<span class="label-text">{$t('adventures.all')}</span>
+								</label>
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="ownership_filter"
+										class="radio radio-primary radio-sm"
+										checked={currentSort.ownership === 'mine'}
+										on:change={() => updateOwnershipFilter('mine')}
+									/>
+									<span class="label-text">{$t('adventures.my_locations')}</span>
+								</label>
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="ownership_filter"
+										class="radio radio-primary radio-sm"
+										checked={currentSort.ownership === 'public'}
+										on:change={() => updateOwnershipFilter('public')}
+									/>
+									<span class="label-text">{$t('adventures.public_locations')}</span>
+								</label>
 							</div>
 						</div>
-
-						<button type="submit" class="btn btn-primary w-full gap-2">
-							<Filter class="w-4 h-4" />
-							{$t('adventures.filter')}
-						</button>
-					</form>
+					</div>
 				</div>
 			</div>
 		</div>

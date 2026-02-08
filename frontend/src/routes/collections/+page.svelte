@@ -43,6 +43,7 @@
 	let orderDirection = data.props.order_direction || 'asc';
 	let statusFilter = data.props.status || '';
 	let isPublicFilter = data.props.is_public || 'all';
+	let sharingFilter = data.props.sharing || 'all';
 
 	let invites: CollectionInvite[] = data.props.invites || [];
 
@@ -132,6 +133,22 @@
 		url.searchParams.set('page', '1'); // Reset to first page when filter changes
 		currentPage = 1;
 		isPublicFilter = visibility;
+		await goto(url.toString(), { invalidateAll: true, replaceState: true });
+		if (data.props.adventures) {
+			collections = data.props.adventures;
+		}
+	}
+
+	async function updateSharingFilter(sharing: string) {
+		const url = new URL($page.url);
+		if (sharing && sharing !== 'all') {
+			url.searchParams.set('sharing', sharing);
+		} else {
+			url.searchParams.delete('sharing');
+		}
+		url.searchParams.set('page', '1');
+		currentPage = 1;
+		sharingFilter = sharing;
 		await goto(url.toString(), { invalidateAll: true, replaceState: true });
 		if (data.props.adventures) {
 			collections = data.props.adventures;
@@ -749,6 +766,47 @@
 										class="radio radio-primary radio-sm"
 										checked={isPublicFilter === 'false'}
 										on:change={() => updateVisibilityFilter('false')}
+									/>
+									<span class="label-text">{$t('adventures.private')}</span>
+								</label>
+							</div>
+						</div>
+
+						<!-- Sharing Filter -->
+						<div class="card bg-base-200/50 p-4">
+							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+								<Share class="w-5 h-5" />
+								{$t('share.shared')}
+							</h3>
+
+							<div class="space-y-2">
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="sharing_filter"
+										class="radio radio-primary radio-sm"
+										checked={sharingFilter === 'all'}
+										on:change={() => updateSharingFilter('all')}
+									/>
+									<span class="label-text">{$t('adventures.all')}</span>
+								</label>
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="sharing_filter"
+										class="radio radio-primary radio-sm"
+										checked={sharingFilter === 'shared'}
+										on:change={() => updateSharingFilter('shared')}
+									/>
+									<span class="label-text">{$t('share.shared')}</span>
+								</label>
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="sharing_filter"
+										class="radio radio-primary radio-sm"
+										checked={sharingFilter === 'not_shared'}
+										on:change={() => updateSharingFilter('not_shared')}
 									/>
 									<span class="label-text">{$t('adventures.private')}</span>
 								</label>
