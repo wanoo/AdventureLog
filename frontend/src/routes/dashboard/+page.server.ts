@@ -45,11 +45,17 @@ export const load = (async (event) => {
 		}
 
 		if (transportationsRes.ok) {
-			transportations = (await transportationsRes.json()).slice(0, 3);
+			const transportationsData = await transportationsRes.json();
+			// Handle both paginated and non-paginated responses
+			const transportationsList = transportationsData.results || transportationsData;
+			transportations = transportationsList.slice(0, 3);
 		}
 
 		if (lodgingsRes.ok) {
-			lodgings = (await lodgingsRes.json()).slice(0, 3);
+			const lodgingsData = await lodgingsRes.json();
+			// Handle both paginated and non-paginated responses
+			const lodgingsList = lodgingsData.results || lodgingsData;
+			lodgings = lodgingsList.slice(0, 3);
 		}
 
 		return {

@@ -772,6 +772,24 @@
 							/>
 						</div>
 
+						<!-- Public Toggle -->
+						<div class="form-control">
+							<label class="label cursor-pointer justify-start gap-4" for="is_public">
+								<input
+									type="checkbox"
+									class="toggle toggle-primary"
+									id="is_public"
+									bind:checked={transportation.is_public}
+								/>
+								<div>
+									<span class="label-text font-medium">{$t('transportation.public_transportation')}</span>
+									<p class="text-sm text-base-content/60">
+										{$t('transportation.public_transportation_description')}
+									</p>
+								</div>
+							</label>
+						</div>
+
 						<MoneyInput
 							label={$t('adventures.price')}
 							value={moneyValue}
@@ -837,28 +855,6 @@
 				<div class="space-y-4">
 					<input type="text" id="tags" name="tags" hidden bind:value={transportation.tags} />
 					<TagComplete bind:tags={transportation.tags} />
-				</div>
-			</div>
-		</div>
-
-		<!-- Visibility Section -->
-		<div class="card bg-base-100 border border-base-300 shadow-lg">
-			<div class="card-body p-6">
-				<div class="form-control">
-					<label class="label cursor-pointer justify-start gap-4" for="is_public">
-						<input
-							type="checkbox"
-							class="toggle toggle-primary"
-							id="is_public"
-							bind:checked={transportation.is_public}
-						/>
-						<div>
-							<span class="label-text font-medium">{$t('transportation.public_transportation')}</span>
-							<p class="text-sm text-base-content/60">
-								{$t('transportation.public_transportation_description')}
-							</p>
-						</div>
-					</label>
 				</div>
 			</div>
 		</div>
