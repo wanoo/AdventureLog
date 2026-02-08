@@ -110,12 +110,16 @@
 	const pinClusterOptions: ClusterOptions = { radius: 300, maxZoom: 8, minPoints: 2 };
 
 	type VisitStatus = 'visited' | 'planned';
+	type PinType = 'location' | 'lodging' | 'transport-departure' | 'transport-arrival';
 
 	type PinFeatureProperties = {
 		id: string;
 		name: string;
 		visitStatus: VisitStatus;
 		categoryIcon?: string;
+		pinType: PinType;
+		pinColor: string; // 'blue' | 'pink' | 'amber'
+		subInfo?: string; // For transport: from/to location
 	};
 
 	type PinFeature = {
@@ -132,13 +136,97 @@
 		features: PinFeature[];
 	};
 
+	// Unified pin type for clustering
+	type UnifiedPin = {
+		id: string;
+		name: string;
+		latitude: string | number;
+		longitude: string | number;
+		is_visited: boolean;
+		icon: string;
+		pinType: PinType;
+		pinColor: string;
+		subInfo?: string;
+	};
+
+	// Combine all filtered pins into a single array for clustering
+	$: allFilteredPins = (() => {
+		const unified: UnifiedPin[] = [];
+
+		// Add location pins
+		for (const pin of filteredPins) {
+			unified.push({
+				id: pin.id,
+				name: pin.name,
+				latitude: pin.latitude,
+				longitude: pin.longitude,
+				is_visited: pin.is_visited,
+				icon: pin.category?.icon || '📍',
+				pinType: 'location',
+				pinColor: 'blue'
+			});
+		}
+
+		// Add lodging pins
+		for (const lodging of filteredLodgingPins) {
+			if (lodging.latitude && lodging.longitude) {
+				unified.push({
+					id: lodging.id,
+					name: lodging.name,
+					latitude: lodging.latitude,
+					longitude: lodging.longitude,
+					is_visited: lodging.is_visited,
+					icon: getLodgingIcon(lodging.type),
+					pinType: 'lodging',
+					pinColor: 'pink'
+				});
+			}
+		}
+
+		// Add transportation pins (both departure and arrival)
+		for (const transport of filteredTransportationPins) {
+			const routeInfo = transport.from_location && transport.to_location
+				? `${transport.from_location} → ${transport.to_location}`
+				: transport.from_location || transport.to_location || '';
+
+			if (transport.origin_latitude && transport.origin_longitude) {
+				unified.push({
+					id: `${transport.id}-dep`,
+					name: transport.name,
+					latitude: transport.origin_latitude,
+					longitude: transport.origin_longitude,
+					is_visited: transport.is_visited,
+					icon: getTransportationIcon(transport.type),
+					pinType: 'transport-departure',
+					pinColor: 'amber',
+					subInfo: routeInfo
+				});
+			}
+			if (transport.destination_latitude && transport.destination_longitude) {
+				unified.push({
+					id: `${transport.id}-arr`,
+					name: transport.name,
+					latitude: transport.destination_latitude,
+					longitude: transport.destination_longitude,
+					is_visited: transport.is_visited,
+					icon: getTransportationIcon(transport.type),
+					pinType: 'transport-arrival',
+					pinColor: 'amber',
+					subInfo: routeInfo
+				});
+			}
+		}
+
+		return unified;
+	})();
+
 	function parseCoordinate(value: number | string | null | undefined): number | null {
 		if (value === null || value === undefined) return null;
 		const numeric = typeof value === 'number' ? value : Number(value);
 		return Number.isFinite(numeric) ? numeric : null;
 	}
 
-	function pinToFeature(pin: Pin): PinFeature | null {
+	function unifiedPinToFeature(pin: UnifiedPin): PinFeature | null {
 		const lat = parseCoordinate(pin.latitude);
 		const lon = parseCoordinate(pin.longitude);
 		if (lat === null || lon === null) return null;
@@ -150,36 +238,51 @@
 				id: pin.id,
 				name: pin.name,
 				visitStatus: pin.is_visited ? 'visited' : 'planned',
-				categoryIcon: pin.category?.icon || '📍'
+				categoryIcon: pin.icon,
+				pinType: pin.pinType,
+				pinColor: pin.pinColor,
+				subInfo: pin.subInfo
 			}
 		};
 	}
 
 	function pinToFeatureUnknown(item: unknown) {
-		return pinToFeature(item as Pin);
+		return unifiedPinToFeature(item as UnifiedPin);
 	}
 
 	function getMarkerProps(feature: any): PinFeatureProperties | null {
 		return feature && feature.properties ? feature.properties : null;
 	}
 
-	// Location pins are blue with border indicating visited status
-	function getVisitStatusClass(status: VisitStatus): string {
-		// All location pins are blue, border style indicates visited status
-		const baseClass = 'bg-gradient-to-br from-blue-400 to-blue-600';
-		switch (status) {
-			case 'visited':
-				return `${baseClass} border-[3px] border-white`;
-			case 'planned':
-				return `${baseClass} border-[3px] border-dashed border-white/60`;
+	// Get pin color gradient based on pin type
+	function getPinColorClass(pinColor: string): string {
+		switch (pinColor) {
+			case 'pink':
+				return 'bg-gradient-to-br from-pink-400 to-pink-600';
+			case 'amber':
+				return 'bg-gradient-to-br from-amber-400 to-amber-600';
+			case 'blue':
 			default:
-				return baseClass;
+				return 'bg-gradient-to-br from-blue-400 to-blue-600';
 		}
 	}
 
-	function markerClassResolver(props: { visitStatus?: string } | null): string {
-		if (!props?.visitStatus) return 'bg-gradient-to-br from-blue-400 to-blue-600';
-		return getVisitStatusClass(props.visitStatus as VisitStatus);
+	// Get visit status border class
+	function getVisitStatusBorderClass(status: VisitStatus): string {
+		switch (status) {
+			case 'visited':
+				return 'border-[3px] border-white';
+			case 'planned':
+				return 'border-[3px] border-dashed border-white/60';
+			default:
+				return '';
+		}
+	}
+
+	function markerClassResolver(props: { visitStatus?: string; pinColor?: string } | null): string {
+		const colorClass = getPinColorClass(props?.pinColor || 'blue');
+		const borderClass = getVisitStatusBorderClass((props?.visitStatus as VisitStatus) || 'planned');
+		return `${colorClass} ${borderClass}`;
 	}
 
 	function markerLabelResolver(props: { categoryIcon?: string } | null): string {
@@ -198,8 +301,36 @@
 		return (TRANSPORTATION_TYPES_ICONS as Record<string, string>)[type] || '🚗';
 	}
 
-	async function handleViewDetails(pinId: string) {
-		goto(`/locations/${pinId}`);
+	function getDetailUrl(props: PinFeatureProperties): string {
+		const id = props.id.replace(/-dep$/, '').replace(/-arr$/, '');
+		switch (props.pinType) {
+			case 'lodging':
+				return `/lodging/${id}`;
+			case 'transport-departure':
+			case 'transport-arrival':
+				return `/transportations/${id}`;
+			case 'location':
+			default:
+				return `/locations/${id}`;
+		}
+	}
+
+	async function handleViewDetails(props: PinFeatureProperties) {
+		goto(getDetailUrl(props));
+	}
+
+	function getTypeLabel(pinType: PinType): string {
+		switch (pinType) {
+			case 'lodging':
+				return $t('navbar.lodging');
+			case 'transport-departure':
+				return $t('transportation.departure');
+			case 'transport-arrival':
+				return $t('transportation.arrival');
+			case 'location':
+			default:
+				return $t('navbar.locations');
+		}
 	}
 
 	// Statistics
@@ -285,10 +416,6 @@
 			);
 		});
 
-		// Auto-zoom to search results when search query changes
-		if (query && filteredPins.length > 0 && typeof window !== 'undefined') {
-			zoomToFilteredPins();
-		}
 	}
 
 	// Filter lodging pins
@@ -340,6 +467,15 @@
 				transport.to_location?.toLowerCase().includes(query)
 			);
 		});
+	}
+
+	// Auto-zoom to search results when search query changes (for any type)
+	$: {
+		const query = searchQuery.toLowerCase().trim();
+		const hasResults = filteredPins.length > 0 || filteredLodgingPins.length > 0 || filteredTransportationPins.length > 0;
+		if (query && hasResults && typeof window !== 'undefined') {
+			zoomToFilteredPins();
+		}
 	}
 
 	// Reset the longitude and latitude when the newMarker is set to null
@@ -531,23 +667,52 @@
 	}
 
 	function zoomToFilteredPins() {
-		if (filteredPins.length === 0) return;
+		// Collect all coordinates from all filtered items
+		const allCoords: { lng: number; lat: number }[] = [];
 
-		const lngs = filteredPins
-			.map((pin) => parseCoordinate(pin.longitude))
-			.filter((lng): lng is number => lng !== null);
-		const lats = filteredPins
-			.map((pin) => parseCoordinate(pin.latitude))
-			.filter((lat): lat is number => lat !== null);
+		// Add location pins
+		for (const pin of filteredPins) {
+			const lng = parseCoordinate(pin.longitude);
+			const lat = parseCoordinate(pin.latitude);
+			if (lng !== null && lat !== null) {
+				allCoords.push({ lng, lat });
+			}
+		}
 
-		if (lngs.length === 0 || lats.length === 0) return;
+		// Add lodging pins
+		for (const lodging of filteredLodgingPins) {
+			const lng = parseCoordinate(lodging.longitude);
+			const lat = parseCoordinate(lodging.latitude);
+			if (lng !== null && lat !== null) {
+				allCoords.push({ lng, lat });
+			}
+		}
+
+		// Add transportation pins (both origin and destination)
+		for (const transport of filteredTransportationPins) {
+			const originLng = parseCoordinate(transport.origin_longitude);
+			const originLat = parseCoordinate(transport.origin_latitude);
+			if (originLng !== null && originLat !== null) {
+				allCoords.push({ lng: originLng, lat: originLat });
+			}
+			const destLng = parseCoordinate(transport.destination_longitude);
+			const destLat = parseCoordinate(transport.destination_latitude);
+			if (destLng !== null && destLat !== null) {
+				allCoords.push({ lng: destLng, lat: destLat });
+			}
+		}
+
+		if (allCoords.length === 0) return;
+
+		const lngs = allCoords.map((c) => c.lng);
+		const lats = allCoords.map((c) => c.lat);
 
 		const minLng = Math.min(...lngs);
 		const maxLng = Math.max(...lngs);
 		const minLat = Math.min(...lats);
 		const maxLat = Math.max(...lats);
 
-		if (filteredPins.length === 1) {
+		if (allCoords.length === 1) {
 			// Single pin - center on it with a nice zoom level
 			mapCenter = [lngs[0], lats[0]];
 			mapZoom = 12;
@@ -741,7 +906,7 @@
 						<FullMap
 							bind:basemapType
 							sourceId={PIN_SOURCE_ID}
-							items={filteredPins}
+							items={allFilteredPins}
 							toFeature={pinToFeatureUnknown}
 							clusterEnabled={true}
 							clusterOptions={pinClusterOptions}
@@ -767,7 +932,7 @@
 										>
 											<!-- Marker Pin -->
 											<div
-												class="map-pin-hit grid place-items-center w-8 h-8 rounded-full border-2 border-white shadow-lg text-base cursor-pointer group-hover:scale-110 transition-all duration-200 {markerClassResolver(
+												class="map-pin-hit grid place-items-center w-8 h-8 rounded-full shadow-lg text-base cursor-pointer group-hover:scale-110 transition-all duration-200 {markerClassResolver(
 													markerProps
 												)}"
 												class:scale-110={isActive}
@@ -777,49 +942,66 @@
 												title=""
 												on:mouseenter={() => {
 													setActive(true);
-													prefetchLocationDetailsForPopup(markerProps.id);
+													// Only fetch location details for location pins
+													if (markerProps.pinType === 'location') {
+														prefetchLocationDetailsForPopup(markerProps.id);
+													}
 												}}
 												on:mouseleave={() => {
 													if (isTouchLike) return;
 													setActive(false);
-													clearHoverPopupIfActive(markerProps.id);
+													if (markerProps.pinType === 'location') {
+														clearHoverPopupIfActive(markerProps.id);
+													}
 												}}
 												on:focus={() => {
 													setActive(true);
-													prefetchLocationDetailsForPopup(markerProps.id);
+													if (markerProps.pinType === 'location') {
+														prefetchLocationDetailsForPopup(markerProps.id);
+													}
 												}}
 												on:blur={() => {
 													if (isTouchLike) return;
 													setActive(false);
-													clearHoverPopupIfActive(markerProps.id);
+													if (markerProps.pinType === 'location') {
+														clearHoverPopupIfActive(markerProps.id);
+													}
 												}}
 												on:click={(e) => {
 													e.stopPropagation();
 													if (isTouchLike) {
 														// On touch devices: first tap shows popup, second tap navigates
-														if (isActive && hoveredPinId === markerProps.id && hoveredLocation) {
-															// Already active with details loaded - navigate
-															handleViewDetails(markerProps.id);
+														if (isActive) {
+															if (markerProps.pinType === 'location') {
+																if (hoveredPinId === markerProps.id && hoveredLocation) {
+																	handleViewDetails(markerProps);
+																	return;
+																}
+																prefetchLocationDetailsForPopup(markerProps.id);
+															} else {
+																// For lodging/transport, navigate directly on second tap
+																handleViewDetails(markerProps);
+															}
 															return;
 														}
-														// First tap or details not loaded - show popup
 														setActive(true);
-														prefetchLocationDetailsForPopup(markerProps.id);
+														if (markerProps.pinType === 'location') {
+															prefetchLocationDetailsForPopup(markerProps.id);
+														}
 														return;
 													}
 													// Desktop: click navigates directly
-													handleViewDetails(markerProps.id);
+													handleViewDetails(markerProps);
 												}}
 												on:keydown={(e) => {
 													if (e.key !== 'Enter') return;
 													e.stopPropagation();
-													handleViewDetails(markerProps.id);
+													handleViewDetails(markerProps);
 												}}
 											>
 												{markerLabelResolver(markerProps)}
 											</div>
 
-											<!-- View Details button moved here -->
 											<!-- Custom DaisyUI Popup -->
 											<div
 												class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-all duration-200 z-[9999]"
@@ -830,12 +1012,22 @@
 													class="card card-compact bg-base-100 shadow-xl border border-base-300 min-w-56 max-w-80"
 												>
 													<div class="card-body gap-3">
-														<!-- Always-visible (fast) content -->
+														<!-- Always-visible content -->
 														<div class="space-y-2">
 															<div class="min-w-0">
 																<h3 class="card-title text-sm leading-tight truncate">
 																	{markerProps.name}
 																</h3>
+																{#if markerProps.pinType !== 'location'}
+																	<div class="text-xs text-base-content/60">
+																		{getTypeLabel(markerProps.pinType)}
+																	</div>
+																{/if}
+																{#if markerProps.subInfo}
+																	<div class="text-xs text-base-content/70 mt-1">
+																		{markerProps.subInfo}
+																	</div>
+																{/if}
 																<div class="mt-1 flex items-center gap-2">
 																	<div
 																		class="badge badge-sm {markerProps.visitStatus === 'visited'
@@ -855,8 +1047,8 @@
 															</div>
 														</div>
 
-														{#if isActive}
-															<!-- Progressive (fetched) content -->
+														<!-- Location-specific progressive content -->
+														{#if isActive && markerProps.pinType === 'location'}
 															{#if hoveredPinId !== markerProps.id}
 																<div class="space-y-2">
 																	<div class="flex items-center gap-2">
@@ -866,10 +1058,6 @@
 																	<div class="skeleton h-3 w-3/4"></div>
 																	<div class="skeleton h-3 w-full"></div>
 																	<div class="skeleton h-3 w-2/3"></div>
-																	<div class="grid grid-cols-2 gap-2">
-																		<div class="skeleton h-6 w-full"></div>
-																		<div class="skeleton h-6 w-full"></div>
-																	</div>
 																</div>
 															{:else if hoveredLocationError}
 																<div role="alert" class="alert alert-error alert-soft">
@@ -884,10 +1072,6 @@
 																	<div class="skeleton h-3 w-3/4"></div>
 																	<div class="skeleton h-3 w-full"></div>
 																	<div class="skeleton h-3 w-2/3"></div>
-																	<div class="grid grid-cols-2 gap-2">
-																		<div class="skeleton h-6 w-full"></div>
-																		<div class="skeleton h-6 w-full"></div>
-																	</div>
 																</div>
 															{:else if hoveredLocation}
 																{#if hoveredLocation.category?.display_name}
@@ -914,12 +1098,6 @@
 																	<div class="badge badge-ghost badge-sm">
 																		Media: {hoveredLocation.images?.length ?? 0}
 																	</div>
-																	<div class="badge badge-ghost badge-sm">
-																		Files: {hoveredLocation.attachments?.length ?? 0}
-																	</div>
-																	<div class="badge badge-ghost badge-sm">
-																		Trails: {hoveredLocation.trails?.length ?? 0}
-																	</div>
 																</div>
 
 																{#if hoveredLocation.visits && hoveredLocation.visits.length > 0}
@@ -932,21 +1110,8 @@
 
 																{#if hoveredLocation.description}
 																	<p class="text-xs leading-snug text-base-content/80">
-																		{truncateForPopup(hoveredLocation.description, 160)}
+																		{truncateForPopup(hoveredLocation.description, 100)}
 																	</p>
-																{/if}
-
-																{#if hoveredLocation.tags && hoveredLocation.tags.length > 0}
-																	<div class="flex flex-wrap gap-1">
-																		{#each hoveredLocation.tags.slice(0, 6) as tag}
-																			<span class="badge badge-ghost badge-sm">{tag}</span>
-																		{/each}
-																		{#if hoveredLocation.tags.length > 6}
-																			<span class="badge badge-ghost badge-sm"
-																				>+{hoveredLocation.tags.length - 6}</span
-																			>
-																		{/if}
-																	</div>
 																{/if}
 															{/if}
 														{/if}
@@ -957,7 +1122,7 @@
 																class="btn btn-primary btn-sm"
 																on:click={(e) => {
 																	e.stopPropagation();
-																	handleViewDetails(markerProps.id);
+																	handleViewDetails(markerProps);
 																}}
 															>
 																{$t('map.view_details')}
@@ -979,108 +1144,6 @@
 								{#if newMarker}
 									<DefaultMarker lngLat={newMarker.lngLat} />
 								{/if}
-
-								<!-- Lodging Pins (Pink) -->
-								{#each filteredLodgingPins as lodging}
-									{#if lodging.latitude && lodging.longitude}
-										<Marker
-											lngLat={[Number(lodging.longitude), Number(lodging.latitude)]}
-											class="grid h-8 w-8 place-items-center rounded-full shadow-lg cursor-pointer transition-transform hover:scale-110 bg-gradient-to-br from-pink-400 to-pink-600 {lodging.is_visited ? 'border-[3px] border-white' : 'border-[3px] border-dashed border-white/60'}"
-										>
-											<span class="text-base">{getLodgingIcon(lodging.type)}</span>
-											<Popup openOn="click" offset={[0, -10]}>
-												<div class="space-y-2 min-w-48">
-													<div class="text-lg text-black font-bold">{lodging.name}</div>
-													<div class="flex gap-2">
-														<div class="badge {lodging.is_visited ? 'badge-success' : 'badge-info'} badge-sm">
-															{lodging.is_visited ? $t('adventures.visited') : $t('adventures.planned')}
-														</div>
-														<div class="badge badge-ghost badge-sm">{lodging.type}</div>
-													</div>
-													<button
-														type="button"
-														class="btn btn-primary btn-sm w-full"
-														on:click={() => goto(`/lodging/${lodging.id}`)}
-													>
-														{$t('map.view_details')}
-													</button>
-												</div>
-											</Popup>
-										</Marker>
-									{/if}
-								{/each}
-
-								<!-- Transportation Pins (Yellow) - Both Departure AND Arrival -->
-								{#each filteredTransportationPins as transport}
-									<!-- Departure Pin -->
-									{#if transport.origin_latitude && transport.origin_longitude}
-										<Marker
-											lngLat={[Number(transport.origin_longitude), Number(transport.origin_latitude)]}
-											class="grid h-8 w-8 place-items-center rounded-full shadow-lg cursor-pointer transition-transform hover:scale-110 bg-gradient-to-br from-amber-400 to-amber-600 {transport.is_visited ? 'border-[3px] border-white' : 'border-[3px] border-dashed border-white/60'}"
-										>
-											<span class="text-base">{getTransportationIcon(transport.type)}</span>
-											<Popup openOn="click" offset={[0, -10]}>
-												<div class="space-y-2 min-w-48">
-													<div class="text-lg text-black font-bold">{transport.name}</div>
-													<div class="text-xs text-gray-500 font-medium">{$t('transportation.departure')}</div>
-													{#if transport.from_location}
-														<div class="text-sm text-gray-600">{transport.from_location}</div>
-													{/if}
-													{#if transport.to_location}
-														<div class="text-sm text-gray-600">→ {transport.to_location}</div>
-													{/if}
-													<div class="flex gap-2">
-														<div class="badge {transport.is_visited ? 'badge-success' : 'badge-info'} badge-sm">
-															{transport.is_visited ? $t('adventures.visited') : $t('adventures.planned')}
-														</div>
-														<div class="badge badge-ghost badge-sm">{transport.type}</div>
-													</div>
-													<button
-														type="button"
-														class="btn btn-primary btn-sm w-full"
-														on:click={() => goto(`/transportations/${transport.id}`)}
-													>
-														{$t('map.view_details')}
-													</button>
-												</div>
-											</Popup>
-										</Marker>
-									{/if}
-									<!-- Arrival Pin -->
-									{#if transport.destination_latitude && transport.destination_longitude}
-										<Marker
-											lngLat={[Number(transport.destination_longitude), Number(transport.destination_latitude)]}
-											class="grid h-8 w-8 place-items-center rounded-full shadow-lg cursor-pointer transition-transform hover:scale-110 bg-gradient-to-br from-amber-400 to-amber-600 {transport.is_visited ? 'border-[3px] border-white' : 'border-[3px] border-dashed border-white/60'}"
-										>
-											<span class="text-base">{getTransportationIcon(transport.type)}</span>
-											<Popup openOn="click" offset={[0, -10]}>
-												<div class="space-y-2 min-w-48">
-													<div class="text-lg text-black font-bold">{transport.name}</div>
-													<div class="text-xs text-gray-500 font-medium">{$t('transportation.arrival')}</div>
-													{#if transport.from_location}
-														<div class="text-sm text-gray-600">{transport.from_location} →</div>
-													{/if}
-													{#if transport.to_location}
-														<div class="text-sm text-gray-600">{transport.to_location}</div>
-													{/if}
-													<div class="flex gap-2">
-														<div class="badge {transport.is_visited ? 'badge-success' : 'badge-info'} badge-sm">
-															{transport.is_visited ? $t('adventures.visited') : $t('adventures.planned')}
-														</div>
-														<div class="badge badge-ghost badge-sm">{transport.type}</div>
-													</div>
-													<button
-														type="button"
-														class="btn btn-primary btn-sm w-full"
-														on:click={() => goto(`/transportations/${transport.id}`)}
-													>
-														{$t('map.view_details')}
-													</button>
-												</div>
-											</Popup>
-										</Marker>
-									{/if}
-								{/each}
 
 								{#each visitedRegions as region}
 									{#if showRegions}
@@ -1248,7 +1311,7 @@
 										<button
 											type="button"
 											class="btn btn-ghost btn-xs"
-											on:click|stopPropagation={() => (expandLocationFilters = !expandLocationFilters)}
+											on:click|stopPropagation|preventDefault={() => (expandLocationFilters = !expandLocationFilters)}
 										>
 											{#if expandLocationFilters}
 												<ChevronUp class="w-4 h-4" />
@@ -1304,7 +1367,7 @@
 										<button
 											type="button"
 											class="btn btn-ghost btn-xs"
-											on:click|stopPropagation={() => (expandLodgingFilters = !expandLodgingFilters)}
+											on:click|stopPropagation|preventDefault={() => (expandLodgingFilters = !expandLodgingFilters)}
 										>
 											{#if expandLodgingFilters}
 												<ChevronUp class="w-4 h-4" />
@@ -1360,7 +1423,7 @@
 										<button
 											type="button"
 											class="btn btn-ghost btn-xs"
-											on:click|stopPropagation={() => (expandTransportationFilters = !expandTransportationFilters)}
+											on:click|stopPropagation|preventDefault={() => (expandTransportationFilters = !expandTransportationFilters)}
 										>
 											{#if expandTransportationFilters}
 												<ChevronUp class="w-4 h-4" />
