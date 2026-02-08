@@ -23,6 +23,7 @@ export const load = (async (event) => {
 	const order_by = event.url.searchParams.get('order_by') || 'updated_at';
 	const order_direction = event.url.searchParams.get('order_direction') || 'desc';
 	const status = event.url.searchParams.get('status') || '';
+	const is_public = event.url.searchParams.get('is_public') || 'all';
 	const page = event.url.searchParams.get('page') || '1';
 	const currentPage = parseInt(page);
 
@@ -33,7 +34,8 @@ export const load = (async (event) => {
 
 	// Build API URL with nested=true for lighter payload
 	const statusParam = status ? `&status=${status}` : '';
-	const apiUrl = `${serverEndpoint}/api/collections/?order_by=${order_by}&order_direction=${order_direction}&page=${page}&nested=true${statusParam}`;
+	const isPublicParam = is_public !== 'all' ? `&is_public=${is_public}` : '';
+	const apiUrl = `${serverEndpoint}/api/collections/?order_by=${order_by}&order_direction=${order_direction}&page=${page}&nested=true${statusParam}${isPublicParam}`;
 
 	try {
 		// Execute all API calls in parallel
@@ -69,6 +71,7 @@ export const load = (async (event) => {
 				order_by,
 				order_direction,
 				status,
+				is_public,
 				archivedCollections: archivedData as SlimCollection[],
 				invites: invitesData
 			}

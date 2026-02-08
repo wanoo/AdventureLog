@@ -106,6 +106,19 @@ class TransportationViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    def _apply_ownership_filtering(self, queryset, request):
+        """Apply ownership filtering to queryset (mine, public, all)."""
+        ownership_param = request.query_params.get('ownership')
+        if ownership_param is None or ownership_param == 'all':
+            return queryset
+
+        if ownership_param.lower() == 'mine':
+            queryset = queryset.filter(user=request.user)
+        elif ownership_param.lower() == 'public':
+            queryset = queryset.filter(is_public=True).exclude(user=request.user)
+
+        return queryset
+
     # ==================== CUSTOM ACTIONS ====================
 
     @action(detail=False, methods=['get'])
@@ -148,6 +161,7 @@ class TransportationViewSet(viewsets.ModelViewSet):
         # Apply visit and public filters
         queryset = self._apply_visit_filtering(queryset, request)
         queryset = self._apply_public_filtering(queryset, request)
+        queryset = self._apply_ownership_filtering(queryset, request)
 
         queryset = self.apply_sorting(queryset)
         return self.paginate_and_respond(queryset, request)

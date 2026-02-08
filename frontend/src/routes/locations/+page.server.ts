@@ -28,9 +28,11 @@ export const load = (async (event) => {
 		const order_direction = event.url.searchParams.get('order_direction') || 'asc';
 		const page = event.url.searchParams.get('page') || '1';
 		const is_visited = event.url.searchParams.get('is_visited') || 'all';
+		const is_public = event.url.searchParams.get('is_public') || 'all';
+		const ownership = event.url.searchParams.get('ownership') || 'all';
 
 		let initialFetch = await event.fetch(
-			`${serverEndpoint}/api/locations/filtered?types=${typeString}&order_by=${order_by}&order_direction=${order_direction}&include_collections=${include_collections}&page=${page}&is_visited=${is_visited}`,
+			`${serverEndpoint}/api/locations/filtered?types=${typeString}&order_by=${order_by}&order_direction=${order_direction}&include_collections=${include_collections}&page=${page}&is_visited=${is_visited}&is_public=${is_public}&ownership=${ownership}`,
 			{
 				headers: {
 					Cookie: `sessionid=${event.cookies.get('sessionid')}`

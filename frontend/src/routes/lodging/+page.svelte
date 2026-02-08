@@ -48,7 +48,8 @@
 		order_by: 'updated_at',
 		order: 'asc',
 		is_visited: 'all',
-		is_public: 'all'
+		is_public: 'all',
+		ownership: 'all'
 	};
 
 	// Get type options from the icons with localized labels
@@ -95,6 +96,7 @@
 		currentSort.order = url.searchParams.get('order_direction') || 'asc';
 		currentSort.is_visited = url.searchParams.get('is_visited') || 'all';
 		currentSort.is_public = url.searchParams.get('is_public') || 'all';
+		currentSort.ownership = url.searchParams.get('ownership') || 'all';
 	}
 
 	function getVisitedCount() {
@@ -443,6 +445,43 @@
 									value="false"
 									aria-label={$t('adventures.private')}
 									checked={currentSort.is_public === 'false'}
+								/>
+							</div>
+						</div>
+
+						<!-- Ownership Filter -->
+						<div class="card bg-base-200/50 p-4">
+							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+								<Eye class="w-5 h-5" />
+								{$t('adventures.ownership_filter')}
+							</h3>
+							<div class="join w-full">
+								<input
+									class="join-item btn btn-sm flex-1"
+									type="radio"
+									name="ownership"
+									id="all_ownership"
+									value="all"
+									aria-label={$t('adventures.all')}
+									checked={currentSort.ownership === 'all'}
+								/>
+								<input
+									class="join-item btn btn-sm flex-1"
+									type="radio"
+									name="ownership"
+									id="mine_ownership"
+									value="mine"
+									aria-label={$t('adventures.my_locations')}
+									checked={currentSort.ownership === 'mine'}
+								/>
+								<input
+									class="join-item btn btn-sm flex-1"
+									type="radio"
+									name="ownership"
+									id="public_ownership"
+									value="public"
+									aria-label={$t('adventures.public_locations')}
+									checked={currentSort.ownership === 'public'}
 								/>
 							</div>
 						</div>

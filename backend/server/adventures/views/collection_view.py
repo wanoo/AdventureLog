@@ -67,12 +67,12 @@ class CollectionViewSet(viewsets.ModelViewSet):
         """Apply status filtering based on query parameter"""
         from datetime import date
         status_filter = self.request.query_params.get('status', None)
-        
+
         if not status_filter:
             return queryset
-        
+
         today = date.today()
-        
+
         if status_filter == 'folder':
             # Collections without dates
             return queryset.filter(Q(start_date__isnull=True) | Q(end_date__isnull=True))
@@ -85,7 +85,20 @@ class CollectionViewSet(viewsets.ModelViewSet):
         elif status_filter == 'completed':
             # End date in the past
             return queryset.filter(end_date__lt=today)
-        
+
+        return queryset
+
+    def _apply_public_filtering(self, queryset, request):
+        """Apply public/private filtering to queryset."""
+        is_public_param = request.query_params.get('is_public')
+        if is_public_param is None or is_public_param == 'all':
+            return queryset
+
+        if is_public_param.lower() == 'true':
+            queryset = queryset.filter(is_public=True)
+        elif is_public_param.lower() == 'false':
+            queryset = queryset.filter(is_public=False)
+
         return queryset
     
     def get_serializer_context(self):
@@ -182,6 +195,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
         )
         
         queryset = self.apply_status_filter(queryset)
+        queryset = self._apply_public_filtering(queryset, request)
         queryset = self.apply_sorting(queryset)
         return self.paginate_and_respond(queryset, request)
     

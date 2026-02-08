@@ -227,6 +227,10 @@ class LocationViewSet(viewsets.ModelViewSet):
 
         # Apply visit status filtering
         queryset = self._apply_visit_filtering(queryset, request)
+        # Apply visibility filtering
+        queryset = self._apply_public_filtering(queryset, request)
+        # Apply ownership filtering
+        queryset = self._apply_ownership_filtering(queryset, request)
         queryset = self.apply_sorting(queryset)
 
         return self.paginate_and_respond(queryset, request)
@@ -534,6 +538,32 @@ class LocationViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(visits__start_date__lte=now).distinct()
         else:
             queryset = queryset.exclude(visits__start_date__lte=now).distinct()
+
+        return queryset
+
+    def _apply_public_filtering(self, queryset, request):
+        """Apply public/private filtering to queryset."""
+        is_public_param = request.query_params.get('is_public')
+        if is_public_param is None or is_public_param == 'all':
+            return queryset
+
+        if is_public_param.lower() == 'true':
+            queryset = queryset.filter(is_public=True)
+        elif is_public_param.lower() == 'false':
+            queryset = queryset.filter(is_public=False)
+
+        return queryset
+
+    def _apply_ownership_filtering(self, queryset, request):
+        """Apply ownership filtering to queryset (mine, public, all)."""
+        ownership_param = request.query_params.get('ownership')
+        if ownership_param is None or ownership_param == 'all':
+            return queryset
+
+        if ownership_param.lower() == 'mine':
+            queryset = queryset.filter(user=request.user)
+        elif ownership_param.lower() == 'public':
+            queryset = queryset.filter(is_public=True).exclude(user=request.user)
 
         return queryset
 

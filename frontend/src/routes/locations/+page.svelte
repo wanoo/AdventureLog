@@ -27,7 +27,9 @@
 		visited: true,
 		planned: true,
 		includeCollections: true,
-		is_visited: 'all'
+		is_visited: 'all',
+		is_public: 'all',
+		ownership: 'all'
 	};
 
 	let locationBeingUpdated: Location | undefined = undefined;
@@ -58,8 +60,6 @@
 	let isLocationModalOpen: boolean = false;
 	let sidebarOpen = false;
 
-	// Visibility filter for collaborative mode
-	let visibilityFilter: 'all' | 'true' | 'false' = 'all';
 
 	// Reactive statements - Only read from URL, don't write
 	$: {
@@ -124,6 +124,8 @@
 		if (url.searchParams.get('is_visited')) {
 			currentSort.is_visited = url.searchParams.get('is_visited') || 'all';
 		}
+		currentSort.is_public = url.searchParams.get('is_public') || 'all';
+		currentSort.ownership = url.searchParams.get('ownership') || 'all';
 	}
 
 	function handleChangePage(pageNumber: number) {
@@ -156,19 +158,6 @@
 		return adventures.filter((a) => !a.is_visited).length;
 	}
 
-	// Filter adventures by visibility (for collaborative mode)
-	$: filteredByVisibility = (() => {
-		if (!data.collaborativeMode || visibilityFilter === 'all') {
-			return adventures;
-		}
-		if (visibilityFilter === 'true') {
-			return adventures.filter((a) => (a as Location).is_public === true);
-		}
-		if (visibilityFilter === 'false') {
-			return adventures.filter((a) => (a as Location).is_public === false);
-		}
-		return adventures;
-	})();
 </script>
 
 <svelte:head>
@@ -248,7 +237,7 @@
 
 			<!-- Main Content -->
 			<div class="container mx-auto px-6 py-8">
-				{#if filteredByVisibility.length === 0}
+				{#if adventures.length === 0}
 					<div class="flex flex-col items-center justify-center py-16">
 						<div class="p-6 bg-base-200/50 rounded-2xl mb-6">
 							<Compass class="w-16 h-16 text-base-content/30" />
@@ -275,7 +264,7 @@
 					<div
 						class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6"
 					>
-						{#each filteredByVisibility as adventure}
+						{#each adventures as adventure}
 							<LocationCard
 								user={data.user}
 								{adventure}
@@ -510,32 +499,66 @@
 									<input
 										class="join-item btn btn-sm flex-1"
 										type="radio"
-										name="visibility"
+										name="is_public"
 										id="all_visibility"
 										value="all"
 										aria-label={$t('adventures.all')}
-										checked={visibilityFilter === 'all'}
-										on:change={() => (visibilityFilter = 'all')}
+										checked={currentSort.is_public === 'all'}
 									/>
 									<input
 										class="join-item btn btn-sm flex-1"
 										type="radio"
-										name="visibility"
+										name="is_public"
 										id="public_visibility"
 										value="true"
 										aria-label={$t('adventures.public')}
-										checked={visibilityFilter === 'true'}
-										on:change={() => (visibilityFilter = 'true')}
+										checked={currentSort.is_public === 'true'}
 									/>
 									<input
 										class="join-item btn btn-sm flex-1"
 										type="radio"
-										name="visibility"
+										name="is_public"
 										id="private_visibility"
 										value="false"
 										aria-label={$t('adventures.private')}
-										checked={visibilityFilter === 'false'}
-										on:change={() => (visibilityFilter = 'false')}
+										checked={currentSort.is_public === 'false'}
+									/>
+								</div>
+							</div>
+
+							<!-- Ownership Filter -->
+							<div class="card bg-base-200/50 p-4">
+								<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+									<Eye class="w-5 h-5" />
+									{$t('adventures.ownership_filter')}
+								</h3>
+								<div class="join w-full">
+									<input
+										class="join-item btn btn-sm flex-1"
+										type="radio"
+										name="ownership"
+										id="all_ownership"
+										value="all"
+										aria-label={$t('adventures.all')}
+										checked={currentSort.ownership === 'all'}
+									/>
+									<input
+										class="join-item btn btn-sm flex-1"
+										type="radio"
+										name="ownership"
+										id="mine_ownership"
+										value="mine"
+										aria-label={$t('adventures.my_locations')}
+										checked={currentSort.ownership === 'mine'}
+									/>
+									<input
+										class="join-item btn btn-sm flex-1"
+										type="radio"
+										name="ownership"
+										id="public_ownership"
+										value="public"
+										aria-label={$t('adventures.public_locations')}
+										checked={currentSort.ownership === 'public'}
 									/>
 								</div>
 							</div>
