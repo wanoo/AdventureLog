@@ -548,37 +548,31 @@
 																{$t('adventures.added_by')} <a href="/profile/{visit.user_username}" class="font-semibold link link-hover link-primary">{visit.user_username}</a>
 															</div>
 															{#if visit.rating !== null && visit.rating !== undefined}
-																<div class="flex items-center gap-1">
-																	<div class="rating rating-sm">
-																		{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
-																			<input
-																				type="radio"
-																				name="rating-visit-{visit.id}"
-																				class="mask mask-star-2 bg-warning"
-																				checked={star <= Math.round(visit.rating ?? 0)}
-																				disabled
-																			/>
-																		{/each}
-																	</div>
-																	<span class="text-xs opacity-70">({visit.rating})</span>
+																<div class="rating rating-sm">
+																	{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
+																		<input
+																			type="radio"
+																			name="rating-visit-{visit.id}"
+																			class="mask mask-star-2 bg-warning"
+																			checked={star <= visit.rating}
+																			disabled
+																		/>
+																	{/each}
 																</div>
 															{/if}
 														</div>
 													{:else if visit.rating !== null && visit.rating !== undefined}
 														<div class="flex justify-end mb-2">
-															<div class="flex items-center gap-1">
-																<div class="rating rating-sm">
-																	{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
-																		<input
-																			type="radio"
-																			name="rating-visit-nousername-{visit.id}"
-																			class="mask mask-star-2 bg-warning"
-																			checked={star <= Math.round(visit.rating ?? 0)}
-																			disabled
-																		/>
-																	{/each}
-																</div>
-																<span class="text-xs opacity-70">({visit.rating})</span>
+															<div class="rating rating-sm">
+																{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
+																	<input
+																		type="radio"
+																		name="rating-visit-nousername-{visit.id}"
+																		class="mask mask-star-2 bg-warning"
+																		checked={star <= visit.rating}
+																		disabled
+																	/>
+																{/each}
 															</div>
 														</div>
 													{/if}

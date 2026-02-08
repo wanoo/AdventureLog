@@ -395,7 +395,7 @@ class LocationSerializer(CustomModelSerializer):
         ratings = [v.rating for v in obj.visits.all() if v.rating is not None]
         if not ratings:
             return None
-        return round(sum(ratings) / len(ratings), 1)
+        return round(sum(ratings) / len(ratings), 2)
 
     def get_contributors(self, obj):
         """
@@ -951,7 +951,7 @@ class TransportationSerializer(CustomModelSerializer):
         ratings = [v.rating for v in obj.visits.all() if v.rating is not None]
         if not ratings:
             return None
-        return round(sum(ratings) / len(ratings), 1)
+        return round(sum(ratings) / len(ratings), 2)
 
 
 class LodgingSerializer(CustomModelSerializer):
@@ -1016,7 +1016,7 @@ class LodgingSerializer(CustomModelSerializer):
         ratings = [v.rating for v in obj.visits.all() if v.rating is not None]
         if not ratings:
             return None
-        return round(sum(ratings) / len(ratings), 1)
+        return round(sum(ratings) / len(ratings), 2)
 
 
 class NoteSerializer(CustomModelSerializer):
