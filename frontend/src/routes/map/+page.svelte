@@ -1114,11 +1114,10 @@
 											class="relative group z-[1000] group-hover:z-[10000] focus-within:z-[10000]"
 										>
 											<!-- Marker Pin -->
-											{@const isGrouped = markerProps.groupedItems && markerProps.groupedItems.length > 0}
 											<div
 												class="map-pin-hit grid place-items-center rounded-full shadow-lg cursor-pointer group-hover:scale-110 transition-all duration-200 {markerClassResolver(
 													markerProps
-												)} {isGrouped ? 'w-10 h-10 text-sm font-bold' : 'w-8 h-8 text-base'}"
+												)} {markerProps.groupedItems && markerProps.groupedItems.length > 0 ? 'w-10 h-10 text-sm font-bold' : 'w-8 h-8 text-base'}"
 												class:scale-110={isActive}
 												role="button"
 												tabindex="0"
@@ -1195,7 +1194,7 @@
 													handleViewDetails(markerProps);
 												}}
 											>
-												{#if isGrouped}
+												{#if markerProps.groupedItems && markerProps.groupedItems.length > 0}
 													{markerProps.groupedItems.length}
 												{:else}
 													{markerLabelResolver(markerProps)}
