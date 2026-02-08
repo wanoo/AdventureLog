@@ -47,6 +47,11 @@
 			)
 		: null;
 
+	// Reactively update is_visited based on visits array
+	$: if (adventure && adventure.visits) {
+		adventure.is_visited = adventure.visits.length > 0;
+	}
+
 	function goToSlide(index: number) {
 		currentSlide = index;
 	}
