@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from adventures.models import Transportation, TRANSPORTATION_TYPES, AuditLog, ContentImage, ContentAttachment
-from adventures.serializers import TransportationSerializer, AuditLogSerializer
+from adventures.serializers import TransportationSerializer, TransportationMapPinSerializer, AuditLogSerializer
 from rest_framework.exceptions import PermissionDenied
 from adventures.permissions import IsOwnerOrSharedWithFullAccess
 from adventures.utils import pagination
@@ -120,6 +120,29 @@ class TransportationViewSet(viewsets.ModelViewSet):
         return queryset
 
     # ==================== CUSTOM ACTIONS ====================
+
+    @action(detail=False, methods=['get'], url_path='pins')
+    def pins(self, request):
+        """Get all transportation with coordinates for map display."""
+        if not request.user.is_authenticated:
+            return Response({"error": "User is not authenticated"}, status=400)
+
+        is_collaborative = getattr(settings, 'COLLABORATIVE_MODE', False)
+
+        if is_collaborative:
+            base_filter = Q(user=request.user) | Q(is_public=True) | Q(collections__shared_with=request.user)
+        else:
+            base_filter = Q(user=request.user) | Q(collections__shared_with=request.user)
+
+        # Only get transportation with coordinates (at least origin)
+        transportations = Transportation.objects.filter(
+            base_filter,
+            origin_latitude__isnull=False,
+            origin_longitude__isnull=False
+        ).distinct()
+
+        serializer = TransportationMapPinSerializer(transportations, many=True, context={'request': request})
+        return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
     def filtered(self, request):

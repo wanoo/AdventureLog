@@ -3,9 +3,10 @@
 	import { onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
 	import type { Activity, Location, VisitedCity, VisitedRegion, Pin } from '$lib/types.js';
+	import type { LodgingPin, TransportationPin } from './+page.server';
 	import type { ClusterOptions } from 'svelte-maplibre';
 	import { goto } from '$app/navigation';
-	import { getActivityColor } from '$lib';
+	import { getActivityColor, LODGING_TYPES_ICONS, TRANSPORTATION_TYPES_ICONS } from '$lib';
 	import { page } from '$app/stores';
 
 	// Icons
@@ -20,6 +21,8 @@
 	import NewLocationModal from '$lib/components/locations/LocationModal.svelte';
 	import ActivityIcon from '~icons/mdi/run-fast';
 	import SearchIcon from '~icons/mdi/magnify';
+	import HotelIcon from '~icons/mdi/bed';
+	import TransportIcon from '~icons/mdi/airplane';
 	import FullMap from '$lib/components/map/FullMap.svelte';
 
 	export let data;
@@ -42,7 +45,13 @@
 	let visitedRegions: VisitedRegion[] = data.props.visitedRegions;
 	let visitedCities: VisitedCity[] = [];
 	let pins: Pin[] = data.props.pins; // Lightweight pin objects
+	let lodgingPins: LodgingPin[] = data.props.lodgingPins || [];
+	let transportationPins: TransportationPin[] = data.props.transportationPins || [];
 	let activities: Activity[] = [];
+
+	// Display toggles for new item types
+	let showLodging: boolean = true;
+	let showTransportation: boolean = true;
 
 	let filteredPins = pins;
 
@@ -824,6 +833,75 @@
 									<DefaultMarker lngLat={newMarker.lngLat} />
 								{/if}
 
+								<!-- Lodging Pins -->
+								{#if showLodging}
+									{#each lodgingPins as lodging}
+										{#if lodging.latitude && lodging.longitude}
+											<Marker
+												lngLat={[Number(lodging.longitude), Number(lodging.latitude)]}
+												class="grid h-8 w-8 place-items-center rounded-full border-2 border-white shadow-lg cursor-pointer transition-transform hover:scale-110 {lodging.is_visited ? 'bg-gradient-to-br from-purple-400 to-purple-600' : 'bg-gradient-to-br from-purple-200 to-purple-400'}"
+											>
+												<span class="text-base">{LODGING_TYPES_ICONS[lodging.type] || '🏨'}</span>
+												<Popup openOn="click" offset={[0, -10]}>
+													<div class="space-y-2 min-w-48">
+														<div class="text-lg text-black font-bold">{lodging.name}</div>
+														<div class="flex gap-2">
+															<div class="badge {lodging.is_visited ? 'badge-success' : 'badge-info'} badge-sm">
+																{lodging.is_visited ? $t('adventures.visited') : $t('adventures.planned')}
+															</div>
+															<div class="badge badge-ghost badge-sm">{lodging.type}</div>
+														</div>
+														<button
+															type="button"
+															class="btn btn-primary btn-sm w-full"
+															on:click={() => goto(`/lodging/${lodging.id}`)}
+														>
+															{$t('map.view_details')}
+														</button>
+													</div>
+												</Popup>
+											</Marker>
+										{/if}
+									{/each}
+								{/if}
+
+								<!-- Transportation Pins (origin points) -->
+								{#if showTransportation}
+									{#each transportationPins as transport}
+										{#if transport.origin_latitude && transport.origin_longitude}
+											<Marker
+												lngLat={[Number(transport.origin_longitude), Number(transport.origin_latitude)]}
+												class="grid h-8 w-8 place-items-center rounded-full border-2 border-white shadow-lg cursor-pointer transition-transform hover:scale-110 {transport.is_visited ? 'bg-gradient-to-br from-orange-400 to-orange-600' : 'bg-gradient-to-br from-orange-200 to-orange-400'}"
+											>
+												<span class="text-base">{TRANSPORTATION_TYPES_ICONS[transport.type] || '🚗'}</span>
+												<Popup openOn="click" offset={[0, -10]}>
+													<div class="space-y-2 min-w-48">
+														<div class="text-lg text-black font-bold">{transport.name}</div>
+														{#if transport.from_location && transport.to_location}
+															<div class="text-sm text-gray-600">
+																{transport.from_location} → {transport.to_location}
+															</div>
+														{/if}
+														<div class="flex gap-2">
+															<div class="badge {transport.is_visited ? 'badge-success' : 'badge-info'} badge-sm">
+																{transport.is_visited ? $t('adventures.visited') : $t('adventures.planned')}
+															</div>
+															<div class="badge badge-ghost badge-sm">{transport.type}</div>
+														</div>
+														<button
+															type="button"
+															class="btn btn-primary btn-sm w-full"
+															on:click={() => goto(`/transportations/${transport.id}`)}
+														>
+															{$t('map.view_details')}
+														</button>
+													</div>
+												</Popup>
+											</Marker>
+										{/if}
+									{/each}
+								{/if}
+
 								{#each visitedRegions as region}
 									{#if showRegions}
 										<Marker
@@ -1005,6 +1083,30 @@
 									{$t('settings.activities')}{activities.length > 0
 										? ` (${activities.length})`
 										: ''}
+								</span>
+							</label>
+
+							<label class="label cursor-pointer justify-start gap-3">
+								<input
+									type="checkbox"
+									bind:checked={showLodging}
+									class="checkbox checkbox-secondary checkbox-sm"
+								/>
+								<span class="label-text flex items-center gap-2">
+									<HotelIcon class="w-4 h-4" />
+									{$t('navbar.lodging')} ({lodgingPins.length})
+								</span>
+							</label>
+
+							<label class="label cursor-pointer justify-start gap-3">
+								<input
+									type="checkbox"
+									bind:checked={showTransportation}
+									class="checkbox checkbox-warning checkbox-sm"
+								/>
+								<span class="label-text flex items-center gap-2">
+									<TransportIcon class="w-4 h-4" />
+									{$t('navbar.transportation')} ({transportationPins.length})
 								</span>
 							</label>
 						</div>

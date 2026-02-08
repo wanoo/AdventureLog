@@ -117,7 +117,12 @@
 	$: routeToLabel = hasCodePair
 		? transportation.end_code
 		: (transportation.to_location ?? transportation.end_code ?? null);
-	$: hasExpandableDetails = Boolean(transportation?.end_date || travelDurationLabel);
+	// Use first visit's dates for display
+	$: firstVisit = transportation?.visits?.[0] ?? null;
+	$: visitStartDate = firstVisit?.start_date ?? null;
+	$: visitEndDate = firstVisit?.end_date ?? null;
+	$: visitTimezone = firstVisit?.timezone ?? null;
+	$: hasExpandableDetails = Boolean(visitEndDate || travelDurationLabel);
 	$: if (!hasExpandableDetails) showMoreDetails = false;
 	$: transportationPriceLabel = formatMoney(
 		toMoneyValue(transportation.price, transportation.price_currency, DEFAULT_CURRENCY)
@@ -387,19 +392,19 @@
 			</div>
 		{/if}
 
-		<!-- Date & Time Section -->
-		{#if transportation.date}
+		<!-- Date & Time Section (from first visit) -->
+		{#if visitStartDate}
 			<div class="flex flex-col gap-1.5">
-				{#if isAllDay(transportation.date) && (!transportation.end_date || isAllDay(transportation.end_date))}
+				{#if isAllDay(visitStartDate) && (!visitEndDate || isAllDay(visitEndDate))}
 					<!-- All-day event -->
 					<div class="flex items-center gap-2 text-sm">
 						<span class="font-medium text-base-content"
-							>{formatAllDayDate(transportation.date)}</span
+							>{formatAllDayDate(visitStartDate)}</span
 						>
-						{#if transportation.end_date && transportation.end_date !== transportation.date}
+						{#if visitEndDate && visitEndDate !== visitStartDate}
 							<span class="text-base-content/40">→</span>
 							<span class="font-medium text-base-content"
-								>{formatAllDayDate(transportation.end_date)}</span
+								>{formatAllDayDate(visitEndDate)}</span
 							>
 						{/if}
 					</div>
@@ -410,7 +415,7 @@
 							<div class="flex flex-col gap-0.5 min-w-0">
 								<span class="text-xs text-base-content/60">Departure</span>
 								<span class="text-sm font-semibold text-base-content">
-									{formatDateInTimezone(transportation.date, transportation.start_timezone)}
+									{formatDateInTimezone(visitStartDate, visitTimezone)}
 								</span>
 							</div>
 							{#if hasCodePair}
@@ -423,10 +428,10 @@
 						<div class="flex items-center gap-2 text-xs text-base-content/70">
 							<div
 								class="tooltip"
-								data-tip={getTimezoneTip(transportation.start_timezone) ?? undefined}
+								data-tip={getTimezoneTip(visitTimezone) ?? undefined}
 							>
 								<span class="badge badge-ghost badge-sm">
-									{getTimezoneLabel(transportation.start_timezone)}
+									{getTimezoneLabel(visitTimezone)}
 								</span>
 							</div>
 						</div>
@@ -449,15 +454,15 @@
 
 					{#if showMoreDetails && hasExpandableDetails}
 						<div class="flex flex-col gap-1">
-							{#if transportation.end_date}
+							{#if visitEndDate}
 								<div class="bg-base-200 rounded-lg px-3 py-2 flex flex-col gap-2">
 									<div class="flex items-center justify-between gap-2">
 										<div class="flex flex-col gap-0.5 min-w-0">
 											<span class="text-xs text-base-content/60">Arrival</span>
 											<span class="text-sm font-semibold text-base-content">
 												{formatDateInTimezone(
-													transportation.end_date,
-													transportation.end_timezone ?? transportation.start_timezone
+													visitEndDate,
+													visitTimezone
 												)}
 											</span>
 										</div>
@@ -466,14 +471,10 @@
 									<div class="flex items-center gap-2 text-xs text-base-content/70">
 										<div
 											class="tooltip"
-											data-tip={getTimezoneTip(
-												transportation.end_timezone ?? transportation.start_timezone
-											) ?? undefined}
+											data-tip={getTimezoneTip(visitTimezone) ?? undefined}
 										>
 											<span class="badge badge-ghost badge-sm">
-												{getTimezoneLabel(
-													transportation.end_timezone ?? transportation.start_timezone
-												)}
+												{getTimezoneLabel(visitTimezone)}
 											</span>
 										</div>
 									</div>

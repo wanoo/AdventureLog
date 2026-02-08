@@ -720,6 +720,74 @@ class MapPinSerializer(serializers.ModelSerializer):
             return obj.user == request.user
         return False
 
+
+class LodgingMapPinSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for lodging pins on the map."""
+    is_visited = serializers.SerializerMethodField()
+    is_owned = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Lodging
+        fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'type', 'is_owned']
+        read_only_fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'type', 'is_owned']
+
+    def get_is_visited(self, obj):
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            request = self.context.get('request')
+            if request and request.user.is_authenticated:
+                from django.utils import timezone
+                current_date = timezone.now().date()
+                user_visits = obj.visits.filter(user=request.user)
+                for visit in user_visits:
+                    start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
+                    if start_date and start_date <= current_date:
+                        return True
+                return False
+        return obj.is_visited_status()
+
+    def get_is_owned(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            return obj.user == request.user
+        return False
+
+
+class TransportationMapPinSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for transportation pins on the map."""
+    is_visited = serializers.SerializerMethodField()
+    is_owned = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Transportation
+        fields = [
+            'id', 'name', 'type', 'is_visited', 'is_owned',
+            'origin_latitude', 'origin_longitude',
+            'destination_latitude', 'destination_longitude',
+            'from_location', 'to_location'
+        ]
+        read_only_fields = fields
+
+    def get_is_visited(self, obj):
+        if getattr(settings, 'COLLABORATIVE_MODE', False):
+            request = self.context.get('request')
+            if request and request.user.is_authenticated:
+                from django.utils import timezone
+                current_date = timezone.now().date()
+                user_visits = obj.visits.filter(user=request.user)
+                for visit in user_visits:
+                    start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
+                    if start_date and start_date <= current_date:
+                        return True
+                return False
+        return obj.is_visited_status()
+
+    def get_is_owned(self, obj):
+        request = self.context.get('request')
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            return obj.user == request.user
+        return False
+
+
 class TransportationSerializer(CustomModelSerializer):
     distance = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()

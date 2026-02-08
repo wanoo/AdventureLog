@@ -91,8 +91,13 @@
 	);
 
 	let showMoreDetails = false;
+	// Use first visit's dates for display
+	$: firstVisit = lodging?.visits?.[0] ?? null;
+	$: visitStartDate = firstVisit?.start_date ?? null;
+	$: visitEndDate = firstVisit?.end_date ?? null;
+	$: visitTimezone = firstVisit?.timezone ?? null;
 	$: hasExpandableDetails = Boolean(
-		lodging.check_out && (isTimedStay(lodging.check_out) || isTimedStay(lodging.check_in))
+		visitEndDate && (isTimedStay(visitEndDate) || isTimedStay(visitStartDate))
 	);
 	$: if (!hasExpandableDetails) showMoreDetails = false;
 
@@ -337,19 +342,19 @@
 			</div>
 		{/if}
 
-		<!-- Check-in & Check-out Section -->
-		{#if lodging.check_in || lodging.check_out}
+		<!-- Check-in & Check-out Section (from first visit) -->
+		{#if visitStartDate || visitEndDate}
 			<div class="flex flex-col gap-1.5">
-				{#if lodging.check_in && lodging.check_out}
+				{#if visitStartDate && visitEndDate}
 					<!-- Both dates present -->
-					{#if isAllDay(lodging.check_in) && isAllDay(lodging.check_out)}
+					{#if isAllDay(visitStartDate) && isAllDay(visitEndDate)}
 						<!-- All-day dates -->
 						<div class="flex items-center gap-2 text-sm">
-							<span class="font-medium text-base-content">{formatAllDayDate(lodging.check_in)}</span
+							<span class="font-medium text-base-content">{formatAllDayDate(visitStartDate)}</span
 							>
 							<span class="text-primary">→</span>
 							<span class="font-medium text-base-content"
-								>{formatAllDayDate(lodging.check_out)}</span
+								>{formatAllDayDate(visitEndDate)}</span
 							>
 						</div>
 					{:else}
@@ -361,20 +366,20 @@
 									<div class="flex flex-col gap-0.5 min-w-0">
 										<span class="text-xs text-base-content/60">Check-in</span>
 										<span class="text-sm font-semibold text-base-content">
-											{#if isAllDay(lodging.check_in)}
-												{formatAllDayDate(lodging.check_in)}
+											{#if isAllDay(visitStartDate)}
+												{formatAllDayDate(visitStartDate)}
 											{:else}
-												{formatDateInTimezone(lodging.check_in, lodging.timezone)}
+												{formatDateInTimezone(visitStartDate, visitTimezone)}
 											{/if}
 										</span>
 									</div>
 								</div>
 
-								{#if hasTimePortion(lodging.check_in) && shouldShowTzBadge(lodging.timezone)}
+								{#if hasTimePortion(visitStartDate) && shouldShowTzBadge(visitTimezone)}
 									<div class="flex items-center gap-2 text-xs text-base-content/70">
-										<div class="tooltip" data-tip={getTimezoneTip(lodging.timezone) ?? undefined}>
+										<div class="tooltip" data-tip={getTimezoneTip(visitTimezone) ?? undefined}>
 											<span class="badge badge-ghost badge-sm">
-												{getTimezoneLabel(lodging.timezone)}
+												{getTimezoneLabel(visitTimezone)}
 											</span>
 										</div>
 									</div>
@@ -403,20 +408,20 @@
 										<div class="flex flex-col gap-0.5 min-w-0">
 											<span class="text-xs text-base-content/60">Check-out</span>
 											<span class="text-sm font-semibold text-base-content">
-												{#if isAllDay(lodging.check_out)}
-													{formatAllDayDate(lodging.check_out)}
+												{#if isAllDay(visitEndDate)}
+													{formatAllDayDate(visitEndDate)}
 												{:else}
-													{formatDateInTimezone(lodging.check_out, lodging.timezone)}
+													{formatDateInTimezone(visitEndDate, visitTimezone)}
 												{/if}
 											</span>
 										</div>
 									</div>
 
-									{#if hasTimePortion(lodging.check_out) && shouldShowTzBadge(lodging.timezone)}
+									{#if hasTimePortion(visitEndDate) && shouldShowTzBadge(visitTimezone)}
 										<div class="flex items-center gap-2 text-xs text-base-content/70">
-											<div class="tooltip" data-tip={getTimezoneTip(lodging.timezone) ?? undefined}>
+											<div class="tooltip" data-tip={getTimezoneTip(visitTimezone) ?? undefined}>
 												<span class="badge badge-ghost badge-sm">
-													{getTimezoneLabel(lodging.timezone)}
+													{getTimezoneLabel(visitTimezone)}
 												</span>
 											</div>
 										</div>
@@ -425,53 +430,53 @@
 							{/if}
 						</div>
 					{/if}
-				{:else if lodging.check_in}
+				{:else if visitStartDate}
 					<!-- Check-in only -->
 					<div class="bg-base-200 rounded-lg px-3 py-2 flex flex-col gap-2">
 						<div class="flex items-start justify-between gap-2">
 							<div class="flex flex-col gap-0.5">
 								<span class="text-xs text-base-content/60">Check-in</span>
 								<span class="text-sm font-semibold text-base-content">
-									{#if isAllDay(lodging.check_in)}
-										{formatAllDayDate(lodging.check_in)}
+									{#if isAllDay(visitStartDate)}
+										{formatAllDayDate(visitStartDate)}
 									{:else}
-										{formatDateInTimezone(lodging.check_in, lodging.timezone)}
+										{formatDateInTimezone(visitStartDate, visitTimezone)}
 									{/if}
 								</span>
 							</div>
 						</div>
 
-						{#if hasTimePortion(lodging.check_in) && shouldShowTzBadge(lodging.timezone)}
+						{#if hasTimePortion(visitStartDate) && shouldShowTzBadge(visitTimezone)}
 							<div class="flex items-center gap-2 text-xs text-base-content/70">
-								<div class="tooltip" data-tip={getTimezoneTip(lodging.timezone) ?? undefined}>
+								<div class="tooltip" data-tip={getTimezoneTip(visitTimezone) ?? undefined}>
 									<span class="badge badge-ghost badge-sm">
-										{getTimezoneLabel(lodging.timezone)}
+										{getTimezoneLabel(visitTimezone)}
 									</span>
 								</div>
 							</div>
 						{/if}
 					</div>
-				{:else if lodging.check_out}
+				{:else if visitEndDate}
 					<!-- Check-out only -->
 					<div class="bg-base-200 rounded-lg px-3 py-2 flex flex-col gap-2">
 						<div class="flex items-start justify-between gap-2">
 							<div class="flex flex-col gap-0.5">
 								<span class="text-xs text-base-content/60">Check-out</span>
 								<span class="text-sm font-semibold text-base-content">
-									{#if isAllDay(lodging.check_out)}
-										{formatAllDayDate(lodging.check_out)}
+									{#if isAllDay(visitEndDate)}
+										{formatAllDayDate(visitEndDate)}
 									{:else}
-										{formatDateInTimezone(lodging.check_out, lodging.timezone)}
+										{formatDateInTimezone(visitEndDate, visitTimezone)}
 									{/if}
 								</span>
 							</div>
 						</div>
 
-						{#if hasTimePortion(lodging.check_out) && shouldShowTzBadge(lodging.timezone)}
+						{#if hasTimePortion(visitEndDate) && shouldShowTzBadge(visitTimezone)}
 							<div class="flex items-center gap-2 text-xs text-base-content/70">
-								<div class="tooltip" data-tip={getTimezoneTip(lodging.timezone) ?? undefined}>
+								<div class="tooltip" data-tip={getTimezoneTip(visitTimezone) ?? undefined}>
 									<span class="badge badge-ghost badge-sm">
-										{getTimezoneLabel(lodging.timezone)}
+										{getTimezoneLabel(visitTimezone)}
 									</span>
 								</div>
 							</div>

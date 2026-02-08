@@ -49,10 +49,6 @@
 			description: null,
 			rating: null,
 			link: null,
-			date: null,
-			end_date: null,
-			start_timezone: null,
-			end_timezone: null,
 			flight_number: null,
 			from_location: null,
 			to_location: null,
@@ -101,10 +97,6 @@
 					description: transportationToEdit.description || null,
 					rating: transportationToEdit.rating || null,
 					link: transportationToEdit.link || null,
-					date: transportationToEdit.date || null,
-					end_date: transportationToEdit.end_date || null,
-					start_timezone: transportationToEdit.start_timezone || null,
-					end_timezone: transportationToEdit.end_timezone || null,
 					flight_number: transportationToEdit.flight_number || null,
 					from_location: transportationToEdit.from_location || null,
 					to_location: transportationToEdit.to_location || null,
@@ -332,8 +324,8 @@
 				on:close={() => close()}
 				itemId={transportation.id}
 				contentType="transportation"
-				start_date={transportation.date}
-				end_date={transportation.end_date}
+				start_date={transportation.visits?.[0]?.start_date ?? null}
+				end_date={transportation.visits?.[0]?.end_date ?? null}
 				{user}
 			/>
 		{/if}
