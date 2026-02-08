@@ -224,10 +224,7 @@ export type Transportation = {
 	price: number | null;
 	price_currency: string | null;
 	link: string | null;
-	date: string | null; // ISO 8601 date string
-	end_date: string | null; // ISO 8601 date string
-	start_timezone: string | null;
-	end_timezone: string | null;
+	// Date fields removed - now handled by Visit
 	flight_number: string | null;
 	from_location: string | null;
 	to_location: string | null;
@@ -367,9 +364,7 @@ export type Lodging = {
 	description: string | null;
 	rating: number | null;
 	link: string | null;
-	check_in: string | null; // ISO 8601 date string
-	check_out: string | null; // ISO 8601 date string
-	timezone: string | null;
+	// Date fields removed - now handled by Visit
 	reservation_number: string | null;
 	price: number | null;
 	price_currency: string | null;

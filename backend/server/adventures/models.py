@@ -336,10 +336,7 @@ class Transportation(models.Model):
     rating = models.FloatField(blank=True, null=True)
     price = MoneyField(max_digits=12, decimal_places=2, default_currency='USD', null=True, blank=True)
     link = models.URLField(blank=True, null=True, max_length=2083)
-    date = models.DateTimeField(blank=True, null=True)
-    end_date = models.DateTimeField(blank=True, null=True)
-    start_timezone = models.CharField(max_length=50, choices=[(tz, tz) for tz in TIMEZONES], null=True, blank=True)
-    end_timezone = models.CharField(max_length=50, choices=[(tz, tz) for tz in TIMEZONES], null=True, blank=True)
+    # Date fields removed - now handled by Visit model
     flight_number = models.CharField(max_length=100, blank=True, null=True)
     from_location = models.CharField(max_length=200, blank=True, null=True)
     origin_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
@@ -358,10 +355,6 @@ class Transportation(models.Model):
     # Generic relations for images and attachments
     images = GenericRelation('ContentImage', related_query_name='transportation')
     attachments = GenericRelation('ContentAttachment', related_query_name='transportation')
-
-    def clean(self):
-        if self.date and self.end_date and self.date > self.end_date:
-            raise ValidationError('The start date must be before the end date. Start date: ' + str(self.date) + ' End date: ' + str(self.end_date))
 
     def delete(self, *args, **kwargs):
         # Delete all associated images and attachments
@@ -640,9 +633,7 @@ class Lodging(models.Model):
     description = models.TextField(blank=True, null=True)
     rating = models.FloatField(blank=True, null=True)
     link = models.URLField(blank=True, null=True, max_length=2083)
-    check_in = models.DateTimeField(blank=True, null=True)
-    check_out = models.DateTimeField(blank=True, null=True)
-    timezone = models.CharField(max_length=50, choices=[(tz, tz) for tz in TIMEZONES], null=True, blank=True)
+    # Date fields removed - now handled by Visit model
     reservation_number = models.CharField(max_length=100, blank=True, null=True)
     price = MoneyField(max_digits=12, decimal_places=2, default_currency='USD', null=True, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
@@ -657,10 +648,6 @@ class Lodging(models.Model):
     # Generic relations for images and attachments
     images = GenericRelation('ContentImage', related_query_name='lodging')
     attachments = GenericRelation('ContentAttachment', related_query_name='lodging')
-
-    def clean(self):
-        if self.check_in and self.check_out and self.check_in > self.check_out:
-            raise ValidationError('The start date must be before the end date. Start date: ' + str(self.check_in) + ' End date: ' + str(self.check_out))
 
     def delete(self, *args, **kwargs):
         # Delete all associated images and attachments
