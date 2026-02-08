@@ -322,10 +322,13 @@
 					direction: item.direction
 				}));
 
-				// Count item types to determine if mixed
-				const hasLocation = items.some(i => i.itemType === 'location');
-				const hasLodging = items.some(i => i.itemType === 'lodging');
-				const hasTransport = items.some(i => i.itemType === 'transport');
+				// Count item types to determine dominant type and color
+				const locationCount = items.filter(i => i.itemType === 'location').length;
+				const lodgingCount = items.filter(i => i.itemType === 'lodging').length;
+				const transportCount = items.filter(i => i.itemType === 'transport').length;
+				const hasLocation = locationCount > 0;
+				const hasLodging = lodgingCount > 0;
+				const hasTransport = transportCount > 0;
 				const typeCount = [hasLocation, hasLodging, hasTransport].filter(Boolean).length;
 
 				// Determine color: purple if mixed, otherwise single type color
@@ -340,8 +343,24 @@
 					primaryColor = 'amber';
 				}
 
-				// Use stack icon for grouped pins to indicate multiple items
-				const groupIcon = '📚';
+				// Determine dominant icon: use type with most items, or stack icon if tie
+				let groupIcon: string;
+				const maxCount = Math.max(locationCount, lodgingCount, transportCount);
+				const dominantTypes = [
+					locationCount === maxCount ? 'location' : null,
+					lodgingCount === maxCount ? 'lodging' : null,
+					transportCount === maxCount ? 'transport' : null
+				].filter(Boolean);
+
+				if (dominantTypes.length === 1) {
+					// One dominant type - use first item of that type's icon
+					const dominantType = dominantTypes[0];
+					const dominantItem = items.find(i => i.itemType === dominantType);
+					groupIcon = dominantItem?.icon || '📚';
+				} else {
+					// Tie or mixed - use stack icon
+					groupIcon = '📚';
+				}
 				const hasVisited = items.some(i => i.is_visited);
 
 				// Use first location name if available, or first item name
@@ -1125,9 +1144,13 @@
 												title=""
 												on:mouseenter={() => {
 													setActive(true);
-													// Only fetch location details for location pins
-													if (markerProps.pinType === 'location') {
+													// Only fetch location details for single location pins (not grouped)
+													const isGrouped = markerProps.groupedItems && markerProps.groupedItems.length > 0;
+													if (markerProps.pinType === 'location' && !isGrouped) {
 														prefetchLocationDetailsForPopup(markerProps.id);
+													} else {
+														// Clear any previous error state for grouped/non-location pins
+														hoveredLocationError = null;
 													}
 												}}
 												on:mouseleave={() => {
@@ -1139,8 +1162,11 @@
 												}}
 												on:focus={() => {
 													setActive(true);
-													if (markerProps.pinType === 'location') {
+													const isGrouped = markerProps.groupedItems && markerProps.groupedItems.length > 0;
+													if (markerProps.pinType === 'location' && !isGrouped) {
 														prefetchLocationDetailsForPopup(markerProps.id);
+													} else {
+														hoveredLocationError = null;
 													}
 												}}
 												on:blur={() => {
@@ -1195,7 +1221,10 @@
 												}}
 											>
 												{#if markerProps.groupedItems && markerProps.groupedItems.length > 0}
-													{markerProps.groupedItems.length}
+													<span class="flex items-center gap-0.5">
+														<span class="text-xs">{markerProps.icon}</span>
+														<span>{markerProps.groupedItems.length}</span>
+													</span>
 												{:else}
 													{markerLabelResolver(markerProps)}
 												{/if}
