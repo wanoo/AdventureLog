@@ -41,6 +41,7 @@
 	export let utcStartDate: string | null = null;
 	export let utcEndDate: string | null = null;
 	export let note: string | null = null;
+	export let visitRating: number | null = null;
 	export let visits: Visit[] | null = null;
 	export let objectId: string;
 	export let trails: Trail[] = [];
@@ -242,6 +243,7 @@
 					start_date: utcStartDate,
 					end_date: utcEndDate,
 					notes: note,
+					rating: visitRating,
 					timezone: selectedStartTimezone
 				})
 			});
@@ -266,6 +268,7 @@
 					start_date: utcStartDate,
 					end_date: utcEndDate,
 					notes: note,
+					rating: visitRating,
 					timezone: selectedStartTimezone,
 					location: objectId
 				})
@@ -284,6 +287,7 @@
 		// Reset form fields. If this call was an auto-generated visit, allow clearing even if initialVisitDate is set
 		if (!initialVisitDate || isAuto) {
 			note = '';
+			visitRating = null;
 			localStartDate = '';
 			localEndDate = '';
 			utcStartDate = null;
@@ -626,6 +630,7 @@
 		delete showActivityUpload[visit.id];
 
 		note = visit.notes;
+		visitRating = visit.rating ?? null;
 		constrainDates = true;
 		utcStartDate = visit.start_date;
 		utcEndDate = visit.end_date;
@@ -885,6 +890,33 @@
 							placeholder={$t('adventures.notes_placeholder') + '...'}
 							bind:value={note}
 						></textarea>
+					</div>
+
+					<!-- Rating -->
+					<div class="mt-4">
+						<label class="label-text text-sm font-medium" for="visit-rating"
+							>{$t('adventures.rating')}</label
+						>
+						<div class="rating rating-lg mt-1">
+							{#each [1, 2, 3, 4, 5] as star}
+								<input
+									type="radio"
+									name="visit-rating"
+									class="mask mask-star-2 bg-warning"
+									checked={visitRating === star}
+									on:click={() => visitRating = visitRating === star ? null : star}
+								/>
+							{/each}
+						</div>
+						{#if visitRating}
+							<button
+								type="button"
+								class="btn btn-ghost btn-xs ml-2"
+								on:click={() => visitRating = null}
+							>
+								{$t('adventures.clear')}
+							</button>
+						{/if}
 					</div>
 
 					<!-- Add Visit Button -->

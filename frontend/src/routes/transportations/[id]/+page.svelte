@@ -408,7 +408,23 @@
 					</div>
 
 					<!-- Rating -->
-					{#if transportation.rating !== undefined && transportation.rating !== null}
+					{#if transportation.average_rating !== undefined && transportation.average_rating !== null}
+						<!-- Show average rating from all visits (collaborative mode) -->
+						<div class="flex flex-col items-center mb-6">
+							<div class="rating rating-lg">
+								{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
+									<input
+										type="radio"
+										name="rating-hero"
+										class="mask mask-star-2 bg-warning"
+										checked={star <= (transportation.average_rating ?? 0)}
+										disabled
+									/>
+								{/each}
+							</div>
+							<span class="text-sm opacity-70 mt-1">{$t('adventures.average_rating')} ({transportation.average_rating})</span>
+						</div>
+					{:else if transportation.rating !== undefined && transportation.rating !== null}
 						<div class="flex justify-center mb-6">
 							<div class="rating rating-lg">
 								{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}

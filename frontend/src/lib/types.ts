@@ -60,6 +60,7 @@ export type Location = {
 	tags?: string[] | null;
 	description?: string | null;
 	rating?: number | null;
+	average_rating?: number | null;
 	price?: number | null;
 	price_currency?: string | null;
 	link?: string | null;
@@ -221,6 +222,7 @@ export type Transportation = {
 	name: string;
 	description: string | null;
 	rating: number | null;
+	average_rating?: number | null;
 	price: number | null;
 	price_currency: string | null;
 	link: string | null;
@@ -363,6 +365,7 @@ export type Lodging = {
 	type: string;
 	description: string | null;
 	rating: number | null;
+	average_rating?: number | null;
 	link: string | null;
 	// Date fields removed - now handled by Visit
 	reservation_number: string | null;
