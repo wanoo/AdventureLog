@@ -75,8 +75,19 @@
 	let showPlanned: boolean = true;
 	let searchQuery: string = '';
 
-	// Get unique categories from pins
+	// Get unique categories from pins with their icons
 	$: availableCategories = [...new Set(pins.map((pin) => pin.category?.display_name).filter(Boolean))] as string[];
+
+	// Map category names to their icons
+	$: categoryIconMap = (() => {
+		const map: Record<string, string> = {};
+		for (const pin of pins) {
+			if (pin.category?.display_name && pin.category?.icon) {
+				map[pin.category.display_name] = pin.category.icon;
+			}
+		}
+		return map;
+	})();
 
 	// Get unique lodging types
 	$: availableLodgingTypes = [...new Set(lodgingPins.map((l) => l.type).filter(Boolean))] as string[];
@@ -120,6 +131,8 @@
 		pinType: PinType;
 		pinColor: string; // 'blue' | 'pink' | 'amber'
 		subInfo?: string; // For transport: from/to location
+		groupedItems?: GroupedItem[]; // For grouped transport pins
+		locationName?: string; // For grouped transport pins (e.g., airport name)
 	};
 
 	type PinFeature = {
@@ -136,6 +149,14 @@
 		features: PinFeature[];
 	};
 
+	// Grouped item for transport pins at same location
+	type GroupedItem = {
+		id: string;
+		name: string;
+		icon: string;
+		subInfo?: string;
+	};
+
 	// Unified pin type for clustering
 	type UnifiedPin = {
 		id: string;
@@ -147,6 +168,9 @@
 		pinType: PinType;
 		pinColor: string;
 		subInfo?: string;
+		// For grouped transport pins at same location
+		groupedItems?: GroupedItem[];
+		locationName?: string; // e.g., airport name
 	};
 
 	// Combine all filtered pins into a single array for clustering
@@ -183,36 +207,115 @@
 			}
 		}
 
-		// Add transportation pins (both departure and arrival)
-		for (const transport of filteredTransportationPins) {
-			const routeInfo = transport.from_location && transport.to_location
-				? `${transport.from_location} → ${transport.to_location}`
-				: transport.from_location || transport.to_location || '';
+		// Group transportation pins by coordinates
+		const departureGroups: Map<string, { locationName: string; transports: typeof filteredTransportationPins }> = new Map();
+		const arrivalGroups: Map<string, { locationName: string; transports: typeof filteredTransportationPins }> = new Map();
 
+		for (const transport of filteredTransportationPins) {
 			if (transport.origin_latitude && transport.origin_longitude) {
+				const key = `${transport.origin_latitude},${transport.origin_longitude}`;
+				if (!departureGroups.has(key)) {
+					departureGroups.set(key, { locationName: transport.from_location || '', transports: [] });
+				}
+				departureGroups.get(key)!.transports.push(transport);
+			}
+			if (transport.destination_latitude && transport.destination_longitude) {
+				const key = `${transport.destination_latitude},${transport.destination_longitude}`;
+				if (!arrivalGroups.has(key)) {
+					arrivalGroups.set(key, { locationName: transport.to_location || '', transports: [] });
+				}
+				arrivalGroups.get(key)!.transports.push(transport);
+			}
+		}
+
+		// Add grouped departure pins
+		for (const [coordKey, group] of departureGroups) {
+			const [lat, lng] = coordKey.split(',');
+			const transports = group.transports;
+			const hasVisited = transports.some(t => t.is_visited);
+
+			if (transports.length === 1) {
+				// Single transport - show as before
+				const transport = transports[0];
+				const routeInfo = transport.from_location && transport.to_location
+					? `${transport.from_location} → ${transport.to_location}`
+					: transport.from_location || transport.to_location || '';
 				unified.push({
 					id: `${transport.id}-dep`,
 					name: transport.name,
-					latitude: transport.origin_latitude,
-					longitude: transport.origin_longitude,
+					latitude: lat,
+					longitude: lng,
 					is_visited: transport.is_visited,
 					icon: getTransportationIcon(transport.type),
 					pinType: 'transport-departure',
 					pinColor: 'amber',
 					subInfo: routeInfo
 				});
+			} else {
+				// Multiple transports at same location
+				const groupedItems: GroupedItem[] = transports.map(t => ({
+					id: t.id,
+					name: t.name,
+					icon: getTransportationIcon(t.type),
+					subInfo: t.to_location ? `→ ${t.to_location}` : ''
+				}));
+				unified.push({
+					id: `dep-group-${coordKey}`,
+					name: group.locationName || $t('transportation.departure'),
+					latitude: lat,
+					longitude: lng,
+					is_visited: hasVisited,
+					icon: '✈️',
+					pinType: 'transport-departure',
+					pinColor: 'amber',
+					locationName: group.locationName,
+					groupedItems
+				});
 			}
-			if (transport.destination_latitude && transport.destination_longitude) {
+		}
+
+		// Add grouped arrival pins
+		for (const [coordKey, group] of arrivalGroups) {
+			const [lat, lng] = coordKey.split(',');
+			const transports = group.transports;
+			const hasVisited = transports.some(t => t.is_visited);
+
+			if (transports.length === 1) {
+				// Single transport - show as before
+				const transport = transports[0];
+				const routeInfo = transport.from_location && transport.to_location
+					? `${transport.from_location} → ${transport.to_location}`
+					: transport.from_location || transport.to_location || '';
 				unified.push({
 					id: `${transport.id}-arr`,
 					name: transport.name,
-					latitude: transport.destination_latitude,
-					longitude: transport.destination_longitude,
+					latitude: lat,
+					longitude: lng,
 					is_visited: transport.is_visited,
 					icon: getTransportationIcon(transport.type),
 					pinType: 'transport-arrival',
 					pinColor: 'amber',
 					subInfo: routeInfo
+				});
+			} else {
+				// Multiple transports at same location
+				const groupedItems: GroupedItem[] = transports.map(t => ({
+					id: t.id,
+					name: t.name,
+					icon: getTransportationIcon(t.type),
+					subInfo: t.from_location ? `${t.from_location} →` : ''
+				}));
+				unified.push({
+					id: `arr-group-${coordKey}`,
+					name: group.locationName || $t('transportation.arrival'),
+					latitude: lat,
+					longitude: lng,
+					is_visited: hasVisited,
+					icon: '✈️',
+					pinType: 'transport-arrival',
+					pinColor: 'amber',
+					locationName: group.locationName,
+					groupedItems
 				});
 			}
 		}
@@ -241,7 +344,9 @@
 				categoryIcon: pin.icon,
 				pinType: pin.pinType,
 				pinColor: pin.pinColor,
-				subInfo: pin.subInfo
+				subInfo: pin.subInfo,
+				groupedItems: pin.groupedItems,
+				locationName: pin.locationName
 			}
 		};
 	}
@@ -1016,14 +1121,27 @@
 														<div class="space-y-2">
 															<div class="min-w-0">
 																<h3 class="card-title text-sm leading-tight truncate">
-																	{markerProps.name}
+																	{markerProps.locationName || markerProps.name}
 																</h3>
 																{#if markerProps.pinType !== 'location'}
 																	<div class="text-xs text-base-content/60">
 																		{getTypeLabel(markerProps.pinType)}
 																	</div>
 																{/if}
-																{#if markerProps.subInfo}
+																{#if markerProps.groupedItems && markerProps.groupedItems.length > 0}
+																	<!-- Grouped transport items list -->
+																	<div class="mt-2 space-y-1 max-h-32 overflow-y-auto">
+																		{#each markerProps.groupedItems as item}
+																			<div class="flex items-center gap-2 text-xs py-1 border-b border-base-200 last:border-0">
+																				<span>{item.icon}</span>
+																				<span class="flex-1 truncate">{item.name}</span>
+																				{#if item.subInfo}
+																					<span class="text-base-content/60">{item.subInfo}</span>
+																				{/if}
+																			</div>
+																		{/each}
+																	</div>
+																{:else if markerProps.subInfo}
 																	<div class="text-xs text-base-content/70 mt-1">
 																		{markerProps.subInfo}
 																	</div>
@@ -1038,9 +1156,14 @@
 																			? $t('adventures.visited')
 																			: $t('adventures.planned')}
 																	</div>
-																	{#if markerProps.categoryIcon}
+																	{#if markerProps.categoryIcon && !markerProps.groupedItems}
 																		<div class="badge badge-ghost badge-sm">
 																			{markerProps.categoryIcon}
+																		</div>
+																	{/if}
+																	{#if markerProps.groupedItems}
+																		<div class="badge badge-ghost badge-sm">
+																			{markerProps.groupedItems.length} {$t('transportation.items') || 'items'}
 																		</div>
 																	{/if}
 																</div>
@@ -1338,12 +1461,12 @@
 											{#each availableCategories as category}
 												<button
 													type="button"
-													class="badge badge-sm cursor-pointer transition-all {selectedCategories.has(category)
+													class="badge badge-sm cursor-pointer transition-all {selectedCategories.size === 0 || selectedCategories.has(category)
 														? 'badge-primary'
 														: 'badge-ghost hover:badge-primary/50'}"
 													on:click={() => toggleCategory(category)}
 												>
-													{category}
+													{categoryIconMap[category] || '📍'} {category}
 												</button>
 											{/each}
 										</div>
@@ -1394,7 +1517,7 @@
 											{#each availableLodgingTypes as type}
 												<button
 													type="button"
-													class="badge badge-sm cursor-pointer transition-all {selectedLodgingTypes.has(type)
+													class="badge badge-sm cursor-pointer transition-all {selectedLodgingTypes.size === 0 || selectedLodgingTypes.has(type)
 														? 'badge-secondary'
 														: 'badge-ghost hover:badge-secondary/50'}"
 													on:click={() => toggleLodgingType(type)}
@@ -1450,7 +1573,7 @@
 											{#each availableTransportationTypes as type}
 												<button
 													type="button"
-													class="badge badge-sm cursor-pointer transition-all {selectedTransportationTypes.has(type)
+													class="badge badge-sm cursor-pointer transition-all {selectedTransportationTypes.size === 0 || selectedTransportationTypes.has(type)
 														? 'badge-warning'
 														: 'badge-ghost hover:badge-warning/50'}"
 													on:click={() => toggleTransportationType(type)}

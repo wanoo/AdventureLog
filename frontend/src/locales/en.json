@@ -864,7 +864,10 @@
 		"public_transportation_description": "Allow other users to view this transportation",
 		"move_to_collection_confirm": "This transportation is already in another collection. Move it to this collection?",
 		"linked_success": "Transportation linked successfully",
-		"linked_error": "Failed to link transportation"
+		"linked_error": "Failed to link transportation",
+		"departure": "Departure",
+		"arrival": "Arrival",
+		"items": "items"
 	},
 	"lodging": {
 		"new_lodging": "New Lodging",
@@ -908,6 +911,7 @@
 		"location_map": "Location Map",
 		"add_location_at_marker": "Add New Location at Marker",
 		"clear_marker": "Clear Marker",
+		"clear_filters": "Clear filters",
 		"add_location": "Add New Location",
 		"adventure_stats": "Adventure Stats",
 		"map_controls": "Map Controls",
