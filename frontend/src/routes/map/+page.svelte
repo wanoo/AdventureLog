@@ -1456,7 +1456,7 @@
 											{#each availableCategories as category}
 												<button
 													type="button"
-													class="badge badge-sm cursor-pointer transition-all {isCategoryVisible(category)
+													class="badge badge-sm cursor-pointer transition-all {!hiddenCategories.has(category)
 														? 'badge-primary'
 														: 'badge-ghost hover:badge-primary/50'}"
 													on:click={() => toggleCategory(category)}
@@ -1512,7 +1512,7 @@
 											{#each availableLodgingTypes as type}
 												<button
 													type="button"
-													class="badge badge-sm cursor-pointer transition-all {isLodgingTypeVisible(type)
+													class="badge badge-sm cursor-pointer transition-all {!hiddenLodgingTypes.has(type)
 														? 'badge-secondary'
 														: 'badge-ghost hover:badge-secondary/50'}"
 													on:click={() => toggleLodgingType(type)}
@@ -1568,7 +1568,7 @@
 											{#each availableTransportationTypes as type}
 												<button
 													type="button"
-													class="badge badge-sm cursor-pointer transition-all {isTransportationTypeVisible(type)
+													class="badge badge-sm cursor-pointer transition-all {!hiddenTransportationTypes.has(type)
 														? 'badge-warning'
 														: 'badge-ghost hover:badge-warning/50'}"
 													on:click={() => toggleTransportationType(type)}
