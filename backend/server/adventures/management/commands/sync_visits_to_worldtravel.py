@@ -58,7 +58,12 @@ class Command(BaseCommand):
         if user_id:
             visits_queryset = visits_queryset.filter(user_id=user_id)
 
-        total_visits = visits_queryset.count()
+        try:
+            total_visits = visits_queryset.count()
+        except Exception as e:
+            # May fail during migration if schema is changing
+            self.stdout.write(self.style.WARNING(f'Could not count visits (migration in progress?): {e}'))
+            return
 
         if total_visits == 0:
             self.stdout.write(self.style.WARNING('No visits found'))
@@ -73,7 +78,14 @@ class Command(BaseCommand):
         visits_with_coords = 0
         visits_with_changes = 0
 
-        for visit in visits_queryset:
+        try:
+            visits_list = list(visits_queryset)
+        except Exception as e:
+            # May fail during migration if schema is changing
+            self.stdout.write(self.style.WARNING(f'Could not load visits (migration in progress?): {e}'))
+            return
+
+        for visit in visits_list:
             visits_processed += 1
 
             lat, lon = _get_visit_coordinates(visit)
