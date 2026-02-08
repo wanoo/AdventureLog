@@ -1248,7 +1248,7 @@
 										<button
 											type="button"
 											class="btn btn-ghost btn-xs"
-											on:click={() => (expandLocationFilters = !expandLocationFilters)}
+											on:click|stopPropagation={() => (expandLocationFilters = !expandLocationFilters)}
 										>
 											{#if expandLocationFilters}
 												<ChevronUp class="w-4 h-4" />
@@ -1304,7 +1304,7 @@
 										<button
 											type="button"
 											class="btn btn-ghost btn-xs"
-											on:click={() => (expandLodgingFilters = !expandLodgingFilters)}
+											on:click|stopPropagation={() => (expandLodgingFilters = !expandLodgingFilters)}
 										>
 											{#if expandLodgingFilters}
 												<ChevronUp class="w-4 h-4" />
@@ -1360,7 +1360,7 @@
 										<button
 											type="button"
 											class="btn btn-ghost btn-xs"
-											on:click={() => (expandTransportationFilters = !expandTransportationFilters)}
+											on:click|stopPropagation={() => (expandTransportationFilters = !expandTransportationFilters)}
 										>
 											{#if expandTransportationFilters}
 												<ChevronUp class="w-4 h-4" />

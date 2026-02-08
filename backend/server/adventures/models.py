@@ -224,7 +224,11 @@ class Location(models.Model):
                         raise ValidationError(f'Locations must be associated with collections owned by the same user or shared collections. Collection owner: {collection.user.username} Location owner: {self.user.username}')
         
         if self.category:
-            if self.user != self.category.user:
+            # In collaborative mode, skip category owner validation for public locations
+            # This allows any authenticated user to use any category on public content
+            from django.conf import settings
+            is_collaborative = getattr(settings, 'COLLABORATIVE_MODE', False)
+            if not is_collaborative and self.user != self.category.user:
                 raise ValidationError(f'Locations must be associated with categories owned by the same user. Category owner: {self.category.user.username} Location owner: {self.user.username}')
             
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None, _skip_geocode=False, _skip_shared_validation=False):

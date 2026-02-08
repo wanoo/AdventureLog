@@ -35,13 +35,13 @@ class VisitViewSet(viewsets.ModelViewSet):
 
         # Build the filter for accessible transportations
         transportation_filter = Q(transportation__user=user)  # User owns the transportation
-        transportation_filter |= Q(transportation__collection__shared_with=user)
-        transportation_filter |= Q(transportation__collection__user=user)
+        transportation_filter |= Q(transportation__collections__shared_with=user)
+        transportation_filter |= Q(transportation__collections__user=user)
 
         # Build the filter for accessible lodgings
         lodging_filter = Q(lodging__user=user)  # User owns the lodging
-        lodging_filter |= Q(lodging__collection__shared_with=user)
-        lodging_filter |= Q(lodging__collection__user=user)
+        lodging_filter |= Q(lodging__collections__shared_with=user)
+        lodging_filter |= Q(lodging__collections__user=user)
 
         # In collaborative mode, include visits from public items
         if getattr(settings, 'COLLABORATIVE_MODE', False):
