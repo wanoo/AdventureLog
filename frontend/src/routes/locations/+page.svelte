@@ -148,6 +148,7 @@
 
 	function deleteAdventure(event: CustomEvent<string>) {
 		adventures = adventures.filter((adventure) => adventure.id !== event.detail);
+		count = count - 1;
 	}
 
 	function editAdventure(event: CustomEvent<Location>) {
