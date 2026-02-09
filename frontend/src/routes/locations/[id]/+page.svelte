@@ -22,6 +22,7 @@
 	import NewLocationModal from '$lib/components/locations/LocationModal.svelte';
 	import CashMultiple from '~icons/mdi/cash-multiple';
 	import HistoryPanel from '$lib/components/HistoryPanel.svelte';
+	import StarRating from '$lib/components/StarRating.svelte';
 	import { DEFAULT_CURRENCY, formatMoney, toMoneyValue } from '$lib/money';
 
 	let geojson: any;
@@ -270,37 +271,19 @@
 					<h1 class="text-6xl font-bold mb-4 drop-shadow-lg">{adventure.name}</h1>
 
 					<!-- Rating -->
-					{#if adventure.average_rating !== undefined && adventure.average_rating !== null}
-						<!-- Show average rating from all visits (collaborative mode) -->
-						<div class="flex flex-col items-center mb-6">
-							<div class="rating rating-lg">
-								{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
-									<input
-										type="radio"
-										name="rating-hero"
-										class="mask mask-star-2 bg-warning"
-										checked={star <= (adventure.average_rating ?? 0)}
-										disabled
-									/>
-								{/each}
+					{#key adventure.average_rating ?? adventure.rating}
+						{#if adventure.average_rating !== undefined && adventure.average_rating !== null}
+							<!-- Show average rating from all visits (collaborative mode) -->
+							<div class="flex flex-col items-center mb-6">
+								<StarRating rating={adventure.average_rating} size="lg" readonly showValue={false} />
+								<span class="text-sm opacity-70 mt-1">{$t('adventures.average_rating')} ({adventure.average_rating})</span>
 							</div>
-							<span class="text-sm opacity-70 mt-1">{$t('adventures.average_rating')} ({adventure.average_rating})</span>
-						</div>
-					{:else if adventure.rating !== undefined && adventure.rating !== null}
-						<div class="flex justify-center mb-6">
-							<div class="rating rating-lg">
-								{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
-									<input
-										type="radio"
-										name="rating-hero"
-										class="mask mask-star-2 bg-warning"
-										checked={star <= adventure.rating}
-										disabled
-									/>
-								{/each}
+						{:else if adventure.rating !== undefined && adventure.rating !== null}
+							<div class="flex flex-col items-center mb-6">
+								<StarRating rating={adventure.rating} size="lg" readonly showValue={false} />
 							</div>
-						</div>
-					{/if}
+						{/if}
+					{/key}
 
 					<!-- Quick Info Badges -->
 					<div class="flex flex-wrap justify-center gap-4 mb-6">

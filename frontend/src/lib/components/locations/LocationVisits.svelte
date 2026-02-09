@@ -34,6 +34,7 @@
 	import CloseIcon from '~icons/mdi/close';
 	import StravaActivityCard from '../StravaActivityCard.svelte';
 	import ActivityCard from '../cards/ActivityCard.svelte';
+	import StarRating from '../StarRating.svelte';
 
 	// Props
 	export let collection: Collection | null = null;
@@ -896,18 +897,12 @@
 					<div class="mt-4">
 						<label class="label-text text-sm font-medium">{$t('adventures.rating')}</label>
 						<div class="flex items-center gap-2 mt-1">
-							<div class="rating rating-lg">
-								<input type="radio" name="visit-rating-input" class="rating-hidden" checked={visitRating === null} />
-								{#each [1, 2, 3, 4, 5] as star}
-									<input
-										type="radio"
-										name="visit-rating-input"
-										class="mask mask-star-2 bg-warning"
-										checked={visitRating === star}
-										on:click={() => visitRating = visitRating === star ? null : star}
-									/>
-								{/each}
-							</div>
+							<StarRating
+								bind:rating={visitRating}
+								size="lg"
+								readonly={false}
+								on:change={(e) => visitRating = e.detail}
+							/>
 							{#if visitRating}
 								<button
 									type="button"
@@ -1010,17 +1005,7 @@
 
 											{#if visit.rating !== null && visit.rating !== undefined}
 												<div class="flex items-center gap-2 mt-2">
-													<div class="rating rating-sm">
-														{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
-															<input
-																type="radio"
-																name="rating-list-{visit.id}"
-																class="mask mask-star-2 bg-warning"
-																checked={star <= visit.rating}
-																disabled
-															/>
-														{/each}
-													</div>
+													<StarRating rating={visit.rating} size="sm" readonly />
 												</div>
 											{/if}
 
