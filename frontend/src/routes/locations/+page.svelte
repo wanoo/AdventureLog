@@ -61,6 +61,7 @@
 	let adventureToEdit: Location | null = null;
 	let isLocationModalOpen: boolean = false;
 	let sidebarOpen = false;
+	let ratingHover: number | null = null;
 
 
 	// Reactive statements - Only read from URL, don't write
@@ -585,11 +586,18 @@
 							</h3>
 							<div class="flex flex-col gap-3">
 								<!-- Interactive star selector -->
-								<div class="flex items-center justify-center gap-1">
+								<div
+									class="flex items-center justify-center gap-1"
+									on:mouseleave={() => ratingHover = null}
+									role="group"
+									aria-label="Rating filter"
+								>
 									{#each [1, 2, 3, 4, 5] as rating}
+										{@const isActive = currentSort.min_rating !== 'all' && rating <= parseInt(currentSort.min_rating)}
+										{@const isHovered = ratingHover !== null && rating <= ratingHover}
 										<button
 											type="button"
-											class="btn btn-ghost btn-sm p-1 min-h-0 h-auto transition-transform hover:scale-110"
+											class="btn btn-ghost btn-sm p-1 min-h-0 h-auto transition-transform hover:scale-125"
 											on:click={() => {
 												if (currentSort.min_rating === rating.toString()) {
 													updateRatingFilter('all');
@@ -597,14 +605,12 @@
 													updateRatingFilter(rating.toString());
 												}
 											}}
+											on:mouseenter={() => ratingHover = rating}
 											aria-label="Filter by {rating}+ stars"
 										>
 											<Star
-												class="w-7 h-7 transition-colors {
-													currentSort.min_rating !== 'all' && rating <= parseInt(currentSort.min_rating)
-														? 'text-warning fill-warning'
-														: 'text-base-content/20'
-												}"
+												class="w-8 h-8 transition-all duration-150"
+												style="color: {isActive || isHovered ? '#FBBD23' : 'oklch(var(--bc) / 0.2)'};"
 											/>
 										</button>
 									{/each}
