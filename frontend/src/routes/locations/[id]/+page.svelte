@@ -63,6 +63,7 @@
 	let modalInitialIndex: number = 0;
 	let isImageModalOpen: boolean = false;
 	let history: any[] = [];
+	let ratingRefreshKey: number = 0;
 
 	onMount(async () => {
 		if (data.props.adventure) {
@@ -181,9 +182,10 @@
 		on:save={async () => {
 			// Re-fetch location data to get updated average_rating
 			try {
-				const locationRes = await fetch(`/api/locations/${adventure.id}`);
+				const locationRes = await fetch(`/api/locations/${adventure.id}/`);
 				if (locationRes.ok) {
 					adventure = await locationRes.json();
+					ratingRefreshKey++; // Force rating component to re-render
 				}
 			} catch (e) {
 				console.error('Failed to refresh location:', e);
@@ -271,7 +273,7 @@
 					<h1 class="text-6xl font-bold mb-4 drop-shadow-lg">{adventure.name}</h1>
 
 					<!-- Rating -->
-					{#key `${adventure.id}-${adventure.average_rating}-${adventure.rating}`}
+					{#key ratingRefreshKey}
 						{#if adventure.average_rating !== undefined && adventure.average_rating !== null}
 							<!-- Show average rating from all visits (collaborative mode) -->
 							<div class="flex flex-col items-center mb-6">
