@@ -4,7 +4,7 @@
 	// Props
 	export let rating: number | null = null;
 	export let maxStars: number = 5;
-	export let size: 'sm' | 'md' | 'lg' = 'md';
+	export let size: 'sm' | 'md' | 'lg' | 'xl' | '2xl' = 'md';
 	export let readonly: boolean = true;
 	export let showValue: boolean = false;
 
@@ -14,7 +14,9 @@
 	const sizeClasses = {
 		sm: 'w-4 h-4',
 		md: 'w-5 h-5',
-		lg: 'w-6 h-6'
+		lg: 'w-6 h-6',
+		xl: 'w-8 h-8',
+		'2xl': 'w-10 h-10'
 	};
 
 	// Calculate the fill percentage for each star

@@ -271,16 +271,16 @@
 					<h1 class="text-6xl font-bold mb-4 drop-shadow-lg">{adventure.name}</h1>
 
 					<!-- Rating -->
-					{#key adventure.average_rating ?? adventure.rating}
+					{#key `${adventure.id}-${adventure.average_rating}-${adventure.rating}`}
 						{#if adventure.average_rating !== undefined && adventure.average_rating !== null}
 							<!-- Show average rating from all visits (collaborative mode) -->
 							<div class="flex flex-col items-center mb-6">
-								<StarRating rating={adventure.average_rating} size="lg" readonly showValue={false} />
+								<StarRating rating={adventure.average_rating} size="2xl" readonly showValue={false} />
 								<span class="text-sm opacity-70 mt-1">{$t('adventures.average_rating')} ({adventure.average_rating})</span>
 							</div>
 						{:else if adventure.rating !== undefined && adventure.rating !== null}
 							<div class="flex flex-col items-center mb-6">
-								<StarRating rating={adventure.rating} size="lg" readonly showValue={false} />
+								<StarRating rating={adventure.rating} size="2xl" readonly showValue={false} />
 							</div>
 						{/if}
 					{/key}
