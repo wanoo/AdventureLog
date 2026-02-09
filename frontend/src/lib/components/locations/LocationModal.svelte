@@ -36,12 +36,12 @@
 			requires_id: false
 		},
 		{
-			name: $t('settings.media'),
+			name: $t('adventures.visits'),
 			selected: false,
 			requires_id: true
 		},
 		{
-			name: $t('adventures.visits'),
+			name: $t('settings.media'),
 			selected: false,
 			requires_id: true
 		}
@@ -266,6 +266,23 @@
 			/>
 		{/if}
 		{#if steps[2].selected}
+			<LocationVisits
+				bind:visits={location.visits}
+				bind:trails={location.trails}
+				objectId={location.id}
+				on:back={() => {
+					steps = navigateToStep(steps, 1);
+				}}
+				on:close={() => {
+					steps = navigateToStep(steps, 3);
+				}}
+				measurementSystem={user?.measurement_system || 'metric'}
+				{collection}
+				initialVisitDate={storedInitialVisitDate}
+				currentUserUsername={user?.username || null}
+			/>
+		{/if}
+		{#if steps[3].selected}
 			<LocationMedia
 				bind:images={location.images}
 				bind:attachments={location.attachments}
@@ -273,28 +290,11 @@
 				itemName={location.name}
 				userIsOwner={user?.uuid === location.user?.uuid}
 				on:back={() => {
-					steps = navigateToStep(steps, 1);
-				}}
-				itemId={location.id}
-				on:next={() => {
-					steps = navigateToStep(steps, 3);
-				}}
-				measurementSystem={user?.measurement_system || 'metric'}
-			/>
-		{/if}
-		{#if steps[3].selected}
-			<LocationVisits
-				bind:visits={location.visits}
-				bind:trails={location.trails}
-				objectId={location.id}
-				on:back={() => {
 					steps = navigateToStep(steps, 2);
 				}}
-				on:close={() => close()}
+				itemId={location.id}
+				on:next={() => close()}
 				measurementSystem={user?.measurement_system || 'metric'}
-				{collection}
-				initialVisitDate={storedInitialVisitDate}
-				currentUserUsername={user?.username || null}
 			/>
 		{/if}
 	</div>
