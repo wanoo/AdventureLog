@@ -330,6 +330,8 @@
 							orderByOptions={[
 								{ value: 'updated_at', label: $t('adventures.updated') },
 								{ value: 'name', label: $t('adventures.name') },
+								{ value: 'last_visit', label: $t('adventures.last_visit') },
+								{ value: 'created_at', label: $t('adventures.created_at') },
 								{ value: 'rating', label: $t('adventures.rating') }
 							]}
 							on:change={(e) => updateSort(e.detail.orderBy, e.detail.orderDirection)}

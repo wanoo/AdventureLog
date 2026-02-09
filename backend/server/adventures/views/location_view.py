@@ -68,9 +68,9 @@ class LocationViewSet(viewsets.ModelViewSet):
         include_collections = self.request.query_params.get('include_collections', 'true')
 
         # Validate parameters
-        valid_order_by = ['name', 'type', 'date', 'rating', 'updated_at']
+        valid_order_by = ['name', 'type', 'last_visit', 'rating', 'updated_at', 'created_at']
         if order_by not in valid_order_by:
-            order_by = 'name'
+            order_by = 'updated_at'
 
         if order_direction not in ['asc', 'desc']:
             order_direction = 'asc'
@@ -86,7 +86,7 @@ class LocationViewSet(viewsets.ModelViewSet):
 
     def _apply_ordering(self, queryset, order_by, order_direction):
         """Apply ordering to queryset based on field type."""
-        if order_by == 'date':
+        if order_by == 'last_visit':
             queryset = queryset.annotate(
                 latest_visit=Max('visits__start_date')
             ).filter(latest_visit__isnull=False)
@@ -101,6 +101,8 @@ class LocationViewSet(viewsets.ModelViewSet):
             # Special handling for updated_at (reverse default order)
             ordering = '-updated_at' if order_direction == 'asc' else 'updated_at'
             return queryset.order_by(ordering)
+        elif order_by == 'created_at':
+            ordering = 'created_at'
         else:
             ordering = order_by
 

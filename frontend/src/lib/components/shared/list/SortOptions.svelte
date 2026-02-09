@@ -11,6 +11,8 @@
 	export let orderByOptions: { value: string; label: string }[] = [
 		{ value: 'updated_at', label: 'Updated' },
 		{ value: 'name', label: 'Name' },
+		{ value: 'last_visit', label: 'Last Visit' },
+		{ value: 'created_at', label: 'Created' },
 		{ value: 'rating', label: 'Rating' }
 	];
 

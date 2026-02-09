@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.db.models.functions import Lower
 from django.utils import timezone
 from django.conf import settings
@@ -26,7 +26,7 @@ class TransportationViewSet(viewsets.ModelViewSet):
         order_direction = self.request.query_params.get('order_direction', 'asc')
 
         # Validate parameters
-        valid_order_by = ['name', 'date', 'rating', 'updated_at']
+        valid_order_by = ['name', 'last_visit', 'rating', 'updated_at', 'created_at']
         if order_by not in valid_order_by:
             order_by = 'updated_at'
 
@@ -37,8 +37,11 @@ class TransportationViewSet(viewsets.ModelViewSet):
 
     def _apply_ordering(self, queryset, order_by, order_direction):
         """Apply ordering to queryset based on field type."""
-        if order_by == 'date':
-            ordering = 'date'
+        if order_by == 'last_visit':
+            queryset = queryset.annotate(
+                latest_visit=Max('visits__start_date')
+            ).filter(latest_visit__isnull=False)
+            ordering = 'latest_visit'
         elif order_by == 'name':
             queryset = queryset.annotate(lower_name=Lower('name'))
             ordering = 'lower_name'
@@ -49,6 +52,8 @@ class TransportationViewSet(viewsets.ModelViewSet):
             # Special handling for updated_at (reverse default order)
             ordering = '-updated_at' if order_direction == 'asc' else 'updated_at'
             return queryset.order_by(ordering)
+        elif order_by == 'created_at':
+            ordering = 'created_at'
         else:
             ordering = order_by
 
