@@ -247,8 +247,11 @@ class Location(models.Model):
 
         result = super().save(force_insert, force_update, using, update_fields)
 
+        # Skip validation when only updating computed fields like average_rating
+        skip_validation = update_fields and set(update_fields) <= {'average_rating', 'updated_at'}
+
         # Validate collections after saving (since M2M relationships require saved instance)
-        if self.pk:
+        if self.pk and not skip_validation:
             try:
                 self.clean(skip_shared_validation=_skip_shared_validation)
             except ValidationError as e:
