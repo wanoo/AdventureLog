@@ -180,7 +180,8 @@ class Location(models.Model):
     location = models.CharField(max_length=200, blank=True, null=True)
     tags = ArrayField(models.CharField(max_length=100), blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    rating = models.FloatField(blank=True, null=True)
+    rating = models.FloatField(blank=True, null=True)  # Deprecated: use average_rating from visits
+    average_rating = models.FloatField(blank=True, null=True)  # Cached average from visit ratings
     price = MoneyField(max_digits=12, decimal_places=2, default_currency='USD', null=True, blank=True)
     link = models.URLField(blank=True, null=True, max_length=2083)
     is_public = models.BooleanField(default=False)
@@ -338,7 +339,8 @@ class Transportation(models.Model):
     type = models.CharField(max_length=100, choices=TRANSPORTATION_TYPES)
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
-    rating = models.FloatField(blank=True, null=True)
+    rating = models.FloatField(blank=True, null=True)  # Deprecated: use average_rating from visits
+    average_rating = models.FloatField(blank=True, null=True)  # Cached average from visit ratings
     price = MoneyField(max_digits=12, decimal_places=2, default_currency='USD', null=True, blank=True)
     link = models.URLField(blank=True, null=True, max_length=2083)
     # Date fields removed - now handled by Visit model
@@ -636,7 +638,8 @@ class Lodging(models.Model):
     name = models.CharField(max_length=200)
     type = models.CharField(max_length=100, choices=LODGING_TYPES, default='other')
     description = models.TextField(blank=True, null=True)
-    rating = models.FloatField(blank=True, null=True)
+    rating = models.FloatField(blank=True, null=True)  # Deprecated: use average_rating from visits
+    average_rating = models.FloatField(blank=True, null=True)  # Cached average from visit ratings
     link = models.URLField(blank=True, null=True, max_length=2083)
     # Date fields removed - now handled by Visit model
     reservation_number = models.CharField(max_length=100, blank=True, null=True)

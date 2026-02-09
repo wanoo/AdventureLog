@@ -360,7 +360,7 @@ class LocationSerializer(CustomModelSerializer):
     is_owned = serializers.SerializerMethodField()
     contributors = serializers.SerializerMethodField()
     last_modified_by = serializers.SerializerMethodField()
-    average_rating = serializers.SerializerMethodField()
+    # average_rating is now a stored field, not calculated
     country = CountrySerializer(read_only=True)
     region = RegionSerializer(read_only=True)
     city = CitySerializer(read_only=True)
@@ -386,16 +386,6 @@ class LocationSerializer(CustomModelSerializer):
         if request and hasattr(request, 'user') and request.user.is_authenticated:
             return obj.user == request.user
         return False
-
-    def get_average_rating(self, obj):
-        """
-        Calculate average rating from all visits that have ratings.
-        Returns None if no visits have ratings.
-        """
-        ratings = [v.rating for v in obj.visits.all() if v.rating is not None]
-        if not ratings:
-            return None
-        return round(sum(ratings) / len(ratings), 2)
 
     def get_contributors(self, obj):
         """
@@ -806,7 +796,7 @@ class TransportationSerializer(CustomModelSerializer):
     travel_duration_minutes = serializers.SerializerMethodField()
     visits = VisitSerializer(many=True, read_only=True)
     is_visited = serializers.SerializerMethodField()
-    average_rating = serializers.SerializerMethodField()
+    # average_rating is now a stored field, not calculated
     collections = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Collection.objects.all(),
@@ -943,23 +933,13 @@ class TransportationSerializer(CustomModelSerializer):
                 return True
         return False
 
-    def get_average_rating(self, obj):
-        """
-        Calculate average rating from all visits that have ratings.
-        Returns None if no visits have ratings.
-        """
-        ratings = [v.rating for v in obj.visits.all() if v.rating is not None]
-        if not ratings:
-            return None
-        return round(sum(ratings) / len(ratings), 2)
-
 
 class LodgingSerializer(CustomModelSerializer):
     images = serializers.SerializerMethodField()
     attachments = serializers.SerializerMethodField()
     visits = VisitSerializer(many=True, read_only=True)
     is_visited = serializers.SerializerMethodField()
-    average_rating = serializers.SerializerMethodField()
+    # average_rating is now a stored field, not calculated
     collections = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Collection.objects.all(),
@@ -1007,16 +987,6 @@ class LodgingSerializer(CustomModelSerializer):
             if start_date and start_date <= current_date:
                 return True
         return False
-
-    def get_average_rating(self, obj):
-        """
-        Calculate average rating from all visits that have ratings.
-        Returns None if no visits have ratings.
-        """
-        ratings = [v.rating for v in obj.visits.all() if v.rating is not None]
-        if not ratings:
-            return None
-        return round(sum(ratings) / len(ratings), 2)
 
 
 class NoteSerializer(CustomModelSerializer):

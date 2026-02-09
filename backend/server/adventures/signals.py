@@ -271,3 +271,41 @@ def auto_mark_visited_on_visit_create(sender, instance, created, **kwargs):
     lat, lon = _get_visit_coordinates(instance)
     if lat is not None and lon is not None:
         mark_city_region_visited(user, lat, lon)
+
+
+# ---------------------------------------------------------------------------
+# Update cached average_rating when Visit ratings change
+# ---------------------------------------------------------------------------
+
+def _update_parent_average_rating(visit):
+    """
+    Recalculate and update the average_rating on the visit's parent (Location, Transportation, or Lodging).
+    """
+    parent = visit.location or visit.transportation or visit.lodging
+    if not parent:
+        return
+
+    # Get all visit ratings for this parent
+    ratings = [v.rating for v in parent.visits.all() if v.rating is not None]
+
+    if ratings:
+        avg = round(sum(ratings) / len(ratings), 2)
+    else:
+        avg = None
+
+    # Only update if changed to avoid unnecessary writes
+    if parent.average_rating != avg:
+        parent.average_rating = avg
+        parent.save(update_fields=['average_rating'])
+
+
+@receiver(post_save, sender=Visit)
+def update_average_rating_on_visit_save(sender, instance, **kwargs):
+    """Update parent's average_rating when a visit is saved."""
+    _update_parent_average_rating(instance)
+
+
+@receiver(post_delete, sender=Visit)
+def update_average_rating_on_visit_delete(sender, instance, **kwargs):
+    """Update parent's average_rating when a visit is deleted."""
+    _update_parent_average_rating(instance)

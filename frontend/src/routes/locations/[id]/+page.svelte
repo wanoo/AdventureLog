@@ -178,6 +178,15 @@
 	<NewLocationModal
 		on:close={() => (isEditModalOpen = false)}
 		on:save={async () => {
+			// Re-fetch location data to get updated average_rating
+			try {
+				const locationRes = await fetch(`/api/locations/${adventure.id}`);
+				if (locationRes.ok) {
+					adventure = await locationRes.json();
+				}
+			} catch (e) {
+				console.error('Failed to refresh location:', e);
+			}
 			// Refresh history after save in collaborative mode
 			if (data.collaborativeMode && adventure.id) {
 				try {
