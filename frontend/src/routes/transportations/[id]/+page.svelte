@@ -14,6 +14,7 @@
 	import ClipboardList from '~icons/mdi/clipboard-list';
 	import ImageDisplayModal from '$lib/components/ImageDisplayModal.svelte';
 	import AttachmentCard from '$lib/components/cards/AttachmentCard.svelte';
+	import ActivityCard from '$lib/components/cards/ActivityCard.svelte';
 	import { getBasemapUrl, isAllDay, TRANSPORTATION_TYPES_ICONS } from '$lib';
 	import Star from '~icons/mdi/star';
 	import StarOutline from '~icons/mdi/star-outline';
@@ -640,6 +641,25 @@
 													{#if visit.notes}
 														<div class="mt-3 p-3 bg-base-200 rounded-lg">
 															<p class="text-sm italic">"{visit.notes}"</p>
+														</div>
+													{/if}
+
+													<!-- Activities Section -->
+													{#if visit.activities && visit.activities.length > 0}
+														<div class="mt-4">
+															<h4 class="font-semibold mb-3 flex items-center gap-2">
+																🏃‍♂️ {$t('adventures.activities')} ({visit.activities.length})
+															</h4>
+															<div class="space-y-3">
+																{#each visit.activities as activity}
+																	<ActivityCard
+																		{activity}
+																		readOnly={true}
+																		{visit}
+																		measurementSystem={data.user?.measurement_system || 'metric'}
+																	/>
+																{/each}
+															</div>
 														</div>
 													{/if}
 												</div>
