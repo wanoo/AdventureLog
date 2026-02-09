@@ -30,6 +30,9 @@
 	import ChecklistModal from '$lib/components/ChecklistModal.svelte';
 	import ItineraryLinkModal from '$lib/components/collections/ItineraryLinkModal.svelte';
 	import ItineraryDayPickModal from '$lib/components/collections/ItineraryDayPickModal.svelte';
+	import LocationLink from '$lib/components/LocationLink.svelte';
+	import TransportationLink from '$lib/components/TransportationLink.svelte';
+	import LodgingLink from '$lib/components/LodgingLink.svelte';
 	import Car from '~icons/mdi/car';
 	import LocationMarker from '~icons/mdi/map-marker';
 	import { t } from 'svelte-i18n';
@@ -345,6 +348,13 @@
 	let isNoteModalOpen = false;
 	let isChecklistModalOpen = false;
 	let isItineraryLinkModalOpen = false;
+
+	// Import modals for linking items from outside the collection
+	let isLocationImportModalOpen = false;
+	let isTransportationImportModalOpen = false;
+	let isLodgingImportModalOpen = false;
+	// Target date for imported items (set when opening import modal from a day)
+	let importTargetDate: string | null = null;
 
 	let noteToEdit: Note | null = null;
 	let checklistToEdit: Checklist | null = null;
@@ -1482,6 +1492,54 @@
 			console.error('Error saving day metadata:', err);
 		}
 	}
+
+	// Handler for imported location (from LocationLink modal)
+	async function handleLocationImported(event: CustomEvent<Location>) {
+		const location = event.detail;
+		// Add to collection.locations if not already present
+		if (!collection.locations) collection.locations = [];
+		const exists = collection.locations.some((l) => String(l.id) === String(location.id));
+		if (!exists) {
+			collection.locations = [...collection.locations, location];
+		}
+		// If we have a target date, add to itinerary
+		if (importTargetDate) {
+			await addItineraryItemForObject('location', location.id, importTargetDate, false);
+		}
+		addToast('success', $t('adventures.collection_link_location_success') || 'Location added successfully');
+	}
+
+	// Handler for imported transportation (from TransportationLink modal)
+	async function handleTransportationImported(event: CustomEvent<Transportation>) {
+		const transportation = event.detail;
+		// Add to collection.transportations if not already present
+		if (!collection.transportations) collection.transportations = [];
+		const exists = collection.transportations.some((t) => String(t.id) === String(transportation.id));
+		if (!exists) {
+			collection.transportations = [...collection.transportations, transportation];
+		}
+		// If we have a target date, add to itinerary
+		if (importTargetDate) {
+			await addItineraryItemForObject('transportation', transportation.id, importTargetDate, false);
+		}
+		addToast('success', $t('transportation.linked_success') || 'Transportation linked successfully');
+	}
+
+	// Handler for imported lodging (from LodgingLink modal)
+	async function handleLodgingImported(event: CustomEvent<Lodging>) {
+		const lodging = event.detail;
+		// Add to collection.lodging if not already present
+		if (!collection.lodging) collection.lodging = [];
+		const exists = collection.lodging.some((l) => String(l.id) === String(lodging.id));
+		if (!exists) {
+			collection.lodging = [...collection.lodging, lodging];
+		}
+		// If we have a target date, add to itinerary
+		if (importTargetDate) {
+			await addItineraryItemForObject('lodging', lodging.id, importTargetDate, false);
+		}
+		addToast('success', $t('lodging.linked_success') || 'Lodging linked successfully');
+	}
 </script>
 
 {#if isLocationModalOpen}
@@ -1581,6 +1639,42 @@
 			const { type, itemId, updateDate } = e.detail;
 			addItineraryItemForObject(type, itemId, linkModalTargetDate, updateDate);
 		}}
+	/>
+{/if}
+
+{#if isLocationImportModalOpen && collection}
+	<LocationLink
+		{user}
+		collectionId={collection.id}
+		on:close={() => {
+			isLocationImportModalOpen = false;
+			importTargetDate = null;
+		}}
+		on:add={handleLocationImported}
+	/>
+{/if}
+
+{#if isTransportationImportModalOpen && collection}
+	<TransportationLink
+		{user}
+		collectionId={collection.id}
+		on:close={() => {
+			isTransportationImportModalOpen = false;
+			importTargetDate = null;
+		}}
+		on:add={handleTransportationImported}
+	/>
+{/if}
+
+{#if isLodgingImportModalOpen && collection}
+	<LodgingLink
+		{user}
+		collectionId={collection.id}
+		on:close={() => {
+			isLodgingImportModalOpen = false;
+			importTargetDate = null;
+		}}
+		on:add={handleLodgingImported}
 	/>
 {/if}
 
@@ -1955,6 +2049,46 @@
 												}}
 											>
 												{$t('itinerary.link_existing_item')}
+											</button>
+										</li>
+										<li class="menu-title">{$t('adventures.import_existing')}</li>
+										<li>
+											<button
+												type="button"
+												role="menuitem"
+												class="w-full text-left"
+												on:click={() => {
+													importTargetDate = day.date;
+													isLocationImportModalOpen = true;
+												}}
+											>
+												{$t('locations.location')}
+											</button>
+										</li>
+										<li>
+											<button
+												type="button"
+												role="menuitem"
+												class="w-full text-left"
+												on:click={() => {
+													importTargetDate = day.date;
+													isTransportationImportModalOpen = true;
+												}}
+											>
+												{$t('adventures.transportation')}
+											</button>
+										</li>
+										<li>
+											<button
+												type="button"
+												role="menuitem"
+												class="w-full text-left"
+												on:click={() => {
+													importTargetDate = day.date;
+													isLodgingImportModalOpen = true;
+												}}
+											>
+												{$t('adventures.lodging')}
 											</button>
 										</li>
 										<li class="menu-title">{$t('adventures.create_new')}</li>
