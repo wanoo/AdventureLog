@@ -333,6 +333,17 @@
 {#if isEditModalOpen}
 	<TransportationModal
 		on:close={() => (isEditModalOpen = false)}
+		on:save={async () => {
+			// Re-fetch transportation data to get updated average_rating
+			try {
+				const res = await fetch(`/api/transportations/${transportation.id}`);
+				if (res.ok) {
+					transportation = await res.json();
+				}
+			} catch (e) {
+				console.error('Failed to refresh transportation:', e);
+			}
+		}}
 		user={data.user}
 		transportationToEdit={transportation}
 		bind:transportation

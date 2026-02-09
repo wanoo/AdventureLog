@@ -196,6 +196,17 @@
 {#if isEditModalOpen}
 	<LodgingModal
 		on:close={() => (isEditModalOpen = false)}
+		on:save={async () => {
+			// Re-fetch lodging data to get updated average_rating
+			try {
+				const res = await fetch(`/api/lodging/${lodging.id}`);
+				if (res.ok) {
+					lodging = await res.json();
+				}
+			} catch (e) {
+				console.error('Failed to refresh lodging:', e);
+			}
+		}}
 		user={data.user}
 		lodgingToEdit={lodging}
 		bind:lodging
