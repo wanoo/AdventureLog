@@ -76,6 +76,7 @@
 	let showPlanned: boolean = true;
 	let searchQuery: string = '';
 	let minRating: number = 0; // 0 means no filter
+	let ratingHover: number | null = null;
 
 	// Get unique categories from pins with their icons
 	$: availableCategories = [...new Set(pins.map((pin) => pin.category?.display_name).filter(Boolean))] as string[];
@@ -1745,27 +1746,55 @@
 										{$t('adventures.min_rating')}
 									</span>
 								</div>
-								<div class="flex flex-wrap gap-1 mt-1">
-									<button
-										type="button"
-										class="badge badge-sm cursor-pointer transition-all {minRating === 0
-											? 'badge-primary'
-											: 'badge-ghost hover:badge-primary/50'}"
-										on:click={() => (minRating = 0)}
+								<div class="flex flex-col gap-2 mt-1">
+									<!-- Interactive star selector -->
+									<div
+										class="flex items-center justify-center gap-0.5"
+										on:mouseleave={() => ratingHover = null}
+										role="group"
+										aria-label="Rating filter"
 									>
-										{$t('adventures.all')}
-									</button>
-									{#each [1, 2, 3, 4, 5] as rating}
-										<button
-											type="button"
-											class="badge badge-sm cursor-pointer transition-all {minRating === rating
-												? 'badge-warning'
-												: 'badge-ghost hover:badge-warning/50'}"
-											on:click={() => (minRating = rating)}
-										>
-											{rating}+ ★
-										</button>
-									{/each}
+										{#each [1, 2, 3, 4, 5] as rating}
+											{@const isActive = minRating > 0 && rating <= minRating}
+											{@const isHovered = ratingHover !== null && rating <= ratingHover}
+											<button
+												type="button"
+												class="btn btn-ghost btn-xs p-0.5 min-h-0 h-auto transition-transform hover:scale-125"
+												on:click={() => {
+													if (minRating === rating) {
+														minRating = 0;
+													} else {
+														minRating = rating;
+													}
+												}}
+												on:mouseenter={() => ratingHover = rating}
+												aria-label="Filter by {rating}+ stars"
+											>
+												<Star
+													class="w-6 h-6 transition-all duration-150"
+													style="color: {isActive || isHovered ? '#FBBD23' : 'oklch(var(--bc) / 0.2)'};"
+												/>
+											</button>
+										{/each}
+									</div>
+									<!-- Current filter display -->
+									<div class="text-center">
+										{#if minRating > 0}
+											<span class="badge badge-warning badge-sm gap-1">
+												{minRating}+ {$t('adventures.stars')}
+												<button
+													type="button"
+													class="btn btn-ghost btn-xs p-0 min-h-0 h-auto ml-1"
+													on:click={() => minRating = 0}
+													aria-label="Clear rating filter"
+												>
+													✕
+												</button>
+											</span>
+										{:else}
+											<span class="text-xs text-base-content/50">{$t('adventures.all')}</span>
+										{/if}
+									</div>
 								</div>
 							</div>
 
