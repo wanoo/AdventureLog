@@ -178,9 +178,8 @@
 
 {#if isEditModalOpen}
 	<NewLocationModal
-		on:close={() => (isEditModalOpen = false)}
-		on:save={async () => {
-			// Re-fetch location data to get updated average_rating
+		on:close={async () => {
+			// Re-fetch location data to get updated average_rating before closing
 			try {
 				const locationRes = await fetch(`/api/locations/${adventure.id}/`);
 				if (locationRes.ok) {
@@ -201,10 +200,10 @@
 					console.error('Failed to refresh history:', e);
 				}
 			}
+			isEditModalOpen = false;
 		}}
 		user={data.user}
 		locationToEdit={adventure}
-		bind:location={adventure}
 	/>
 {/if}
 
