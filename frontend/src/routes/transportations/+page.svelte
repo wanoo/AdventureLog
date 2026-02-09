@@ -44,6 +44,7 @@
 	let transportationToEdit: Transportation | null = null;
 	let isTransportationModalOpen: boolean = false;
 	let sidebarOpen = false;
+	let ratingHover: number | null = null;
 
 	let currentSort = {
 		order_by: 'updated_at',
@@ -592,31 +593,51 @@
 								<Star class="w-5 h-5" />
 								{$t('adventures.min_rating')}
 							</h3>
-							<div class="space-y-2">
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="radio"
-										name="rating_filter"
-										class="radio radio-primary radio-sm"
-										checked={currentSort.min_rating === 'all'}
-										on:change={() => updateRatingFilter('all')}
-									/>
-									<span class="label-text">{$t('adventures.all')}</span>
-								</label>
-								{#each [1, 2, 3, 4, 5] as rating}
-									<label class="label cursor-pointer justify-start gap-3">
-										<input
-											type="radio"
-											name="rating_filter"
-											class="radio radio-primary radio-sm"
-											checked={currentSort.min_rating === rating.toString()}
-											on:change={() => updateRatingFilter(rating.toString())}
-										/>
-										<span class="label-text flex items-center gap-1">
-											{rating}+ <Star class="w-4 h-4 text-warning" />
-										</span>
-									</label>
-								{/each}
+							<div class="flex flex-col gap-3">
+								<!-- Interactive star selector -->
+								<div
+									class="flex items-center justify-center gap-1"
+									on:mouseleave={() => ratingHover = null}
+									role="group"
+									aria-label="Rating filter"
+								>
+									{#each [1, 2, 3, 4, 5] as rating}
+										{@const isActive = currentSort.min_rating !== 'all' && rating <= parseInt(currentSort.min_rating)}
+										{@const isHovered = ratingHover !== null && rating <= ratingHover}
+										<button
+											type="button"
+											class="btn btn-ghost btn-sm p-1 min-h-0 h-auto transition-transform hover:scale-125"
+											on:click={() => {
+												if (currentSort.min_rating === rating.toString()) {
+													updateRatingFilter('all');
+												} else {
+													updateRatingFilter(rating.toString());
+												}
+											}}
+											on:mouseenter={() => ratingHover = rating}
+											aria-label="Filter by {rating}+ stars"
+										>
+											<Star
+												class="w-8 h-8 transition-all duration-150"
+												style="color: {isActive || isHovered ? '#FBBD23' : 'oklch(var(--bc) / 0.2)'};"
+											/>
+										</button>
+									{/each}
+								</div>
+								<!-- Current filter display -->
+								<div class="text-center text-sm text-base-content/70">
+									{#if currentSort.min_rating !== 'all'}
+										<span class="font-medium">{currentSort.min_rating}+ {$t('adventures.stars')}</span>
+										<button
+											class="btn btn-ghost btn-xs ml-2"
+											on:click={() => updateRatingFilter('all')}
+										>
+											{$t('adventures.clear')}
+										</button>
+									{:else}
+										<span>{$t('adventures.all')}</span>
+									{/if}
+								</div>
 							</div>
 						</div>
 					</div>
