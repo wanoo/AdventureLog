@@ -162,14 +162,17 @@ class Visit(models.Model):
         super().delete(*args, **kwargs)
 
     def __str__(self):
-        if self.location:
-            parent_name = self.location.name
-        elif self.transportation:
-            parent_name = self.transportation.name
-        elif self.lodging:
-            parent_name = self.lodging.name
-        else:
-            parent_name = "Unknown"
+        try:
+            if self.location_id and self.location:
+                parent_name = self.location.name
+            elif self.transportation_id and self.transportation:
+                parent_name = self.transportation.name
+            elif self.lodging_id and self.lodging:
+                parent_name = self.lodging.name
+            else:
+                parent_name = "Unknown"
+        except (Location.DoesNotExist, Transportation.DoesNotExist, Lodging.DoesNotExist):
+            parent_name = "Deleted"
         return f"{parent_name} - {self.start_date} to {self.end_date}"
 
 class Location(models.Model):

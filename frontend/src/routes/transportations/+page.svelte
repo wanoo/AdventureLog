@@ -128,6 +128,7 @@
 	function deleteTransportation(event: CustomEvent<string>) {
 		transportations = transportations.filter((t) => t.id !== event.detail);
 		count = count - 1;
+		totalPages = Math.ceil(count / resultsPerPage);
 	}
 
 	function editTransportation(event: CustomEvent<Transportation>) {
