@@ -148,7 +148,9 @@
 
 	function deleteAdventure(event: CustomEvent<string>) {
 		adventures = adventures.filter((adventure) => adventure.id !== event.detail);
+		data.props.adventures = adventures;
 		count = count - 1;
+		data.props.count = count;
 		totalPages = Math.ceil(count / resultsPerPage);
 	}
 

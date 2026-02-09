@@ -127,7 +127,9 @@
 
 	function deleteLodging(event: CustomEvent<string>) {
 		lodgingItems = lodgingItems.filter((l) => l.id !== event.detail);
+		data.props.lodgingItems = lodgingItems;
 		count = count - 1;
+		data.props.count = count;
 		totalPages = Math.ceil(count / resultsPerPage);
 	}
 
