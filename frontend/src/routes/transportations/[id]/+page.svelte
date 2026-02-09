@@ -1021,6 +1021,18 @@
 									</div>
 								</div>
 							{/if}
+
+							<!-- Tags -->
+							{#if transportation.tags && transportation.tags.length > 0}
+								<div>
+									<p class="font-semibold text-sm opacity-70 mb-2">🏷️ {$t('adventures.tags')}</p>
+									<div class="flex flex-wrap gap-1">
+										{#each transportation.tags as tag}
+											<span class="badge badge-sm badge-outline">{tag}</span>
+										{/each}
+									</div>
+								</div>
+							{/if}
 						</div>
 					</div>
 				</div>

@@ -719,6 +719,18 @@
 									</div>
 								</div>
 							{/if}
+
+							<!-- Tags -->
+							{#if lodging.tags && lodging.tags.length > 0}
+								<div>
+									<p class="font-semibold text-sm opacity-70 mb-2">🏷️ {$t('adventures.tags')}</p>
+									<div class="flex flex-wrap gap-1">
+										{#each lodging.tags as tag}
+											<span class="badge badge-sm badge-outline">{tag}</span>
+										{/each}
+									</div>
+								</div>
+							{/if}
 						</div>
 					</div>
 				</div>
