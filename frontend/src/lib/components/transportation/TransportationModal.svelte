@@ -7,6 +7,7 @@
 	import MediaStep from '../shared/MediaStep.svelte';
 	import TransportationDetails from './TransportationDetails.svelte';
 	import TransportationVisits from './TransportationVisits.svelte';
+	import { StepTimeline, type ModalStep, navigateToStep } from '../shared/modal';
 
 	export let user: User | null = null;
 	export let collection: Collection | null = null;
@@ -22,7 +23,7 @@
 	// Whether a save/create occurred during this modal session
 	let didSave = false;
 
-	let steps = [
+	let steps: ModalStep[] = [
 		{
 			name: $t('adventures.details'),
 			selected: true,
@@ -123,11 +124,7 @@
 				transportation = createEmptyTransportation();
 				storedInitialVisitDate = initialVisitDate;
 				// Reset steps to details when creating a new transportation
-				steps = [
-					{ name: $t('adventures.details'), selected: true, requires_id: false },
-					{ name: $t('adventures.visits'), selected: false, requires_id: true },
-					{ name: $t('settings.media'), selected: false, requires_id: true }
-				];
+				steps = navigateToStep(steps, 0);
 			}
 		}
 	}
@@ -190,55 +187,13 @@
 					</div>
 				</div>
 
-				<ul
-					class="timeline timeline-vertical timeline-compact sm:timeline-horizontal sm:timeline-normal"
-				>
-					{#each steps as step, index}
-						<li>
-							{#if index > 0}
-								<hr class="bg-base-300" />
-							{/if}
-							<div class="timeline-middle">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 20 20"
-									fill="currentColor"
-									class="h-4 w-4 sm:h-5 sm:w-5 {step.selected
-										? 'text-primary'
-										: 'text-base-content/40'}"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-0.089l4-5-5z"
-										clip-rule="evenodd"
-									/>
-								</svg>
-							</div>
-							<button
-								class="timeline-end timeline-box text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 {step.selected
-									? 'bg-primary text-primary-content'
-									: 'bg-base-200'} {step.requires_id && !transportation?.id
-									? 'opacity-50 cursor-not-allowed'
-									: 'hover:bg-primary/80 cursor-pointer'} transition-colors"
-								on:click={() => {
-									// Reset all steps
-									steps.forEach((s) => (s.selected = false));
-									// Select clicked step
-									steps[index].selected = true;
-								}}
-								disabled={step.requires_id && !transportation?.id}
-							>
-								<span class="hidden sm:inline">{step.name}</span>
-								<span class="sm:hidden"
-									>{step.name.substring(0, 8)}{step.name.length > 8 ? '...' : ''}</span
-								>
-							</button>
-							{#if index < steps.length - 1}
-								<hr class="bg-base-300" />
-							{/if}
-						</li>
-					{/each}
-				</ul>
+				<StepTimeline
+					{steps}
+					entityId={transportation?.id ?? ''}
+					on:stepClick={(e) => {
+						steps = navigateToStep(steps, e.detail.index);
+					}}
+				/>
 
 				<!-- Close Button -->
 				<button class="btn btn-ghost btn-square" on:click={close}>
@@ -261,8 +216,7 @@
 				{collection}
 				bind:editingTransportation={transportation}
 				on:back={() => {
-					steps[1].selected = false;
-					steps[0].selected = true;
+					steps = navigateToStep(steps, 0);
 				}}
 				on:save={(e) => {
 					// Update the entire transportation object with all saved data
@@ -274,14 +228,11 @@
 					// Only allow moving to next steps once we have a persisted id.
 					if (!transportation?.id) {
 						addToast('error', $t('adventures.lodging_save_error'));
-						steps[1].selected = false;
-						steps[2].selected = false;
-						steps[0].selected = true;
+						steps = navigateToStep(steps, 0);
 						return;
 					}
 
-					steps[0].selected = false;
-					steps[1].selected = true;
+					steps = navigateToStep(steps, 1);
 				}}
 				initialVisitDate={storedInitialVisitDate}
 			/>
@@ -294,12 +245,10 @@
 				initialVisitDate={storedInitialVisitDate}
 				currentUserUsername={user?.username || null}
 				on:back={() => {
-					steps[1].selected = false;
-					steps[0].selected = true;
+					steps = navigateToStep(steps, 0);
 				}}
 				on:close={() => {
-					steps[1].selected = false;
-					steps[2].selected = true;
+					steps = navigateToStep(steps, 2);
 				}}
 				on:visitAdded={(e) => {
 					// Update or add the visit (filter out existing with same ID first)
@@ -318,8 +267,7 @@
 				bind:attachments={transportation.attachments}
 				itemName={transportation.name}
 				on:back={() => {
-					steps[2].selected = false;
-					steps[1].selected = true;
+					steps = navigateToStep(steps, 1);
 				}}
 				on:close={() => close()}
 				itemId={transportation.id}
