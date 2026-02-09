@@ -5,7 +5,7 @@
 	import LocationSearchMap from '../shared/LocationSearchMap.svelte';
 	import MoneyInput from '../shared/MoneyInput.svelte';
 	import MarkdownEditor from '../MarkdownEditor.svelte';
-	import TagComplete from '../TagComplete.svelte';
+	import { TagsCard, DetailsActionButtons } from '../shared/form';
 	import { DEFAULT_CURRENCY, normalizeMoneyPayload, toMoneyValue } from '$lib/money';
 	import type { Category, Collection, Location, MoneyValue, User } from '$lib/types';
 	import MapIcon from '~icons/mdi/map';
@@ -390,27 +390,7 @@
 		</div>
 
 		<!-- Tags Section -->
-		<div class="card bg-base-100 border border-base-300 shadow-lg">
-			<div class="card-body p-6">
-				<div class="flex items-center gap-3 mb-6">
-					<div class="p-2 bg-warning/10 rounded-lg">
-						<CategoryIcon class="w-5 h-5 text-warning" />
-					</div>
-					<h2 class="text-xl font-bold">{$t('adventures.tags')} ({location.tags?.length || 0})</h2>
-				</div>
-				<div class="space-y-4">
-					<input
-						type="text"
-						id="tags"
-						name="tags"
-						hidden
-						bind:value={location.tags}
-						class="input input-bordered w-full"
-					/>
-					<TagComplete bind:tags={location.tags} />
-				</div>
-			</div>
-		</div>
+		<TagsCard bind:tags={location.tags} />
 
 		<!-- Location Selection Section -->
 		<div class="card bg-base-100 border border-base-300 shadow-lg">
@@ -434,24 +414,12 @@
 		</div>
 
 		<!-- Action Buttons -->
-		<div class="flex gap-3 justify-end pt-4">
-			<button class="btn btn-neutral-200 gap-2" on:click={handleBack}>
-				<ArrowLeftIcon class="w-5 h-5" />
-				{$t('adventures.back')}
-			</button>
-			<button
-				class="btn btn-primary gap-2"
-				disabled={!location.name || !location.category || isReverseGeocoding}
-				on:click={handleSave}
-			>
-				{#if isReverseGeocoding}
-					<span class="loading loading-spinner loading-sm"></span>
-					{$t('adventures.processing')}...
-				{:else}
-					<SaveIcon class="w-5 h-5" />
-					{$t('adventures.continue')}
-				{/if}
-			</button>
-		</div>
+		<DetailsActionButtons
+			showBack={true}
+			disabled={!location.name || !location.category || isReverseGeocoding}
+			isProcessing={isReverseGeocoding}
+			on:back={handleBack}
+			on:save={handleSave}
+		/>
 	</div>
 </div>
