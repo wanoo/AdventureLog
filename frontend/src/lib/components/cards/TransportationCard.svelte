@@ -503,7 +503,20 @@
 				<span class="badge badge-ghost badge-sm">⏱️ {travelDurationLabel}</span>
 			{/if}
 
-			{#if transportation.rating}
+			{#if transportation.average_rating !== null && transportation.average_rating !== undefined}
+				<div class="flex items-center gap-1">
+					<div class="flex -ml-1">
+						{#each renderStars(Math.round(transportation.average_rating)) as filled}
+							{#if filled}
+								<Star class="w-4 h-4 text-warning fill-current" />
+							{:else}
+								<StarOutline class="w-4 h-4 text-base-content/30" />
+							{/if}
+						{/each}
+					</div>
+					<span class="text-xs text-base-content/60">({transportation.average_rating})</span>
+				</div>
+			{:else if transportation.rating}
 				<div class="flex items-center gap-1">
 					<div class="flex -ml-1">
 						{#each renderStars(transportation.rating) as filled}

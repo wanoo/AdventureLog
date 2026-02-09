@@ -897,6 +897,7 @@
 						<label class="label-text text-sm font-medium">{$t('adventures.rating')}</label>
 						<div class="flex items-center gap-2 mt-1">
 							<div class="rating rating-lg">
+								<input type="radio" name="visit-rating-input" class="rating-hidden" checked={visitRating === null} />
 								{#each [1, 2, 3, 4, 5] as star}
 									<input
 										type="radio"

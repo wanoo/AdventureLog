@@ -12,6 +12,7 @@ export interface LodgingPin {
 	is_visited: boolean;
 	type: string;
 	is_owned: boolean;
+	average_rating: number | null;
 }
 
 export interface TransportationPin {
@@ -26,6 +27,7 @@ export interface TransportationPin {
 	destination_longitude: string | null;
 	from_location: string | null;
 	to_location: string | null;
+	average_rating: number | null;
 }
 
 export const load = (async (event) => {

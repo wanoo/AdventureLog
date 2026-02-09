@@ -557,6 +557,7 @@ export type Pin = {
 	is_visited?: boolean;
 	category: Category | null;
 	is_owned?: boolean; // For collaborative mode
+	average_rating?: number | null;
 };
 
 export type Recommendation = {

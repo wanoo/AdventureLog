@@ -25,6 +25,7 @@
 	export let utcStartDate: string | null = null;
 	export let utcEndDate: string | null = null;
 	export let note: string | null = null;
+	export let visitRating: number | null = null;
 	export let visits: Visit[] | null = null;
 	export let transportationId: string;
 	export let initialVisitDate: string | null = null;
@@ -157,6 +158,7 @@
 					start_date: utcStartDate,
 					end_date: utcEndDate,
 					notes: note,
+					rating: visitRating,
 					timezone: selectedStartTimezone
 				})
 			});
@@ -176,6 +178,7 @@
 				start_date: utcStartDate,
 				end_date: utcEndDate,
 				notes: note,
+				rating: visitRating,
 				timezone: selectedStartTimezone,
 				transportation: transportationId
 			};
@@ -202,6 +205,7 @@
 		// Reset form fields
 		if (!initialVisitDate || isAuto) {
 			note = '';
+			visitRating = null;
 			localStartDate = '';
 			localEndDate = '';
 			utcStartDate = null;
@@ -240,6 +244,7 @@
 		}
 
 		note = visit.notes;
+		visitRating = visit.rating ?? null;
 		constrainDates = true;
 		utcStartDate = visit.start_date;
 		utcEndDate = visit.end_date;
@@ -469,6 +474,34 @@
 							placeholder={$t('adventures.notes_placeholder') + '...'}
 							bind:value={note}
 						></textarea>
+					</div>
+
+					<!-- Rating -->
+					<div class="mt-4">
+						<label class="label-text text-sm font-medium">{$t('adventures.rating')}</label>
+						<div class="flex items-center gap-2 mt-1">
+							<div class="rating rating-lg">
+								<input type="radio" name="transport-visit-rating-input" class="rating-hidden" checked={visitRating === null} />
+								{#each [1, 2, 3, 4, 5] as star}
+									<input
+										type="radio"
+										name="transport-visit-rating-input"
+										class="mask mask-star-2 bg-warning"
+										checked={visitRating === star}
+										on:click={() => visitRating = visitRating === star ? null : star}
+									/>
+								{/each}
+							</div>
+							{#if visitRating}
+								<button
+									type="button"
+									class="btn btn-ghost btn-xs"
+									on:click={() => visitRating = null}
+								>
+									{$t('adventures.clear')}
+								</button>
+							{/if}
+						</div>
 					</div>
 
 					<!-- Add Visit Button -->

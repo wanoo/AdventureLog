@@ -15,6 +15,7 @@
 	import Calendar from '~icons/mdi/calendar';
 	import Tag from '~icons/mdi/tag';
 	import Compass from '~icons/mdi/compass';
+	import Star from '~icons/mdi/star';
 	import NewLocationModal from '$lib/components/locations/LocationModal.svelte';
 
 	export let data: any;
@@ -29,7 +30,8 @@
 		includeCollections: true,
 		is_visited: 'all',
 		is_public: 'all',
-		ownership: 'all'
+		ownership: 'all',
+		min_rating: 'all'
 	};
 
 	let locationBeingUpdated: Location | undefined = undefined;
@@ -126,6 +128,7 @@
 		}
 		currentSort.is_public = url.searchParams.get('is_public') || 'all';
 		currentSort.ownership = url.searchParams.get('ownership') || 'all';
+		currentSort.min_rating = url.searchParams.get('min_rating') || 'all';
 	}
 
 	function handleChangePage(pageNumber: number) {
@@ -214,6 +217,23 @@
 		url.searchParams.set('page', '1');
 		currentPage = 1;
 		currentSort.ownership = ownership;
+		await goto(url.toString(), { invalidateAll: true, replaceState: true });
+		if (data.props.adventures) {
+			adventures = data.props.adventures;
+			count = data.props.count;
+		}
+	}
+
+	async function updateRatingFilter(minRating: string) {
+		const url = new URL($page.url);
+		if (minRating && minRating !== 'all') {
+			url.searchParams.set('min_rating', minRating);
+		} else {
+			url.searchParams.delete('min_rating');
+		}
+		url.searchParams.set('page', '1');
+		currentPage = 1;
+		currentSort.min_rating = minRating;
 		await goto(url.toString(), { invalidateAll: true, replaceState: true });
 		if (data.props.adventures) {
 			adventures = data.props.adventures;
@@ -555,6 +575,40 @@
 								/>
 								<span class="label-text">{$t('adventures.collection_locations')}</span>
 							</label>
+						</div>
+
+						<!-- Rating Filter -->
+						<div class="card bg-base-200/50 p-4">
+							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+								<Star class="w-5 h-5" />
+								{$t('adventures.min_rating')}
+							</h3>
+							<div class="space-y-2">
+								<label class="label cursor-pointer justify-start gap-3">
+									<input
+										type="radio"
+										name="rating_filter"
+										class="radio radio-primary radio-sm"
+										checked={currentSort.min_rating === 'all'}
+										on:change={() => updateRatingFilter('all')}
+									/>
+									<span class="label-text">{$t('adventures.all')}</span>
+								</label>
+								{#each [1, 2, 3, 4, 5] as rating}
+									<label class="label cursor-pointer justify-start gap-3">
+										<input
+											type="radio"
+											name="rating_filter"
+											class="radio radio-primary radio-sm"
+											checked={currentSort.min_rating === rating.toString()}
+											on:change={() => updateRatingFilter(rating.toString())}
+										/>
+										<span class="label-text flex items-center gap-1">
+											{rating}+ <Star class="w-4 h-4 text-warning" />
+										</span>
+									</label>
+								{/each}
+							</div>
 						</div>
 
 						<!-- Visibility Filter (collaborative mode only) -->

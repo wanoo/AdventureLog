@@ -95,8 +95,8 @@ class LocationViewSet(viewsets.ModelViewSet):
             queryset = queryset.annotate(lower_name=Lower('name'))
             ordering = 'lower_name'
         elif order_by == 'rating':
-            queryset = queryset.filter(rating__isnull=False)
-            ordering = 'rating'
+            queryset = queryset.filter(average_rating__isnull=False)
+            ordering = 'average_rating'
         elif order_by == 'updated_at':
             # Special handling for updated_at (reverse default order)
             ordering = '-updated_at' if order_direction == 'asc' else 'updated_at'
@@ -231,6 +231,8 @@ class LocationViewSet(viewsets.ModelViewSet):
         queryset = self._apply_public_filtering(queryset, request)
         # Apply ownership filtering
         queryset = self._apply_ownership_filtering(queryset, request)
+        # Apply rating filtering
+        queryset = self._apply_rating_filtering(queryset, request)
         queryset = self.apply_sorting(queryset)
 
         return self.paginate_and_respond(queryset, request)
@@ -564,6 +566,21 @@ class LocationViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(user=request.user)
         elif ownership_param.lower() == 'public':
             queryset = queryset.filter(is_public=True).exclude(user=request.user)
+
+        return queryset
+
+    def _apply_rating_filtering(self, queryset, request):
+        """Apply minimum rating filtering to queryset."""
+        min_rating_param = request.query_params.get('min_rating')
+        if min_rating_param is None or min_rating_param == 'all':
+            return queryset
+
+        try:
+            min_rating = float(min_rating_param)
+            if min_rating > 0:
+                queryset = queryset.filter(average_rating__gte=min_rating)
+        except (ValueError, TypeError):
+            pass
 
         return queryset
 

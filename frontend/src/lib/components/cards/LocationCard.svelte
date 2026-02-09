@@ -531,7 +531,20 @@
 				</div>
 			{/if}
 
-			{#if adventure.rating}
+			{#if adventure.average_rating !== null && adventure.average_rating !== undefined}
+				<div class="flex items-center gap-1">
+					<div class="flex -ml-1">
+						{#each renderStars(Math.round(adventure.average_rating)) as filled}
+							{#if filled}
+								<Star class="w-4 h-4 text-warning fill-current" />
+							{:else}
+								<StarOutline class="w-4 h-4 text-base-content/30" />
+							{/if}
+						{/each}
+					</div>
+					<span class="text-xs text-base-content/60">({adventure.average_rating})</span>
+				</div>
+			{:else if adventure.rating}
 				<div class="flex items-center gap-1">
 					<div class="flex -ml-1">
 						{#each renderStars(adventure.rating) as filled}

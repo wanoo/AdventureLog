@@ -60,6 +60,7 @@
 		"public": "Publique",
 		"rating": "Notation",
 		"average_rating": "Note moyenne",
+		"min_rating": "Note minimum",
 		"share": "Partager",
 		"sort": "Trier",
 		"sources": "Sources",

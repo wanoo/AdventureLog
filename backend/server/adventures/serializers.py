@@ -695,8 +695,8 @@ class MapPinSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Location
-        fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'category', 'is_owned']
-        read_only_fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'category', 'is_owned']
+        fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'category', 'is_owned', 'average_rating']
+        read_only_fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'category', 'is_owned', 'average_rating']
 
     def get_is_visited(self, obj):
         # In collaborative mode, only count the current user's visits
@@ -729,8 +729,8 @@ class LodgingMapPinSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lodging
-        fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'type', 'is_owned']
-        read_only_fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'type', 'is_owned']
+        fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'type', 'is_owned', 'average_rating']
+        read_only_fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'type', 'is_owned', 'average_rating']
 
     def get_is_visited(self, obj):
         if getattr(settings, 'COLLABORATIVE_MODE', False):
@@ -764,9 +764,9 @@ class TransportationMapPinSerializer(serializers.ModelSerializer):
             'id', 'name', 'type', 'is_visited', 'is_owned',
             'origin_latitude', 'origin_longitude',
             'destination_latitude', 'destination_longitude',
-            'from_location', 'to_location'
+            'from_location', 'to_location', 'average_rating'
         ]
-        read_only_fields = fields
+        read_only_fields = fields + ['average_rating']
 
     def get_is_visited(self, obj):
         if getattr(settings, 'COLLABORATIVE_MODE', False):

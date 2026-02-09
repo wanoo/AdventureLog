@@ -26,6 +26,7 @@
 	import TransportIcon from '~icons/mdi/airplane';
 	import ChevronDown from '~icons/mdi/chevron-down';
 	import ChevronUp from '~icons/mdi/chevron-up';
+	import Star from '~icons/mdi/star';
 	import FullMap from '$lib/components/map/FullMap.svelte';
 
 	export let data;
@@ -74,6 +75,7 @@
 	let showVisited: boolean = true;
 	let showPlanned: boolean = true;
 	let searchQuery: string = '';
+	let minRating: number = 0; // 0 means no filter
 
 	// Get unique categories from pins with their icons
 	$: availableCategories = [...new Set(pins.map((pin) => pin.category?.display_name).filter(Boolean))] as string[];
@@ -614,6 +616,11 @@
 			const categoryName = pin.category?.display_name;
 			if (categoryName && hiddenCategories.has(categoryName)) return false;
 
+			// Filter by minimum rating
+			if (minRating > 0) {
+				if (!pin.average_rating || pin.average_rating < minRating) return false;
+			}
+
 			// Filter by search query
 			if (!query) return true;
 			return (
@@ -639,6 +646,11 @@
 			// Filter by hidden lodging types
 			if (lodging.type && hiddenLodgingTypes.has(lodging.type)) return false;
 
+			// Filter by minimum rating
+			if (minRating > 0) {
+				if (!lodging.average_rating || lodging.average_rating < minRating) return false;
+			}
+
 			// Filter by search query
 			if (!query) return true;
 			return lodging.name?.toLowerCase().includes(query) || lodging.type?.toLowerCase().includes(query);
@@ -659,6 +671,11 @@
 
 			// Filter by hidden transportation types
 			if (transport.type && hiddenTransportationTypes.has(transport.type)) return false;
+
+			// Filter by minimum rating
+			if (minRating > 0) {
+				if (!transport.average_rating || transport.average_rating < minRating) return false;
+			}
 
 			// Filter by search query
 			if (!query) return true;
@@ -1718,6 +1735,38 @@
 										</div>
 									</div>
 								{/if}
+							</div>
+
+							<!-- Rating Filter -->
+							<div class="border-b border-base-300 pb-3">
+								<div class="label">
+									<span class="label-text flex items-center gap-2">
+										<Star class="w-4 h-4 text-warning" />
+										{$t('adventures.min_rating')}
+									</span>
+								</div>
+								<div class="flex flex-wrap gap-1 mt-1">
+									<button
+										type="button"
+										class="badge badge-sm cursor-pointer transition-all {minRating === 0
+											? 'badge-primary'
+											: 'badge-ghost hover:badge-primary/50'}"
+										on:click={() => (minRating = 0)}
+									>
+										{$t('adventures.all')}
+									</button>
+									{#each [1, 2, 3, 4, 5] as rating}
+										<button
+											type="button"
+											class="badge badge-sm cursor-pointer transition-all {minRating === rating
+												? 'badge-warning'
+												: 'badge-ghost hover:badge-warning/50'}"
+											on:click={() => (minRating = rating)}
+										>
+											{rating}+ ★
+										</button>
+									{/each}
+								</div>
 							</div>
 
 							<!-- Other display options -->

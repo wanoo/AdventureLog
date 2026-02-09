@@ -488,7 +488,20 @@
 
 		<!-- Rating & Info Badges -->
 		<div class="flex flex-wrap items-center gap-2 text-sm">
-			{#if lodging.rating}
+			{#if lodging.average_rating !== null && lodging.average_rating !== undefined}
+				<div class="flex items-center gap-1">
+					<div class="flex -ml-1">
+						{#each renderStars(Math.round(lodging.average_rating)) as filled}
+							{#if filled}
+								<Star class="w-4 h-4 text-warning fill-current" />
+							{:else}
+								<StarOutline class="w-4 h-4 text-base-content/30" />
+							{/if}
+						{/each}
+					</div>
+					<span class="text-xs text-base-content/60">({lodging.average_rating})</span>
+				</div>
+			{:else if lodging.rating}
 				<div class="flex items-center gap-1">
 					<div class="flex -ml-1">
 						{#each renderStars(lodging.rating) as filled}
