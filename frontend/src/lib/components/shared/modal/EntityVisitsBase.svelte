@@ -57,7 +57,7 @@
 	let isEditing = false;
 	let visitIdEditing: string | null = null;
 
-	// Activity management state (Location only)
+	// Activity management state
 	let stravaEnabled: boolean = false;
 	let visitActivities: { [visitId: string]: StravaActivity[] } = {};
 	let loadingActivities: { [visitId: string]: boolean } = {};
@@ -283,9 +283,9 @@
 		}
 	}
 
-	// Activity management functions (Location only)
+	// Activity management functions
 	async function loadActivitiesForVisit(visit: Visit) {
-		if (!stravaEnabled || entityType !== 'location') return;
+		if (!stravaEnabled) return;
 
 		loadingActivities[visit.id] = true;
 		loadingActivities = { ...loadingActivities };
@@ -512,13 +512,14 @@
 			});
 
 			if (response.ok) {
-				// Refetch the location data to get the updated visits with correct IDs
-				const locationResponse = await fetch(`/api/locations/${entityId}/`);
-				if (locationResponse.ok) {
-					const updatedLocation = await locationResponse.json();
-					visits = updatedLocation.visits;
+				// Refetch the entity data to get the updated visits with correct IDs
+				const endpoint = entityType === 'location' ? 'locations' : entityType === 'transportation' ? 'transportations' : 'lodging';
+				const entityResponse = await fetch(`/api/${endpoint}/${entityId}/`);
+				if (entityResponse.ok) {
+					const updatedEntity = await entityResponse.json();
+					visits = updatedEntity.visits;
 				} else {
-					console.error('Failed to refetch location data:', await locationResponse.text());
+					console.error('Failed to refetch entity data:', await entityResponse.text());
 				}
 			} else {
 				console.error('Failed to delete activity:', await response.text());
@@ -602,13 +603,11 @@
 			visits = visits.filter((v) => v.id !== visit.id);
 		}
 
-		// Clean up activities for this visit (Location only)
-		if (entityType === 'location') {
-			delete visitActivities[visit.id];
-			delete expandedVisits[visit.id];
-			delete loadingActivities[visit.id];
-			delete showActivityUpload[visit.id];
-		}
+		// Clean up activities for this visit
+		delete visitActivities[visit.id];
+		delete expandedVisits[visit.id];
+		delete loadingActivities[visit.id];
+		delete showActivityUpload[visit.id];
 
 		note = visit.notes;
 		visitRating = visit.rating ?? null;
@@ -622,13 +621,11 @@
 	}
 
 	function removeVisit(visitId: string) {
-		// Clean up activities for this visit (Location only)
-		if (entityType === 'location') {
-			delete visitActivities[visitId];
-			delete expandedVisits[visitId];
-			delete loadingActivities[visitId];
-			delete showActivityUpload[visitId];
-		}
+		// Clean up activities for this visit
+		delete visitActivities[visitId];
+		delete expandedVisits[visitId];
+		delete loadingActivities[visitId];
+		delete showActivityUpload[visitId];
 
 		if (visits) {
 			visits = visits.filter((v) => v.id !== visitId);
@@ -671,19 +668,17 @@
 			selectedStartTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 		}
 
-		// Check if Strava is enabled (Location only)
-		if (entityType === 'location') {
-			try {
-				const response = await fetch('/api/integrations/strava/activities', {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json'
-					}
-				});
-				stravaEnabled = response.ok;
-			} catch {
-				stravaEnabled = false;
-			}
+		// Check if Strava is enabled
+		try {
+			const response = await fetch('/api/integrations/strava/activities', {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+			stravaEnabled = response.ok;
+		} catch {
+			stravaEnabled = false;
 		}
 
 		// If initialVisitDate is provided and a visit on that date doesn't exist, create and upload a new all day visit
@@ -977,8 +972,8 @@
 												</div>
 											{/if}
 
-											<!-- Activities count (Location only) -->
-											{#if entityType === 'location' && visit.activities && visit.activities.length > 0}
+											<!-- Activities count -->
+											{#if visit.activities && visit.activities.length > 0}
 												<div class="flex items-center gap-2 mt-2">
 													<RunFastIcon class="w-3 h-3 text-success" />
 													<span class="text-xs text-success font-medium">
@@ -991,8 +986,8 @@
 
 										<!-- Visit Actions -->
 										<div class="flex gap-1 ml-4">
-											<!-- Activities Button (Location only, if Strava is enabled) -->
-											{#if entityType === 'location' && stravaEnabled}
+											<!-- Activities Button (if Strava is enabled) -->
+											{#if stravaEnabled}
 												<button
 													class="btn btn-info btn-xs tooltip tooltip-top gap-1"
 													data-tip={$t('adventures.view_strava_activities')}
@@ -1007,16 +1002,14 @@
 
 											<!-- Only show edit/delete buttons if user owns this visit -->
 											{#if !visit.user_username || visit.user_username === currentUserUsername}
-												<!-- Upload Activity Button (Location only) -->
-												{#if entityType === 'location'}
-													<button
-														class="btn btn-success btn-xs tooltip tooltip-top gap-1"
-														data-tip={$t('adventures.add_activity')}
-														on:click={() => showActivityUploadForm(visit.id)}
-													>
-														<UploadIcon class="w-3 h-3" />
-													</button>
-												{/if}
+												<!-- Upload Activity Button -->
+												<button
+													class="btn btn-success btn-xs tooltip tooltip-top gap-1"
+													data-tip={$t('adventures.add_activity')}
+													on:click={() => showActivityUploadForm(visit.id)}
+												>
+													<UploadIcon class="w-3 h-3" />
+												</button>
 
 												<button
 													class="btn btn-warning btn-xs tooltip tooltip-top"
@@ -1036,8 +1029,8 @@
 										</div>
 									</div>
 
-									<!-- Activity Upload Form (Location only) -->
-									{#if entityType === 'location' && showActivityUpload[visit.id]}
+									<!-- Activity Upload Form -->
+									{#if showActivityUpload[visit.id]}
 										<div class="mt-4 pt-4 border-t border-base-300">
 											<div class="flex items-center justify-between mb-3">
 												<div class="flex items-center gap-2">
@@ -1323,8 +1316,8 @@
 										</div>
 									{/if}
 
-									<!-- Saved Activities Section (Location only) -->
-									{#if entityType === 'location' && visit.activities && visit.activities.length > 0}
+									<!-- Saved Activities Section -->
+									{#if visit.activities && visit.activities.length > 0}
 										<div class="mt-4 pt-4 border-t border-base-300">
 											<div class="flex items-center gap-2 mb-3">
 												<RunFastIcon class="w-4 h-4 text-success" />
@@ -1348,8 +1341,8 @@
 										</div>
 									{/if}
 
-									<!-- Strava Activities Section (Location only) -->
-									{#if entityType === 'location' && stravaEnabled && expandedVisits[visit.id]}
+									<!-- Strava Activities Section -->
+									{#if stravaEnabled && expandedVisits[visit.id]}
 										<div class="mt-4 pt-4 border-t border-base-300">
 											<div class="flex items-center gap-2 mb-3">
 												<RunFastIcon class="w-4 h-4 text-info" />
