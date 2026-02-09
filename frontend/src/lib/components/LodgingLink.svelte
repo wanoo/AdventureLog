@@ -14,7 +14,6 @@
 	import Check from '~icons/mdi/check-circle';
 	import Public from '~icons/mdi/earth';
 	import Private from '~icons/mdi/lock';
-	import Warning from '~icons/mdi/alert';
 
 	let modal: HTMLDialogElement;
 	let lodgings: Lodging[] = [];
@@ -304,9 +303,6 @@
 											<span class="loading loading-spinner loading-xs"></span>
 										{:else}
 											<Link class="w-4 h-4" />
-										{/if}
-										{#if lodging.collections && lodging.collections.length > 0}
-											<Warning class="w-3 h-3 text-warning" />
 										{/if}
 										{$t('adventures.add_to_collection')}
 									</button>
