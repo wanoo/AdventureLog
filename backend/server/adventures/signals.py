@@ -193,13 +193,18 @@ def _get_visit_coordinates(visit):
     Get lat/lon from the visit's parent (location, transportation, or lodging).
     For transportation, uses destination coordinates.
     """
-    if visit.location:
-        return visit.location.latitude, visit.location.longitude
-    elif visit.transportation:
-        # Use destination as the "visited" place
-        return visit.transportation.destination_latitude, visit.transportation.destination_longitude
-    elif visit.lodging:
-        return visit.lodging.latitude, visit.lodging.longitude
+    from adventures.models import Location, Transportation, Lodging
+
+    try:
+        if visit.location_id and visit.location:
+            return visit.location.latitude, visit.location.longitude
+        elif visit.transportation_id and visit.transportation:
+            # Use destination as the "visited" place
+            return visit.transportation.destination_latitude, visit.transportation.destination_longitude
+        elif visit.lodging_id and visit.lodging:
+            return visit.lodging.latitude, visit.lodging.longitude
+    except (Location.DoesNotExist, Transportation.DoesNotExist, Lodging.DoesNotExist):
+        pass
     return None, None
 
 
@@ -281,7 +286,21 @@ def _update_parent_average_rating(visit):
     """
     Recalculate and update the average_rating on the visit's parent (Location, Transportation, or Lodging).
     """
-    parent = visit.location or visit.transportation or visit.lodging
+    from adventures.models import Location, Transportation, Lodging
+
+    # Safely get parent - it may have been deleted in a CASCADE
+    parent = None
+    try:
+        if visit.location_id:
+            parent = visit.location
+        elif visit.transportation_id:
+            parent = visit.transportation
+        elif visit.lodging_id:
+            parent = visit.lodging
+    except (Location.DoesNotExist, Transportation.DoesNotExist, Lodging.DoesNotExist):
+        # Parent was deleted, nothing to update
+        return
+
     if not parent:
         return
 
