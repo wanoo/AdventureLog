@@ -7,13 +7,19 @@
 	import { t } from 'svelte-i18n';
 	import { TRANSPORTATION_TYPES_ICONS } from '$lib';
 	import TransportationModal from '$lib/components/transportation/TransportationModal.svelte';
+	import {
+		Pagination,
+		EntityListHeader,
+		SortOptions,
+		RadioFilter,
+		RatingFilter,
+		EmptyState,
+		FloatingActionButton
+	} from '$lib/components/shared/list';
 
-	import Plus from '~icons/mdi/plus';
 	import Filter from '~icons/mdi/filter-variant';
-	import Sort from '~icons/mdi/sort';
 	import Airplane from '~icons/mdi/airplane';
 	import Eye from '~icons/mdi/eye';
-	import Star from '~icons/mdi/star';
 
 	export let data: any;
 
@@ -44,7 +50,6 @@
 	let transportationToEdit: Transportation | null = null;
 	let isTransportationModalOpen: boolean = false;
 	let sidebarOpen = false;
-	let ratingHover: number | null = null;
 
 	let currentSort = {
 		order_by: 'updated_at',
@@ -255,78 +260,29 @@
 		<input id="my-drawer" type="checkbox" class="drawer-toggle" bind:checked={sidebarOpen} />
 
 		<div class="drawer-content">
-			<!-- Header Section -->
-			<div class="sticky top-0 z-30 bg-base-100/80 backdrop-blur-lg border-b border-base-300">
-				<div class="container mx-auto px-6 py-4">
-					<div class="flex items-center justify-between">
-						<div class="flex items-center gap-4">
-							<button class="btn btn-ghost btn-square lg:hidden" on:click={toggleSidebar}>
-								<Filter class="w-5 h-5" />
-							</button>
-							<div class="flex items-center gap-3">
-								<div class="p-2 bg-primary/10 rounded-xl">
-									<Airplane class="w-8 h-8 text-primary" />
-								</div>
-								<div>
-									<h1 class="text-3xl font-bold bg-clip-text text-primary">
-										{$t('transportation.my_transportations') || 'My Transportations'}
-									</h1>
-									<p class="text-sm text-base-content/60">
-										{count}
-										{$t('adventures.transportations')}
-									</p>
-								</div>
-							</div>
-						</div>
-
-						<!-- Quick Stats -->
-						<div class="hidden md:flex items-center gap-3">
-							<div class="stats stats-horizontal bg-base-200/50 border border-base-300/50">
-								<div class="stat py-2 px-4">
-									<div class="stat-figure text-primary">
-										<Airplane class="w-5 h-5" />
-									</div>
-									<div class="stat-title text-xs">{$t('adventures.total') || 'Total'}</div>
-									<div class="stat-value text-lg">{count}</div>
-								</div>
-								<div class="stat py-2 px-4">
-									<div class="stat-title text-xs">{$t('adventures.visited')}</div>
-									<div class="stat-value text-lg text-success">{getVisitedCount()}</div>
-								</div>
-								<div class="stat py-2 px-4">
-									<div class="stat-title text-xs">{$t('adventures.planned')}</div>
-									<div class="stat-value text-lg text-warning">{getPlannedCount()}</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
+			<EntityListHeader
+				title={$t('transportation.my_transportations') || 'My Transportations'}
+				subtitle="{count} {$t('adventures.transportations')}"
+				icon={Airplane}
+				{count}
+				visitedCount={getVisitedCount()}
+				plannedCount={getPlannedCount()}
+				onToggleSidebar={toggleSidebar}
+			/>
 
 			<!-- Main Content -->
 			<div class="container mx-auto px-6 py-8">
 				{#if transportations.length === 0}
-					<div class="flex flex-col items-center justify-center py-16">
-						<div class="p-6 bg-base-200/50 rounded-2xl mb-6">
-							<Airplane class="w-16 h-16 text-base-content/30" />
-						</div>
-						<h3 class="text-xl font-semibold text-base-content/70 mb-2">
-							{$t('transportation.no_transportations_found') || 'No transportations found'}
-						</h3>
-						<p class="text-base-content/50 text-center max-w-md">
-							{$t('adventures.no_adventures_message')}
-						</p>
-						<button
-							class="btn btn-primary btn-wide mt-6 gap-2"
-							on:click={() => {
-								transportationToEdit = null;
-								isTransportationModalOpen = true;
-							}}
-						>
-							<Plus class="w-5 h-5" />
-							{$t('transportation.create_transportation') || 'Create Transportation'}
-						</button>
-					</div>
+					<EmptyState
+						icon={Airplane}
+						title={$t('transportation.no_transportations_found') || 'No transportations found'}
+						message={$t('adventures.no_adventures_message')}
+						buttonText={$t('transportation.create_transportation') || 'Create Transportation'}
+						on:create={() => {
+							transportationToEdit = null;
+							isTransportationModalOpen = true;
+						}}
+					/>
 				{:else}
 					<!-- Transportations Grid -->
 					<div
@@ -343,22 +299,7 @@
 					</div>
 
 					<!-- Pagination -->
-					{#if totalPages > 1}
-						<div class="flex justify-center mt-12">
-							<div class="join bg-base-100 shadow-lg rounded-2xl p-2">
-								{#each Array.from({ length: totalPages }, (_, i) => i + 1) as pageNum}
-									<button
-										class="join-item btn btn-sm {currentPage === pageNum
-											? 'btn-primary'
-											: 'btn-ghost'}"
-										on:click={() => handleChangePage(pageNum)}
-									>
-										{pageNum}
-									</button>
-								{/each}
-							</div>
-						</div>
-					{/if}
+					<Pagination {currentPage} {totalPages} on:changePage={(e) => handleChangePage(e.detail)} />
 				{/if}
 			</div>
 		</div>
@@ -376,7 +317,7 @@
 						<h2 class="text-xl font-bold">{$t('adventures.filters_and_sort')}</h2>
 					</div>
 
-					<!-- Filters (Dynamic like collections) -->
+					<!-- Filters -->
 					<div class="space-y-6">
 						<!-- Type Filter -->
 						<div class="card bg-base-200/50 p-4">
@@ -387,275 +328,71 @@
 							<TypeFilterDropdown bind:types={typeString} {typeOptions} on:change={updateTypeFilter} />
 						</div>
 
-						<!-- Sort Options -->
-						<div class="card bg-base-200/50 p-4">
-							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
-								<Sort class="w-5 h-5" />
-								{$t('adventures.sort')}
-							</h3>
+						<SortOptions
+							orderBy={currentSort.order_by}
+							orderDirection={currentSort.order}
+							orderByOptions={[
+								{ value: 'updated_at', label: $t('adventures.updated') },
+								{ value: 'name', label: $t('adventures.name') },
+								{ value: 'date', label: $t('adventures.date') },
+								{ value: 'rating', label: $t('adventures.rating') }
+							]}
+							on:change={(e) => updateSort(e.detail.orderBy, e.detail.orderDirection)}
+						/>
 
-							<div class="space-y-4">
-								<div>
-									<!-- svelte-ignore a11y-label-has-associated-control -->
-									<label class="label">
-										<span class="label-text font-medium">{$t('adventures.order_direction')}</span>
-									</label>
-									<div class="join w-full">
-										<button
-											class="join-item btn btn-sm flex-1 {currentSort.order === 'asc' ? 'btn-active' : ''}"
-											on:click={() => updateSort(currentSort.order_by || 'updated_at', 'asc')}
-										>
-											{$t('adventures.ascending')}
-										</button>
-										<button
-											class="join-item btn btn-sm flex-1 {currentSort.order === 'desc' ? 'btn-active' : ''}"
-											on:click={() => updateSort(currentSort.order_by || 'updated_at', 'desc')}
-										>
-											{$t('adventures.descending')}
-										</button>
-									</div>
-								</div>
+						<RadioFilter
+							title={$t('adventures.visited')}
+							icon={Eye}
+							value={currentSort.is_visited}
+							name="visited_filter"
+							options={[
+								{ value: 'all', label: $t('adventures.all') },
+								{ value: 'true', label: $t('adventures.visited') },
+								{ value: 'false', label: $t('adventures.not_visited') }
+							]}
+							on:change={(e) => updateVisitedFilter(e.detail)}
+						/>
 
-								<div>
-									<!-- svelte-ignore a11y-label-has-associated-control -->
-									<label class="label">
-										<span class="label-text font-medium">{$t('adventures.order_by')}</span>
-									</label>
-									<div class="space-y-2">
-										<label class="label cursor-pointer justify-start gap-3">
-											<input
-												type="radio"
-												name="order_by_radio"
-												class="radio radio-primary radio-sm"
-												checked={currentSort.order_by === 'updated_at'}
-												on:change={() => updateSort('updated_at', currentSort.order || 'asc')}
-											/>
-											<span class="label-text">{$t('adventures.updated')}</span>
-										</label>
-										<label class="label cursor-pointer justify-start gap-3">
-											<input
-												type="radio"
-												name="order_by_radio"
-												class="radio radio-primary radio-sm"
-												checked={currentSort.order_by === 'name'}
-												on:change={() => updateSort('name', currentSort.order || 'asc')}
-											/>
-											<span class="label-text">{$t('adventures.name')}</span>
-										</label>
-										<label class="label cursor-pointer justify-start gap-3">
-											<input
-												type="radio"
-												name="order_by_radio"
-												class="radio radio-primary radio-sm"
-												checked={currentSort.order_by === 'date'}
-												on:change={() => updateSort('date', currentSort.order || 'asc')}
-											/>
-											<span class="label-text">{$t('adventures.date')}</span>
-										</label>
-										<label class="label cursor-pointer justify-start gap-3">
-											<input
-												type="radio"
-												name="order_by_radio"
-												class="radio radio-primary radio-sm"
-												checked={currentSort.order_by === 'rating'}
-												on:change={() => updateSort('rating', currentSort.order || 'asc')}
-											/>
-											<span class="label-text">{$t('adventures.rating')}</span>
-										</label>
-									</div>
-								</div>
-							</div>
-						</div>
+						<RadioFilter
+							title={$t('adventures.visibility')}
+							icon={Eye}
+							value={currentSort.is_public}
+							name="visibility_filter"
+							options={[
+								{ value: 'all', label: $t('adventures.all') },
+								{ value: 'true', label: $t('adventures.public') },
+								{ value: 'false', label: $t('adventures.private') }
+							]}
+							on:change={(e) => updateVisibilityFilter(e.detail)}
+						/>
 
-						<!-- Visited Filter -->
-						<div class="card bg-base-200/50 p-4">
-							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
-								<Eye class="w-5 h-5" />
-								{$t('adventures.visited')}
-							</h3>
-							<div class="space-y-2">
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="radio"
-										name="visited_filter"
-										class="radio radio-primary radio-sm"
-										checked={currentSort.is_visited === 'all'}
-										on:change={() => updateVisitedFilter('all')}
-									/>
-									<span class="label-text">{$t('adventures.all')}</span>
-								</label>
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="radio"
-										name="visited_filter"
-										class="radio radio-primary radio-sm"
-										checked={currentSort.is_visited === 'true'}
-										on:change={() => updateVisitedFilter('true')}
-									/>
-									<span class="label-text">{$t('adventures.visited')}</span>
-								</label>
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="radio"
-										name="visited_filter"
-										class="radio radio-primary radio-sm"
-										checked={currentSort.is_visited === 'false'}
-										on:change={() => updateVisitedFilter('false')}
-									/>
-									<span class="label-text">{$t('adventures.not_visited')}</span>
-								</label>
-							</div>
-						</div>
+						<RadioFilter
+							title={$t('adventures.ownership_filter')}
+							icon={Eye}
+							value={currentSort.ownership}
+							name="ownership_filter"
+							options={[
+								{ value: 'all', label: $t('adventures.all') },
+								{ value: 'mine', label: $t('adventures.my_locations') },
+								{ value: 'public', label: $t('adventures.public_locations') }
+							]}
+							on:change={(e) => updateOwnershipFilter(e.detail)}
+						/>
 
-						<!-- Visibility Filter -->
-						<div class="card bg-base-200/50 p-4">
-							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
-								<Eye class="w-5 h-5" />
-								{$t('adventures.visibility')}
-							</h3>
-							<div class="space-y-2">
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="radio"
-										name="visibility_filter"
-										class="radio radio-primary radio-sm"
-										checked={currentSort.is_public === 'all'}
-										on:change={() => updateVisibilityFilter('all')}
-									/>
-									<span class="label-text">{$t('adventures.all')}</span>
-								</label>
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="radio"
-										name="visibility_filter"
-										class="radio radio-primary radio-sm"
-										checked={currentSort.is_public === 'true'}
-										on:change={() => updateVisibilityFilter('true')}
-									/>
-									<span class="label-text">{$t('adventures.public')}</span>
-								</label>
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="radio"
-										name="visibility_filter"
-										class="radio radio-primary radio-sm"
-										checked={currentSort.is_public === 'false'}
-										on:change={() => updateVisibilityFilter('false')}
-									/>
-									<span class="label-text">{$t('adventures.private')}</span>
-								</label>
-							</div>
-						</div>
-
-						<!-- Ownership Filter -->
-						<div class="card bg-base-200/50 p-4">
-							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
-								<Eye class="w-5 h-5" />
-								{$t('adventures.ownership_filter')}
-							</h3>
-							<div class="space-y-2">
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="radio"
-										name="ownership_filter"
-										class="radio radio-primary radio-sm"
-										checked={currentSort.ownership === 'all'}
-										on:change={() => updateOwnershipFilter('all')}
-									/>
-									<span class="label-text">{$t('adventures.all')}</span>
-								</label>
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="radio"
-										name="ownership_filter"
-										class="radio radio-primary radio-sm"
-										checked={currentSort.ownership === 'mine'}
-										on:change={() => updateOwnershipFilter('mine')}
-									/>
-									<span class="label-text">{$t('adventures.my_locations')}</span>
-								</label>
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="radio"
-										name="ownership_filter"
-										class="radio radio-primary radio-sm"
-										checked={currentSort.ownership === 'public'}
-										on:change={() => updateOwnershipFilter('public')}
-									/>
-									<span class="label-text">{$t('adventures.public_locations')}</span>
-								</label>
-							</div>
-						</div>
-
-						<!-- Rating Filter -->
-						<div class="card bg-base-200/50 p-4">
-							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
-								<Star class="w-5 h-5" />
-								{$t('adventures.min_rating')}
-							</h3>
-							<div class="flex flex-col gap-3">
-								<!-- Interactive star selector -->
-								<div
-									class="flex items-center justify-center gap-1"
-									on:mouseleave={() => ratingHover = null}
-									role="group"
-									aria-label="Rating filter"
-								>
-									{#each [1, 2, 3, 4, 5] as rating}
-										{@const isActive = currentSort.min_rating !== 'all' && rating <= parseInt(currentSort.min_rating)}
-										{@const isHovered = ratingHover !== null && rating <= ratingHover}
-										<button
-											type="button"
-											class="btn btn-ghost btn-sm p-1 min-h-0 h-auto transition-transform hover:scale-125"
-											on:click={() => {
-												if (currentSort.min_rating === rating.toString()) {
-													updateRatingFilter('all');
-												} else {
-													updateRatingFilter(rating.toString());
-												}
-											}}
-											on:mouseenter={() => ratingHover = rating}
-											aria-label="Filter by {rating}+ stars"
-										>
-											<Star
-												class="w-8 h-8 transition-all duration-150"
-												style="color: {isActive || isHovered ? '#FBBD23' : 'oklch(var(--bc) / 0.2)'};"
-											/>
-										</button>
-									{/each}
-								</div>
-								<!-- Current filter display -->
-								<div class="text-center text-sm text-base-content/70">
-									{#if currentSort.min_rating !== 'all'}
-										<span class="font-medium">{currentSort.min_rating}+ {$t('adventures.stars')}</span>
-										<button
-											class="btn btn-ghost btn-xs ml-2"
-											on:click={() => updateRatingFilter('all')}
-										>
-											{$t('adventures.clear')}
-										</button>
-									{:else}
-										<span>{$t('adventures.all')}</span>
-									{/if}
-								</div>
-							</div>
-						</div>
+						<RatingFilter
+							minRating={currentSort.min_rating}
+							on:change={(e) => updateRatingFilter(e.detail)}
+						/>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	<!-- Floating Action Button -->
-	<div class="fixed bottom-6 right-6 z-[999]">
-		<button
-			class="btn btn-primary btn-circle w-16 h-16 shadow-2xl hover:shadow-primary/25 transition-all duration-200"
-			on:click={() => {
-				isTransportationModalOpen = true;
-				transportationToEdit = null;
-			}}
-		>
-			<Plus class="w-8 h-8" />
-		</button>
-	</div>
+	<FloatingActionButton
+		on:click={() => {
+			isTransportationModalOpen = true;
+			transportationToEdit = null;
+		}}
+	/>
 </div>

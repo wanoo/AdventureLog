@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { goto } from '$app/navigation';
 	import type { Location, Collection, User } from '$lib/types';
 	const dispatch = createEventDispatcher();
@@ -8,7 +8,6 @@
 	import FileDocumentEdit from '~icons/mdi/file-document-edit';
 	import TrashCan from '~icons/mdi/trash-can-outline';
 	import Calendar from '~icons/mdi/calendar';
-	import Clock from '~icons/mdi/clock-outline';
 	import MapMarker from '~icons/mdi/map-marker';
 	import LinkIcon from '~icons/mdi/link-variant';
 	import Check from '~icons/mdi/check';
@@ -17,19 +16,15 @@
 	import LinkVariantRemove from '~icons/mdi/link-variant-remove';
 	import Plus from '~icons/mdi/plus';
 	import CollectionLink from '../CollectionLink.svelte';
-	import DotsHorizontal from '~icons/mdi/dots-horizontal';
 	import DeleteWarning from '../DeleteWarning.svelte';
 	import CardCarousel from '../CardCarousel.svelte';
 	import { t } from 'svelte-i18n';
-	import Star from '~icons/mdi/star';
-	import StarOutline from '~icons/mdi/star-outline';
 	import StarRating from '../StarRating.svelte';
-	import Eye from '~icons/mdi/eye';
-	import EyeOff from '~icons/mdi/eye-off';
 	import CollectionItineraryPlanner from '../collections/CollectionItineraryPlanner.svelte';
 	import CalendarRemove from '~icons/mdi/calendar-remove';
 	import Globe from '~icons/mdi/globe';
 	import { DEFAULT_CURRENCY, formatMoney, toMoneyValue } from '$lib/money';
+	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge } from '../shared/cards';
 
 	export let type: string | null = null;
 	export let user: User | null;
@@ -41,31 +36,7 @@
 	let isCollectionModalOpen: boolean = false;
 	let isWarningModalOpen: boolean = false;
 	let copied: boolean = false;
-	let isActionsMenuOpen: boolean = false;
-	let actionsMenuRef: HTMLDivElement | null = null;
-	const ACTIONS_CLOSE_EVENT = 'card-actions-close';
-	const handleCloseEvent = () => (isActionsMenuOpen = false);
-
-	function handleDocumentClick(event: MouseEvent) {
-		if (!isActionsMenuOpen) return;
-		const target = event.target as Node | null;
-		if (actionsMenuRef && target && !actionsMenuRef.contains(target)) {
-			isActionsMenuOpen = false;
-		}
-	}
-
-	function closeAllLocationMenus() {
-		window.dispatchEvent(new CustomEvent(ACTIONS_CLOSE_EVENT));
-	}
-
-	onMount(() => {
-		document.addEventListener('click', handleDocumentClick);
-		window.addEventListener(ACTIONS_CLOSE_EVENT, handleCloseEvent);
-		return () => {
-			document.removeEventListener('click', handleDocumentClick);
-			window.removeEventListener(ACTIONS_CLOSE_EVENT, handleCloseEvent);
-		};
-	});
+	let actionsMenu: { close: () => void };
 
 	async function copyLink() {
 		try {
@@ -109,16 +80,6 @@
 	$: creatorDisplayName = adventure.user?.first_name
 		? `${adventure.user.first_name} ${adventure.user.last_name || ''}`.trim()
 		: adventure.user?.username || 'Unknown User';
-
-	// Helper functions for display
-
-	function renderStars(rating: number) {
-		const stars = [];
-		for (let i = 1; i <= 5; i++) {
-			stars.push(i <= rating);
-		}
-		return stars;
-	}
 
 	function changeDay() {
 		dispatch('changeDay', { type: 'location', item: adventure, forcePicker: true });
@@ -244,43 +205,8 @@
 	<div class="relative overflow-hidden rounded-t-2xl">
 		<CardCarousel images={adventure.images} icon={adventure.category?.icon} name={adventure.name} />
 
-		<!-- Status Overlay (icon-only) -->
-		<div class="absolute top-2 left-4 flex items-center gap-3">
-			<div
-				class="tooltip tooltip-right"
-				data-tip={adventure.is_visited ? $t('adventures.visited') : $t('adventures.not_visited')}
-			>
-				{#if adventure.is_visited}
-					<div class="badge badge-sm badge-success p-1 rounded-full shadow-sm">
-						<Calendar class="w-4 h-4" />
-					</div>
-				{:else}
-					<div class="badge badge-sm badge-warning p-1 rounded-full shadow-sm">
-						<Clock class="w-4 h-4" />
-					</div>
-				{/if}
-			</div>
-		</div>
-
-		<!-- Privacy Indicator -->
-		<div class="absolute top-2 right-4">
-			<div
-				class="tooltip tooltip-left"
-				data-tip={adventure.is_public ? $t('adventures.public') : $t('adventures.private')}
-			>
-				<div
-					class="badge badge-sm p-1 rounded-full text-base-content shadow-sm"
-					role="img"
-					aria-label={adventure.is_public ? $t('adventures.public') : $t('adventures.private')}
-				>
-					{#if adventure.is_public}
-						<Eye class="w-4 h-4" />
-					{:else}
-						<EyeOff class="w-4 h-4" />
-					{/if}
-				</div>
-			</div>
-		</div>
+		<CardStatusBadge isVisited={adventure.is_visited} />
+		<CardPrivacyBadge isPublic={adventure.is_public} />
 
 		<!-- Category Badge -->
 		{#if adventure.category}
@@ -352,166 +278,141 @@
 				</button>
 				{#if !readOnly}
 					{#if (adventure.user && adventure.user.uuid == user?.uuid) || (collection && user && collection.shared_with?.includes(user.uuid)) || (collection && user && collection.user == user.uuid)}
-						<div
-							class="dropdown dropdown-end relative z-50"
-							class:dropdown-open={isActionsMenuOpen}
-							bind:this={actionsMenuRef}
-						>
-							<button
-								type="button"
-								class="btn btn-square btn-sm p-1 text-base-content"
-								aria-haspopup="menu"
-								aria-label={$t('adventures.location_actions') || 'Location actions'}
-								on:click|stopPropagation={() => {
-									if (isActionsMenuOpen) {
-										isActionsMenuOpen = false;
-										return;
-									}
-									closeAllLocationMenus();
-									isActionsMenuOpen = true;
-								}}
-							>
-								<DotsHorizontal class="w-5 h-5" />
-							</button>
-							<ul
-								tabindex="-1"
-								class="dropdown-content menu bg-base-100 rounded-box z-[9999] w-52 p-2 shadow-lg border border-base-300"
-							>
+						<CardActionsMenu bind:this={actionsMenu} ariaLabel={$t('adventures.location_actions') || 'Location actions'} let:close>
+							<li>
+								<button
+									on:click={() => {
+										close();
+										editAdventure();
+									}}
+									class="flex items-center gap-2"
+								>
+									<FileDocumentEdit class="w-4 h-4" />
+									{$t('adventures.edit_location')}
+								</button>
+							</li>
+							{#if user?.uuid == adventure.user?.uuid}
 								<li>
 									<button
 										on:click={() => {
-											isActionsMenuOpen = false;
-											editAdventure();
+											close();
+											isCollectionModalOpen = true;
 										}}
 										class="flex items-center gap-2"
 									>
-										<FileDocumentEdit class="w-4 h-4" />
-										{$t('adventures.edit_location')}
+										<Plus class="w-4 h-4" />
+										{$t('collection.manage_collections')}
 									</button>
 								</li>
-								{#if user?.uuid == adventure.user?.uuid}
+							{:else if collection && user && collection.user == user.uuid}
+								<li>
+									<button
+										on:click={() => {
+											close();
+											removeFromCollection(new CustomEvent('unlink', { detail: collection.id }));
+										}}
+										class="flex items-center gap-2"
+									>
+										<LinkVariantRemove class="w-4 h-4" />
+										{$t('adventures.remove_from_collection')}
+									</button>
+								</li>
+							{/if}
+
+							{#if adventure.is_public}
+								<li>
+									<button
+										on:click={() => {
+											close();
+											copyLink();
+										}}
+										class="flex items-center gap-2"
+									>
+										{#if copied}
+											<Check class="w-4 h-4 text-success" />
+											<span>{$t('adventures.link_copied')}</span>
+										{:else}
+											<LinkIcon class="w-4 h-4" />
+											{$t('adventures.copy_link')}
+										{/if}
+									</button>
+								</li>
+							{/if}
+
+							{#if itineraryItem && itineraryItem.id}
+								<div class="divider my-1"></div>
+								{#if !itineraryItem.is_global}
 									<li>
 										<button
 											on:click={() => {
-												isActionsMenuOpen = false;
-												isCollectionModalOpen = true;
+												close();
+												dispatch('moveToGlobal', { type: 'location', id: adventure.id });
 											}}
-											class="flex items-center gap-2"
+											class=" flex items-center gap-2"
 										>
-											<Plus class="w-4 h-4" />
-											{$t('collection.manage_collections')}
+											<Globe class="w-4 h-4" />
+											{$t('itinerary.move_to_trip_context') || 'Move to Trip Context'}
 										</button>
 									</li>
-								{:else if collection && user && collection.user == user.uuid}
 									<li>
 										<button
 											on:click={() => {
-												isActionsMenuOpen = false;
-												removeFromCollection(new CustomEvent('unlink', { detail: collection.id }));
+												close();
+												changeDay();
 											}}
-											class="flex items-center gap-2"
+											class=" flex items-center gap-2"
 										>
-											<LinkVariantRemove class="w-4 h-4" />
-											{$t('adventures.remove_from_collection')}
+											<Calendar class="w-4 h-4" />
+											{$t('itinerary.change_day')}
 										</button>
 									</li>
-								{/if}
-
-								{#if adventure.is_public}
 									<li>
 										<button
 											on:click={() => {
-												isActionsMenuOpen = false;
-												copyLink();
+												close();
+												removeFromItinerary();
 											}}
-											class="flex items-center gap-2"
-										>
-											{#if copied}
-												<Check class="w-4 h-4 text-success" />
-												<span>{$t('adventures.link_copied')}</span>
-											{:else}
-												<LinkIcon class="w-4 h-4" />
-												{$t('adventures.copy_link')}
-											{/if}
-										</button>
-									</li>
-								{/if}
-
-								{#if itineraryItem && itineraryItem.id}
-									<div class="divider my-1"></div>
-									{#if !itineraryItem.is_global}
-										<li>
-											<button
-												on:click={() => {
-													isActionsMenuOpen = false;
-													dispatch('moveToGlobal', { type: 'location', id: adventure.id });
-												}}
-												class=" flex items-center gap-2"
-											>
-												<Globe class="w-4 h-4" />
-												{$t('itinerary.move_to_trip_context') || 'Move to Trip Context'}
-											</button>
-										</li>
-										<li>
-											<button
-												on:click={() => {
-													isActionsMenuOpen = false;
-													changeDay();
-												}}
-												class=" flex items-center gap-2"
-											>
-												<Calendar class="w-4 h-4" />
-												{$t('itinerary.change_day')}
-											</button>
-										</li>
-										<li>
-											<button
-												on:click={() => {
-													isActionsMenuOpen = false;
-													removeFromItinerary();
-												}}
-												class="text-error flex items-center gap-2"
-											>
-												<CalendarRemove class="w-4 h-4 text-error" />
-												{$t('itinerary.remove_from_itinerary')}
-											</button>
-										</li>
-									{/if}
-									{#if itineraryItem.is_global}
-										<li>
-											<button
-												on:click={() => {
-													isActionsMenuOpen = false;
-													removeFromItinerary();
-												}}
-												class="text-error flex items-center gap-2"
-											>
-												<CalendarRemove class="w-4 h-4 text-error" />
-												{$t('itinerary.remove_from_trip_context')}
-											</button>
-										</li>
-									{/if}
-								{/if}
-
-								{#if user.uuid == adventure.user?.uuid}
-									<div class="divider my-1"></div>
-									<li>
-										<button
-											id="delete_adventure"
-											data-umami-event="Delete Adventure"
 											class="text-error flex items-center gap-2"
-											on:click={() => {
-												isActionsMenuOpen = false;
-												isWarningModalOpen = true;
-											}}
 										>
-											<TrashCan class="w-4 h-4" />
-											{$t('adventures.delete')}
+											<CalendarRemove class="w-4 h-4 text-error" />
+											{$t('itinerary.remove_from_itinerary')}
 										</button>
 									</li>
 								{/if}
-							</ul>
-						</div>
+								{#if itineraryItem.is_global}
+									<li>
+										<button
+											on:click={() => {
+												close();
+												removeFromItinerary();
+											}}
+											class="text-error flex items-center gap-2"
+										>
+											<CalendarRemove class="w-4 h-4 text-error" />
+											{$t('itinerary.remove_from_trip_context')}
+										</button>
+									</li>
+								{/if}
+							{/if}
+
+							{#if user.uuid == adventure.user?.uuid}
+								<div class="divider my-1"></div>
+								<li>
+									<button
+										id="delete_adventure"
+										data-umami-event="Delete Adventure"
+										class="text-error flex items-center gap-2"
+										on:click={() => {
+											close();
+											isWarningModalOpen = true;
+										}}
+									>
+										<TrashCan class="w-4 h-4" />
+										{$t('adventures.delete')}
+									</button>
+								</li>
+							{/if}
+						</CardActionsMenu>
 					{/if}
 				{/if}
 			</div>

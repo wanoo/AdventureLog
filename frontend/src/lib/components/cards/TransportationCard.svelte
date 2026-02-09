@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import TrashCanOutline from '~icons/mdi/trash-can-outline';
 	import FileDocumentEdit from '~icons/mdi/file-document-edit';
 	import type { Collection, Transportation, User } from '$lib/types';
@@ -12,46 +12,16 @@
 	import { DEFAULT_CURRENCY, formatMoney, toMoneyValue } from '$lib/money';
 	import CardCarousel from '../CardCarousel.svelte';
 	import TransportationRoutePreview from './TransportationRoutePreview.svelte';
-
-	import Eye from '~icons/mdi/eye';
-	import EyeOff from '~icons/mdi/eye-off';
-	import Star from '~icons/mdi/star';
-	import StarOutline from '~icons/mdi/star-outline';
 	import StarRating from '../StarRating.svelte';
 	import Calendar from '~icons/mdi/calendar';
-	import Clock from '~icons/mdi/clock-outline';
-	import DotsHorizontal from '~icons/mdi/dots-horizontal';
 	import CalendarRemove from '~icons/mdi/calendar-remove';
 	import Launch from '~icons/mdi/launch';
 	import Globe from '~icons/mdi/globe';
 	import { goto } from '$app/navigation';
 	import type { CollectionItineraryItem } from '$lib/types';
+	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge } from '../shared/cards';
 
-	let isActionsMenuOpen = false;
-	let actionsMenuRef: HTMLDivElement | null = null;
-	const ACTIONS_CLOSE_EVENT = 'card-actions-close';
-	const handleCloseEvent = () => (isActionsMenuOpen = false);
-
-	function handleDocumentClick(event: MouseEvent) {
-		if (!isActionsMenuOpen) return;
-		const target = event.target as Node | null;
-		if (actionsMenuRef && target && !actionsMenuRef.contains(target)) {
-			isActionsMenuOpen = false;
-		}
-	}
-
-	function closeAllTransportationMenus() {
-		window.dispatchEvent(new CustomEvent(ACTIONS_CLOSE_EVENT));
-	}
-
-	onMount(() => {
-		document.addEventListener('click', handleDocumentClick);
-		window.addEventListener(ACTIONS_CLOSE_EVENT, handleCloseEvent);
-		return () => {
-			document.removeEventListener('click', handleDocumentClick);
-			window.removeEventListener(ACTIONS_CLOSE_EVENT, handleCloseEvent);
-		};
-	});
+	let actionsMenu: { close: () => void };
 
 	function getTransportationIcon(type: string) {
 		if (type in TRANSPORTATION_TYPES_ICONS) {
@@ -59,14 +29,6 @@
 		} else {
 			return '🚗';
 		}
-	}
-
-	function renderStars(rating: number) {
-		const stars = [];
-		for (let i = 1; i <= 5; i++) {
-			stars.push(i <= rating);
-		}
-		return stars;
 	}
 
 	const dispatch = createEventDispatcher();
@@ -199,43 +161,8 @@
 			/>
 		{/if}
 
-		<!-- Status Overlay (icon-only) -->
-		<div class="absolute top-2 left-4 flex items-center gap-3">
-			<div
-				class="tooltip tooltip-right"
-				data-tip={transportation.is_visited ? $t('adventures.visited') : $t('adventures.not_visited')}
-			>
-				{#if transportation.is_visited}
-					<div class="badge badge-sm badge-success p-1 rounded-full shadow-sm">
-						<Calendar class="w-4 h-4" />
-					</div>
-				{:else}
-					<div class="badge badge-sm badge-warning p-1 rounded-full shadow-sm">
-						<Clock class="w-4 h-4" />
-					</div>
-				{/if}
-			</div>
-		</div>
-
-		<!-- Privacy Indicator -->
-		<div class="absolute top-2 right-4">
-			<div
-				class="tooltip tooltip-left"
-				data-tip={transportation.is_public ? $t('adventures.public') : $t('adventures.private')}
-			>
-				<div
-					class="badge badge-sm p-1 rounded-full text-base-content shadow-sm"
-					role="img"
-					aria-label={transportation.is_public ? $t('adventures.public') : $t('adventures.private')}
-				>
-					{#if transportation.is_public}
-						<Eye class="w-4 h-4" />
-					{:else}
-						<EyeOff class="w-4 h-4" />
-					{/if}
-				</div>
-			</div>
-		</div>
+		<CardStatusBadge isVisited={transportation.is_visited} />
+		<CardPrivacyBadge isPublic={transportation.is_public} />
 
 		<!-- Category Badge -->
 		{#if transportation.type}
@@ -268,102 +195,78 @@
 				</button>
 
 				{#if !readOnly && (transportation.user === user?.uuid || (collection && user && collection.shared_with?.includes(user.uuid)))}
-					<div
-						class="dropdown dropdown-end relative z-50"
-						class:dropdown-open={isActionsMenuOpen}
-						bind:this={actionsMenuRef}
-					>
-						<button
-							type="button"
-							class="btn btn-square btn-sm p-1 text-base-content"
-							aria-haspopup="menu"
-							on:click|stopPropagation={() => {
-								if (isActionsMenuOpen) {
-									isActionsMenuOpen = false;
-									return;
-								}
-								closeAllTransportationMenus();
-								isActionsMenuOpen = true;
-							}}
-						>
-							<DotsHorizontal class="w-5 h-5" />
-						</button>
-						<ul
-							tabindex="-1"
-							class="dropdown-content menu bg-base-100 rounded-box z-[9999] w-52 p-2 shadow-lg border border-base-300"
-						>
-							<li>
-								<button
-									on:click={() => {
-										isActionsMenuOpen = false;
-										editTransportation();
-									}}
-									class="flex items-center gap-2"
-								>
-									<FileDocumentEdit class="w-4 h-4" />
-									{$t('transportation.edit')}
-								</button>
-							</li>
-							{#if itineraryItem && itineraryItem.id}
-								<div class="divider my-1"></div>
-								{#if !itineraryItem.is_global}
-									<li>
-										<button
-											on:click={() => {
-												isActionsMenuOpen = false;
-												dispatch('moveToGlobal', { type: 'transportation', id: transportation.id });
-											}}
-											class=" flex items-center gap-2"
-										>
-											<Globe class="w-4 h-4 " />
-											{$t('itinerary.move_to_trip_context') || 'Move to Trip Context'}
-										</button>
-									</li>
-									<li>
-										<button
-											on:click={() => {
-												isActionsMenuOpen = false;
-												changeDay();
-											}}
-											class=" flex items-center gap-2"
-										>
-											<Calendar class="w-4 h-4 text" />
-											{$t('itinerary.change_day')}
-										</button>
-									</li>
-								{/if}
+					<CardActionsMenu bind:this={actionsMenu} ariaLabel={$t('adventures.transportation_actions') || 'Transportation actions'} let:close>
+						<li>
+							<button
+								on:click={() => {
+									close();
+									editTransportation();
+								}}
+								class="flex items-center gap-2"
+							>
+								<FileDocumentEdit class="w-4 h-4" />
+								{$t('transportation.edit')}
+							</button>
+						</li>
+						{#if itineraryItem && itineraryItem.id}
+							<div class="divider my-1"></div>
+							{#if !itineraryItem.is_global}
 								<li>
 									<button
 										on:click={() => {
-											isActionsMenuOpen = false;
-											removeFromItinerary();
+											close();
+											dispatch('moveToGlobal', { type: 'transportation', id: transportation.id });
 										}}
-										class="text-error flex items-center gap-2"
+										class=" flex items-center gap-2"
 									>
-										<CalendarRemove class="w-4 h-4 text-error" />
-										{#if itineraryItem.is_global}
-											{$t('itinerary.remove_from_trip_context') || 'Remove from Trip Context'}
-										{:else}
-											{$t('itinerary.remove_from_itinerary')}
-										{/if}
+										<Globe class="w-4 h-4 " />
+										{$t('itinerary.move_to_trip_context') || 'Move to Trip Context'}
+									</button>
+								</li>
+								<li>
+									<button
+										on:click={() => {
+											close();
+											changeDay();
+										}}
+										class=" flex items-center gap-2"
+									>
+										<Calendar class="w-4 h-4 text" />
+										{$t('itinerary.change_day')}
 									</button>
 								</li>
 							{/if}
-							<div class="divider my-1"></div>
 							<li>
 								<button
-									class="text-error flex items-center gap-2"
 									on:click={() => {
-										isActionsMenuOpen = false;
-										isWarningModalOpen = true;
+										close();
+										removeFromItinerary();
 									}}
+									class="text-error flex items-center gap-2"
 								>
-									<TrashCanOutline class="w-4 h-4" />
-									{$t('adventures.delete')}
+									<CalendarRemove class="w-4 h-4 text-error" />
+									{#if itineraryItem.is_global}
+										{$t('itinerary.remove_from_trip_context') || 'Remove from Trip Context'}
+									{:else}
+										{$t('itinerary.remove_from_itinerary')}
+									{/if}
 								</button>
 							</li>
-						</ul>
-					</div>
+						{/if}
+						<div class="divider my-1"></div>
+						<li>
+							<button
+								class="text-error flex items-center gap-2"
+								on:click={() => {
+									close();
+									isWarningModalOpen = true;
+								}}
+							>
+								<TrashCanOutline class="w-4 h-4" />
+								{$t('adventures.delete')}
+							</button>
+						</li>
+					</CardActionsMenu>
 				{/if}
 			</div>
 		</div>
