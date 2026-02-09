@@ -93,15 +93,8 @@
 	async function linkLodging(lodging: Lodging) {
 		linkingId = lodging.id;
 
-		// Check if lodging is already in other collections
+		// Lodging supports multiple collections, so just add the new one
 		const existingCollections = lodging.collections || [];
-		if (existingCollections.length > 0) {
-			const confirmed = confirm($t('lodging.move_to_collection_confirm'));
-			if (!confirmed) {
-				linkingId = null;
-				return;
-			}
-		}
 
 		try {
 			// Add the new collection to existing ones

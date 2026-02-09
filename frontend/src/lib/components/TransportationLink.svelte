@@ -94,15 +94,8 @@
 	async function linkTransportation(transportation: Transportation) {
 		linkingId = transportation.id;
 
-		// Check if transportation is already in other collections
+		// Transportation supports multiple collections, so just add the new one
 		const existingCollections = transportation.collections || [];
-		if (existingCollections.length > 0) {
-			const confirmed = confirm($t('transportation.move_to_collection_confirm'));
-			if (!confirmed) {
-				linkingId = null;
-				return;
-			}
-		}
 
 		try {
 			// Add the new collection to existing ones
