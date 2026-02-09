@@ -583,31 +583,50 @@
 								<Star class="w-5 h-5" />
 								{$t('adventures.min_rating')}
 							</h3>
-							<div class="space-y-2">
-								<label class="label cursor-pointer justify-start gap-3">
-									<input
-										type="radio"
-										name="rating_filter"
-										class="radio radio-primary radio-sm"
-										checked={currentSort.min_rating === 'all'}
-										on:change={() => updateRatingFilter('all')}
-									/>
-									<span class="label-text">{$t('adventures.all')}</span>
-								</label>
-								{#each [1, 2, 3, 4, 5] as rating}
-									<label class="label cursor-pointer justify-start gap-3">
-										<input
-											type="radio"
-											name="rating_filter"
-											class="radio radio-primary radio-sm"
-											checked={currentSort.min_rating === rating.toString()}
-											on:change={() => updateRatingFilter(rating.toString())}
-										/>
-										<span class="label-text flex items-center gap-1">
-											{rating}+ <Star class="w-4 h-4 text-warning" />
+							<div class="flex flex-col gap-3">
+								<!-- Interactive star selector -->
+								<div class="flex items-center justify-center gap-1">
+									{#each [1, 2, 3, 4, 5] as rating}
+										<button
+											type="button"
+											class="btn btn-ghost btn-sm p-1 min-h-0 h-auto transition-transform hover:scale-110"
+											on:click={() => {
+												if (currentSort.min_rating === rating.toString()) {
+													updateRatingFilter('all');
+												} else {
+													updateRatingFilter(rating.toString());
+												}
+											}}
+											aria-label="Filter by {rating}+ stars"
+										>
+											<Star
+												class="w-7 h-7 transition-colors {
+													currentSort.min_rating !== 'all' && rating <= parseInt(currentSort.min_rating)
+														? 'text-warning fill-warning'
+														: 'text-base-content/20'
+												}"
+											/>
+										</button>
+									{/each}
+								</div>
+								<!-- Current filter display -->
+								<div class="text-center">
+									{#if currentSort.min_rating !== 'all'}
+										<span class="badge badge-warning gap-1">
+											{currentSort.min_rating}+ {$t('adventures.stars')}
+											<button
+												type="button"
+												class="btn btn-ghost btn-xs p-0 min-h-0 h-auto ml-1"
+												on:click={() => updateRatingFilter('all')}
+												aria-label="Clear rating filter"
+											>
+												✕
+											</button>
 										</span>
-									</label>
-								{/each}
+									{:else}
+										<span class="text-sm text-base-content/50">{$t('adventures.all')}</span>
+									{/if}
+								</div>
 							</div>
 						</div>
 
