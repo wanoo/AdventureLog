@@ -27,6 +27,7 @@
 	import CardCarousel from '$lib/components/CardCarousel.svelte';
 	import { formatDateInTimezone, formatAllDayDate } from '$lib/dateUtils';
 	import LodgingModal from '$lib/components/lodging/LodgingModal.svelte';
+	import StarRating from '$lib/components/StarRating.svelte';
 	import { DEFAULT_CURRENCY, formatMoney, toMoneyValue } from '$lib/money';
 
 	const renderMarkdown = (markdown: string) => {
@@ -55,6 +56,7 @@
 	let isEditModalOpen: boolean = false;
 	let localStayWindow: string | null = null;
 	let showLocalStayTime: boolean = false;
+	let ratingRefreshKey: number = 0;
 
 	$: lodgingPriceLabel = lodging
 		? formatMoney(
@@ -195,21 +197,21 @@
 
 {#if isEditModalOpen}
 	<LodgingModal
-		on:close={() => (isEditModalOpen = false)}
-		on:save={async () => {
-			// Re-fetch lodging data to get updated average_rating
+		on:close={async () => {
+			// Re-fetch lodging data to get updated average_rating before closing
 			try {
 				const res = await fetch(`/api/lodging/${lodging.id}`);
 				if (res.ok) {
 					lodging = await res.json();
+					ratingRefreshKey++;
 				}
 			} catch (e) {
 				console.error('Failed to refresh lodging:', e);
 			}
+			isEditModalOpen = false;
 		}}
 		user={data.user}
 		lodgingToEdit={lodging}
-		bind:lodging
 	/>
 {/if}
 
@@ -285,32 +287,16 @@
 					{#if lodging.average_rating !== undefined && lodging.average_rating !== null}
 						<!-- Show average rating from all visits (collaborative mode) -->
 						<div class="flex flex-col items-center mb-6">
-							<div class="rating rating-lg">
-								{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
-									<input
-										type="radio"
-										name="rating-hero"
-										class="mask mask-star-2 bg-warning"
-										checked={star <= (lodging.average_rating ?? 0)}
-										disabled
-									/>
-								{/each}
-							</div>
+							{#key ratingRefreshKey}
+								<StarRating rating={lodging.average_rating} size="2xl" readonly showValue={false} />
+							{/key}
 							<span class="text-sm opacity-70 mt-1">{$t('adventures.average_rating')} ({lodging.average_rating})</span>
 						</div>
 					{:else if lodging.rating !== undefined && lodging.rating !== null}
-						<div class="flex justify-center mb-6">
-							<div class="rating rating-lg">
-								{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
-									<input
-										type="radio"
-										name="rating-hero"
-										class="mask mask-star-2 bg-warning"
-										checked={star <= lodging.rating}
-										disabled
-									/>
-								{/each}
-							</div>
+						<div class="flex flex-col items-center mb-6">
+							{#key ratingRefreshKey}
+								<StarRating rating={lodging.rating} size="2xl" readonly showValue={false} />
+							{/key}
 						</div>
 					{/if}
 
@@ -452,30 +438,12 @@
 																{$t('adventures.added_by')} <a href="/profile/{visit.user_username}" class="font-semibold link link-hover link-primary">{visit.user_username}</a>
 															</div>
 															{#if visit.rating !== null && visit.rating !== undefined}
-																<div class="rating rating-sm">
-																	{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
-																		<input
-																			type="radio"
-																			class="mask mask-star-2 bg-warning"
-																			checked={star <= (visit.rating ?? 0)}
-																			disabled
-																		/>
-																	{/each}
-																</div>
+																<StarRating rating={visit.rating} size="sm" readonly />
 															{/if}
 														</div>
 													{:else if visit.rating !== null && visit.rating !== undefined}
 														<div class="flex justify-end mb-2">
-															<div class="rating rating-sm">
-																{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
-																	<input
-																		type="radio"
-																		class="mask mask-star-2 bg-warning"
-																		checked={star <= (visit.rating ?? 0)}
-																		disabled
-																	/>
-																{/each}
-															</div>
+															<StarRating rating={visit.rating} size="sm" readonly />
 														</div>
 													{/if}
 													{#if isAllDay(visit.start_date)}

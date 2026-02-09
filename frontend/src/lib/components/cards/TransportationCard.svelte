@@ -17,6 +17,7 @@
 	import EyeOff from '~icons/mdi/eye-off';
 	import Star from '~icons/mdi/star';
 	import StarOutline from '~icons/mdi/star-outline';
+	import StarRating from '../StarRating.svelte';
 	import Calendar from '~icons/mdi/calendar';
 	import Clock from '~icons/mdi/clock-outline';
 	import DotsHorizontal from '~icons/mdi/dots-horizontal';
@@ -505,28 +506,12 @@
 
 			{#if transportation.average_rating !== null && transportation.average_rating !== undefined}
 				<div class="flex items-center gap-1">
-					<div class="flex -ml-1">
-						{#each renderStars(Math.round(transportation.average_rating)) as filled}
-							{#if filled}
-								<Star class="w-4 h-4 text-warning fill-current" />
-							{:else}
-								<StarOutline class="w-4 h-4 text-base-content/30" />
-							{/if}
-						{/each}
-					</div>
+					<StarRating rating={transportation.average_rating} size="sm" readonly />
 					<span class="text-xs text-base-content/60">({transportation.average_rating})</span>
 				</div>
 			{:else if transportation.rating}
 				<div class="flex items-center gap-1">
-					<div class="flex -ml-1">
-						{#each renderStars(transportation.rating) as filled}
-							{#if filled}
-								<Star class="w-4 h-4 text-warning fill-current" />
-							{:else}
-								<StarOutline class="w-4 h-4 text-base-content/30" />
-							{/if}
-						{/each}
-					</div>
+					<StarRating rating={transportation.rating} size="sm" readonly />
 					<span class="text-xs text-base-content/60">({transportation.rating}/5)</span>
 				</div>
 			{/if}

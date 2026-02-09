@@ -16,6 +16,7 @@
 	import EyeOff from '~icons/mdi/eye-off';
 	import Star from '~icons/mdi/star';
 	import StarOutline from '~icons/mdi/star-outline';
+	import StarRating from '../StarRating.svelte';
 	import MapMarker from '~icons/mdi/map-marker';
 	import DotsHorizontal from '~icons/mdi/dots-horizontal';
 	import CalendarRemove from '~icons/mdi/calendar-remove';
@@ -490,28 +491,12 @@
 		<div class="flex flex-wrap items-center gap-2 text-sm">
 			{#if lodging.average_rating !== null && lodging.average_rating !== undefined}
 				<div class="flex items-center gap-1">
-					<div class="flex -ml-1">
-						{#each renderStars(Math.round(lodging.average_rating)) as filled}
-							{#if filled}
-								<Star class="w-4 h-4 text-warning fill-current" />
-							{:else}
-								<StarOutline class="w-4 h-4 text-base-content/30" />
-							{/if}
-						{/each}
-					</div>
+					<StarRating rating={lodging.average_rating} size="sm" readonly />
 					<span class="text-xs text-base-content/60">({lodging.average_rating})</span>
 				</div>
 			{:else if lodging.rating}
 				<div class="flex items-center gap-1">
-					<div class="flex -ml-1">
-						{#each renderStars(lodging.rating) as filled}
-							{#if filled}
-								<Star class="w-4 h-4 text-warning fill-current" />
-							{:else}
-								<StarOutline class="w-4 h-4 text-base-content/30" />
-							{/if}
-						{/each}
-					</div>
+					<StarRating rating={lodging.rating} size="sm" readonly />
 					<span class="text-xs text-base-content/60">({lodging.rating}/5)</span>
 				</div>
 			{/if}

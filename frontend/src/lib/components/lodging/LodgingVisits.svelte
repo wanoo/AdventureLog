@@ -18,6 +18,7 @@
 	import SettingsIcon from '~icons/mdi/cog';
 	import ArrowLeftIcon from '~icons/mdi/arrow-left';
 	import InfoIcon from '~icons/mdi/information';
+	import StarRating from '../StarRating.svelte';
 
 	// Props
 	export let collection: Collection | null = null;
@@ -480,18 +481,7 @@
 					<div class="mt-4">
 						<label class="label-text text-sm font-medium">{$t('adventures.rating')}</label>
 						<div class="flex items-center gap-2 mt-1">
-							<div class="rating rating-lg">
-								<input type="radio" name="lodging-visit-rating-input" class="rating-hidden" checked={visitRating === null} />
-								{#each [1, 2, 3, 4, 5] as star}
-									<input
-										type="radio"
-										name="lodging-visit-rating-input"
-										class="mask mask-star-2 bg-warning"
-										checked={visitRating === star}
-										on:click={() => visitRating = visitRating === star ? null : star}
-									/>
-								{/each}
-							</div>
+							<StarRating rating={visitRating} size="lg" readonly={false} on:change={(e) => visitRating = e.detail} />
 							{#if visitRating}
 								<button
 									type="button"
@@ -591,6 +581,11 @@
 												<p class="text-xs text-base-content/70 bg-base-200/50 p-2 rounded">
 													"{visit.notes}"
 												</p>
+											{/if}
+											{#if visit.rating !== null && visit.rating !== undefined}
+												<div class="mt-2">
+													<StarRating rating={visit.rating} size="sm" readonly />
+												</div>
 											{/if}
 										</div>
 
