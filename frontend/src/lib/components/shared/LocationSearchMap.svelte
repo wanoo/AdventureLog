@@ -85,10 +85,6 @@
 	export let isReverseGeocoding = false;
 	export let transportationMode = false; // New prop for transportation mode
 	export let searchMode: SearchMode = 'location'; // Search mode for transportation
-	// Legacy support: airportMode maps to searchMode
-	export let airportMode = false;
-	$: if (airportMode && searchMode === 'location') searchMode = 'airport';
-	$: airportMode = searchMode === 'airport';
 	// Props for initial transportation locations when editing
 	export let initialStartLocation: {
 		name: string;
