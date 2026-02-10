@@ -17,11 +17,12 @@
 	import { DEFAULT_CURRENCY, normalizeMoneyPayload, toMoneyValue } from '$lib/money';
 	import MapIcon from '~icons/mdi/map';
 	import InfoIcon from '~icons/mdi/information';
+	import type { SearchMode } from '../shared/LocationSearchMap.svelte';
 
 	const dispatch = createEventDispatcher();
 
 	let isReverseGeocoding = false;
-	export let airportMode = false;
+	export let searchMode: SearchMode = 'location';
 	let previousTransportationType: string | null = null;
 
 	// Props
@@ -102,23 +103,23 @@
 		transportation.end_code = normalizeCode(endCodeField);
 	}
 
-	// Track airport mode changes
-	let prevAirportMode = airportMode;
-	$: if (prevAirportMode !== airportMode) {
-		prevAirportMode = airportMode;
-		if (!airportMode) clearAirportCodes();
+	// Track search mode changes
+	let prevSearchMode = searchMode;
+	$: if (prevSearchMode !== searchMode) {
+		prevSearchMode = searchMode;
+		if (searchMode === 'location') clearAirportCodes();
 	}
 
-	// Auto-enable airport mode when type changes to plane
-	$: if (
-		transportation.type === 'plane' &&
-		previousTransportationType !== 'plane' &&
-		!airportMode
-	) {
+	// Auto-set search mode based on transportation type
+	$: if (transportation.type && previousTransportationType !== transportation.type) {
 		previousTransportationType = transportation.type;
-		airportMode = true;
-	} else if (transportation.type !== previousTransportationType) {
-		previousTransportationType = transportation.type;
+		if (transportation.type === 'plane' && searchMode === 'location') {
+			searchMode = 'airport';
+		} else if (transportation.type === 'train' && searchMode === 'location') {
+			searchMode = 'train';
+		} else if (transportation.type === 'bus' && searchMode === 'location') {
+			searchMode = 'bus';
+		}
 	}
 
 	function handleTransportationUpdate(
@@ -301,7 +302,7 @@
 					</div>
 
 					<!-- Start/End Codes -->
-					{#if transportation.type === 'plane' || airportMode}
+					{#if searchMode !== 'location'}
 						<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 							<div class="form-control">
 								<label class="label" for="start_code">
@@ -316,7 +317,7 @@
 									on:input={handleStartCodeEvent}
 									class="input input-bordered bg-base-100/80 focus:bg-base-100 uppercase"
 									maxlength="5"
-									placeholder={airportMode ? 'JFK' : $t('transportation.departure_code')}
+									placeholder={searchMode === 'airport' ? 'JFK' : $t('transportation.departure_code')}
 								/>
 							</div>
 							<div class="form-control">
@@ -332,7 +333,7 @@
 									on:input={handleEndCodeEvent}
 									class="input input-bordered bg-base-100/80 focus:bg-base-100 uppercase"
 									maxlength="5"
-									placeholder={airportMode ? 'LHR' : $t('transportation.arrival_code')}
+									placeholder={searchMode === 'airport' ? 'LHR' : $t('transportation.arrival_code')}
 								/>
 							</div>
 						</div>
@@ -381,7 +382,7 @@
 			<LocationSearchMap
 				bind:isReverseGeocoding
 				transportationMode={true}
-				bind:airportMode
+				bind:searchMode
 				showDisplayNameInput={false}
 				initialStartLocation={initialTransportation?.origin_latitude && initialTransportation?.origin_longitude
 					? {

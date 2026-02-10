@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { t } from 'svelte-i18n';
-	import LocationSearchMap from '../shared/LocationSearchMap.svelte';
+	import LocationSearchMap, { type SearchMode } from '../shared/LocationSearchMap.svelte';
 
 	const dispatch = createEventDispatcher();
 
-	// Airport mode toggle (shared with parent)
-	export let airportMode = false;
+	// Search mode (shared with parent)
+	export let searchMode: SearchMode = 'location';
 
 	let isReverseGeocoding = false;
 
@@ -69,7 +69,7 @@
 		dispatch('locationsSelected', {
 			origin: originData,
 			destination: destinationData,
-			airportMode
+			searchMode
 		});
 	}
 </script>
@@ -79,7 +79,7 @@
 	<LocationSearchMap
 		bind:isReverseGeocoding
 		transportationMode={true}
-		bind:airportMode
+		bind:searchMode
 		showDisplayNameInput={false}
 		on:transportationUpdate={handleTransportationUpdate}
 		on:clear={handleClear}

@@ -9,6 +9,7 @@
 	import TransportationDetails from './TransportationDetails.svelte';
 	import TransportationVisits from './TransportationVisits.svelte';
 	import { EntityModal, type ModalStep, navigateToStep } from '../shared/modal';
+	import type { SearchMode } from '../shared/LocationSearchMap.svelte';
 
 	export let user: User | null = null;
 	export let collection: Collection | null = null;
@@ -23,8 +24,8 @@
 	// Whether a save/create occurred during this modal session
 	let didSave = false;
 
-	// Airport mode state (shared between QuickStart and Details)
-	let airportMode = false;
+	// Search mode state (shared between QuickStart and Details)
+	let searchMode: SearchMode = 'location';
 
 	let entityModal: EntityModal;
 
@@ -155,15 +156,15 @@
 >
 	{#if steps[0].selected}
 		<TransportationQuickStart
-			bind:airportMode
+			bind:searchMode
 			on:cancel={close}
 			on:next={() => {
 				steps = navigateToStep(steps, 1);
 			}}
 			on:locationsSelected={(e) => {
-				const { origin, destination, airportMode: eventAirportMode } = e.detail;
-				// Update modal-level airportMode from event
-				airportMode = eventAirportMode;
+				const { origin, destination, searchMode: eventSearchMode } = e.detail;
+				// Update modal-level searchMode from event
+				searchMode = eventSearchMode;
 				if (origin) {
 					transportation.from_location = origin.location || origin.name;
 					transportation.origin_latitude = origin.latitude;
@@ -176,9 +177,11 @@
 					transportation.destination_longitude = destination.longitude;
 					if (destination.code) transportation.end_code = destination.code;
 				}
-				// Set type to plane if airport mode was used
-				if (airportMode && !transportation.type) {
-					transportation.type = 'plane';
+				// Set type based on search mode
+				if (!transportation.type) {
+					if (searchMode === 'airport') transportation.type = 'plane';
+					else if (searchMode === 'train') transportation.type = 'train';
+					else if (searchMode === 'bus') transportation.type = 'bus';
 				}
 				// Auto-generate name if empty
 				if (!transportation.name && origin && destination) {
@@ -193,7 +196,7 @@
 			currentUser={user}
 			initialTransportation={transportation}
 			{collection}
-			bind:airportMode
+			bind:searchMode
 			bind:editingTransportation={transportation}
 			on:back={() => {
 				steps = navigateToStep(steps, 0);

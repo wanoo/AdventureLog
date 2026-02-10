@@ -11,7 +11,50 @@
 	import ClearIcon from '~icons/mdi/close';
 	import PinIcon from '~icons/mdi/map-marker';
 	import AirplaneIcon from '~icons/mdi/airplane';
+	import TrainIcon from '~icons/mdi/train';
+	import BusIcon from '~icons/mdi/bus';
 	import SwapIcon from '~icons/mdi/swap-horizontal';
+
+	// Search mode type for transportation
+	export type SearchMode = 'location' | 'airport' | 'train' | 'bus';
+
+	// Search mode configuration
+	const SEARCH_MODE_CONFIG: Record<SearchMode, {
+		suffix: string;
+		departureLabel: string;
+		arrivalLabel: string;
+		placeholder: string;
+		icon: any;
+	}> = {
+		location: {
+			suffix: '',
+			departureLabel: 'adventures.start_location',
+			arrivalLabel: 'adventures.end_location',
+			placeholder: 'transportation.enter_from_location',
+			icon: PinIcon
+		},
+		airport: {
+			suffix: ' Airport',
+			departureLabel: 'adventures.departure_airport',
+			arrivalLabel: 'adventures.arrival_airport',
+			placeholder: 'adventures.airport_code_examples',
+			icon: AirplaneIcon
+		},
+		train: {
+			suffix: ' Train Station',
+			departureLabel: 'adventures.departure_station',
+			arrivalLabel: 'adventures.arrival_station',
+			placeholder: 'adventures.station_name_examples',
+			icon: TrainIcon
+		},
+		bus: {
+			suffix: ' Bus Station',
+			departureLabel: 'adventures.departure_stop',
+			arrivalLabel: 'adventures.arrival_stop',
+			placeholder: 'adventures.bus_stop_examples',
+			icon: BusIcon
+		}
+	};
 
 	type GeoSelection = {
 		name: string;
@@ -41,7 +84,11 @@
 	export let displayNamePlaceholder = '';
 	export let isReverseGeocoding = false;
 	export let transportationMode = false; // New prop for transportation mode
-	export let airportMode = false; // New prop for airport-specific search
+	export let searchMode: SearchMode = 'location'; // Search mode for transportation
+	// Legacy support: airportMode maps to searchMode
+	export let airportMode = false;
+	$: if (airportMode && searchMode === 'location') searchMode = 'airport';
+	$: airportMode = searchMode === 'airport';
 	// Props for initial transportation locations when editing
 	export let initialStartLocation: {
 		name: string;
@@ -76,17 +123,17 @@
 	let startCode: string | null = null;
 	let endCode: string | null = null;
 
-	// track previous airport mode to detect toggles
-	let prevAirportMode = airportMode;
-	let airportModeInitialized = false;
+	// track previous search mode to detect toggles
+	let prevSearchMode = searchMode;
+	let searchModeInitialized = false;
 
-	// Clear inputs/selections when airportMode is toggled (but not during initial setup)
-	$: if (prevAirportMode !== airportMode) {
-		prevAirportMode = airportMode;
+	// Clear inputs/selections when searchMode is changed (but not during initial setup)
+	$: if (prevSearchMode !== searchMode) {
+		prevSearchMode = searchMode;
 
-		// Only clear if this is not the first time airportMode is being set
-		// This prevents wiping out initial location data when editing existing plane transportations
-		if (airportModeInitialized) {
+		// Only clear if this is not the first time searchMode is being set
+		// This prevents wiping out initial location data when editing existing transportations
+		if (searchModeInitialized) {
 			// clear single-location search state
 			searchQuery = '';
 			searchResults = [];
@@ -110,8 +157,11 @@
 			endLocationData = null;
 		}
 
-		airportModeInitialized = true;
+		searchModeInitialized = true;
 	}
+
+	// Helper to check if we're in a station/airport mode (not plain location)
+	$: isStationMode = searchMode !== 'location';
 
 	// Transportation mode variables
 	let startSearchQuery = '';
@@ -150,7 +200,7 @@
 				location: initialStartLocation.location
 			};
 			startMarker = { lng: initialStartLocation.lng, lat: initialStartLocation.lat };
-			if (airportMode) {
+			if (isStationMode) {
 				startCode =
 					initialStartCode || deriveCode(initialStartLocation.name, initialStartLocation.name);
 				startSearchQuery = startCode || initialStartLocation.location || initialStartLocation.name;
@@ -170,7 +220,7 @@
 				location: initialEndLocation.location
 			};
 			endMarker = { lng: initialEndLocation.lng, lat: initialEndLocation.lat };
-			if (airportMode) {
+			if (isStationMode) {
 				endCode = initialEndCode || deriveCode(initialEndLocation.name, initialEndLocation.name);
 				endSearchQuery = endCode || initialEndLocation.location || initialEndLocation.name;
 			} else {
@@ -198,7 +248,7 @@
 
 		isSearching = true;
 		try {
-			const searchTerm = airportMode ? `${query} Airport` : query;
+			const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
 			const response = await fetch(
 				`/api/reverse-geocode/search/?query=${encodeURIComponent(searchTerm)}`
 			);
@@ -231,7 +281,7 @@
 
 		isSearchingStart = true;
 		try {
-			const searchTerm = airportMode ? `${query} Airport` : query;
+			const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
 			const response = await fetch(
 				`/api/reverse-geocode/search/?query=${encodeURIComponent(searchTerm)}`
 			);
@@ -264,7 +314,7 @@
 
 		isSearchingEnd = true;
 		try {
-			const searchTerm = airportMode ? `${query} Airport` : query;
+			const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
 			const response = await fetch(
 				`/api/reverse-geocode/search/?query=${encodeURIComponent(searchTerm)}`
 			);
@@ -387,7 +437,7 @@
 		const typedQuery = startSearchQuery;
 
 		// Only auto-derive and surface codes in airport mode
-		if (airportMode) {
+		if (isStationMode) {
 			const airportCodeMatch = searchResult.name.match(/\(([A-Z]{3})\)/);
 			startSearchQuery = airportCodeMatch ? airportCodeMatch[1] : searchResult.name;
 			startCode = resolveCode(searchResult, typedQuery);
@@ -416,7 +466,7 @@
 		const typedQuery = endSearchQuery;
 
 		// Only auto-derive and surface codes in airport mode
-		if (airportMode) {
+		if (isStationMode) {
 			const airportCodeMatch = searchResult.name.match(/\(([A-Z]{3})\)/);
 			endSearchQuery = airportCodeMatch ? airportCodeMatch[1] : searchResult.name;
 			endCode = resolveCode(searchResult, typedQuery);
@@ -658,19 +708,50 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 	<div class="space-y-4">
-		<!-- Transportation Mode Toggle -->
+		<!-- Transportation Mode Selector -->
 		{#if transportationMode}
-			<div class="flex items-center gap-3 p-3 bg-primary/10 rounded-lg border border-primary/30">
-				<AirplaneIcon class="w-5 h-5 text-primary" />
-				<div class="flex-1">
-					<label class="label cursor-pointer justify-start gap-3">
-						<input type="checkbox" class="toggle toggle-primary" bind:checked={airportMode} />
-						<span class="label-text font-medium">
-							{airportMode
-								? $t('adventures.airport_search_mode')
-								: $t('adventures.location_search_mode')}
-						</span>
-					</label>
+			<div class="p-3 bg-primary/10 rounded-lg border border-primary/30">
+				<div class="flex flex-wrap gap-2 justify-center">
+					<button
+						type="button"
+						class="btn btn-sm gap-1"
+						class:btn-primary={searchMode === 'location'}
+						class:btn-ghost={searchMode !== 'location'}
+						on:click={() => (searchMode = 'location')}
+					>
+						<PinIcon class="w-4 h-4" />
+						{$t('adventures.location') || 'Location'}
+					</button>
+					<button
+						type="button"
+						class="btn btn-sm gap-1"
+						class:btn-primary={searchMode === 'airport'}
+						class:btn-ghost={searchMode !== 'airport'}
+						on:click={() => (searchMode = 'airport')}
+					>
+						<AirplaneIcon class="w-4 h-4" />
+						{$t('adventures.airport') || 'Airport'}
+					</button>
+					<button
+						type="button"
+						class="btn btn-sm gap-1"
+						class:btn-primary={searchMode === 'train'}
+						class:btn-ghost={searchMode !== 'train'}
+						on:click={() => (searchMode = 'train')}
+					>
+						<TrainIcon class="w-4 h-4" />
+						{$t('adventures.train') || 'Train'}
+					</button>
+					<button
+						type="button"
+						class="btn btn-sm gap-1"
+						class:btn-primary={searchMode === 'bus'}
+						class:btn-ghost={searchMode !== 'bus'}
+						on:click={() => (searchMode = 'bus')}
+					>
+						<BusIcon class="w-4 h-4" />
+						{$t('adventures.bus') || 'Bus'}
+					</button>
 				</div>
 			</div>
 		{/if}
@@ -697,8 +778,8 @@
 			<div class="form-control">
 				<label class="label" for="search-start-location">
 					<span class="label-text font-medium flex items-center gap-2">
-						<PinIcon class="w-4 h-4 text-success" />
-						{airportMode ? $t('adventures.departure_airport') : $t('adventures.start_location')}
+						<svelte:component this={SEARCH_MODE_CONFIG[searchMode].icon} class="w-4 h-4 text-success" />
+						{$t(SEARCH_MODE_CONFIG[searchMode].departureLabel)}
 					</span>
 				</label>
 				<div class="relative">
@@ -710,9 +791,7 @@
 						id="search-start-location"
 						bind:value={startSearchQuery}
 						on:input={handleStartSearchInput}
-						placeholder={airportMode
-							? $t('adventures.airport_code_examples')
-							: $t('transportation.enter_from_location')}
+						placeholder={$t(SEARCH_MODE_CONFIG[searchMode].placeholder)}
 						class="input input-bordered w-full pl-10 pr-4 bg-base-100/80 focus:bg-base-100"
 						class:input-success={selectedStartLocation}
 					/>
@@ -763,8 +842,8 @@
 			<div class="form-control">
 				<label class="label" for="search-end-location">
 					<span class="label-text font-medium flex items-center gap-2">
-						<PinIcon class="w-4 h-4 text-error" />
-						{airportMode ? $t('adventures.arrival_airport') : $t('adventures.end_location')}
+						<svelte:component this={SEARCH_MODE_CONFIG[searchMode].icon} class="w-4 h-4 text-error" />
+						{$t(SEARCH_MODE_CONFIG[searchMode].arrivalLabel)}
 					</span>
 				</label>
 				<div class="relative">
@@ -776,9 +855,7 @@
 						id="search-end-location"
 						bind:value={endSearchQuery}
 						on:input={handleEndSearchInput}
-						placeholder={airportMode
-							? $t('adventures.airport_code_examples')
-							: $t('transportation.enter_to_location')}
+						placeholder={$t(SEARCH_MODE_CONFIG[searchMode].placeholder)}
 						class="input input-bordered w-full pl-10 pr-4 bg-base-100/80 focus:bg-base-100"
 						class:input-error={selectedEndLocation}
 					/>
