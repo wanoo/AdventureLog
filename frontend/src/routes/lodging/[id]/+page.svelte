@@ -3,61 +3,52 @@
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
-	import Lost from '$lib/assets/undraw_lost.svg';
 	import { DefaultMarker, MapLibre, Popup } from 'svelte-maplibre';
 	import { t } from 'svelte-i18n';
-	import { marked } from 'marked';
-	import DOMPurify from 'dompurify';
 	// @ts-ignore
 	import { DateTime } from 'luxon';
 
-	import ClipboardList from '~icons/mdi/clipboard-list';
 	import ImageDisplayModal from '$lib/components/ImageDisplayModal.svelte';
 	import AttachmentCard from '$lib/components/cards/AttachmentCard.svelte';
-	import ActivityCard from '$lib/components/cards/ActivityCard.svelte';
 	import { getBasemapUrl, isAllDay, LODGING_TYPES_ICONS } from '$lib';
 	import Star from '~icons/mdi/star';
 	import StarOutline from '~icons/mdi/star-outline';
 	import MapMarker from '~icons/mdi/map-marker';
 	import CalendarRange from '~icons/mdi/calendar-range';
-	import Eye from '~icons/mdi/eye';
-	import EyeOff from '~icons/mdi/eye-off';
-	import OpenInNew from '~icons/mdi/open-in-new';
 	import CashMultiple from '~icons/mdi/cash-multiple';
 	import CardAccountDetails from '~icons/mdi/card-account-details';
-	import CardCarousel from '$lib/components/CardCarousel.svelte';
+	import OpenInNew from '~icons/mdi/open-in-new';
 	import { formatDateInTimezone, formatAllDayDate } from '$lib/dateUtils';
 	import LodgingModal from '$lib/components/lodging/LodgingModal.svelte';
-	import StarRating from '$lib/components/StarRating.svelte';
 	import { DEFAULT_CURRENCY, formatMoney, toMoneyValue } from '$lib/money';
 
-	const renderMarkdown = (markdown: string) => {
-		return marked(markdown) as string;
-	};
+	// Shared components
+	import {
+		EntityNotFound,
+		EntityLoading,
+		EntityHeroSection,
+		EntityDescriptionCard,
+		EntityVisitsTimeline,
+		EntityEditFab,
+		EntityAttachmentsCard,
+		EntityImagesCard,
+		sortImagesByPrimary,
+		sortVisitsChronologically
+	} from '$lib/components/shared/detail';
 
 	export let data: PageData;
-	console.log(data);
 
 	let lodging: Lodging;
-	let currentSlide = 0;
-
-	// Check if current user has visited (for visited badge)
-	$: userHasVisited = lodging?.visits?.some(
-		(v) => v.user_username === data.user?.username
-	) ?? false;
-
-	function goToSlide(index: number) {
-		currentSlide = index;
-	}
-
 	let notFound: boolean = false;
-	let lodging_images: { image: string; lodging: Lodging | null }[] = [];
 	let modalInitialIndex: number = 0;
 	let isImageModalOpen: boolean = false;
 	let isEditModalOpen: boolean = false;
-	let localStayWindow: string | null = null;
-	let showLocalStayTime: boolean = false;
 	let ratingRefreshKey: number = 0;
+
+	// Check if current user has visited
+	$: userHasVisited = lodging?.visits?.some(
+		(v) => v.user_username === data.user?.username
+	) ?? false;
 
 	$: lodgingPriceLabel = lodging
 		? formatMoney(
@@ -69,12 +60,64 @@
 			)
 		: null;
 
+	$: canEdit = (data.user?.uuid && lodging?.user && data.user.uuid === lodging.user) ||
+		(data.collaborativeMode && lodging?.is_public);
+
+	// Build hero badges
+	$: heroBadges = lodging ? buildHeroBadges(lodging) : [];
+
+	function buildHeroBadges(l: Lodging) {
+		const badges: { label: string; class: string; href?: string }[] = [];
+
+		if (l.type) {
+			badges.push({
+				label: $t(`lodging.${l.type}`),
+				class: 'badge-primary'
+			});
+		}
+		if (l.location) {
+			badges.push({
+				label: `📍 ${l.location}`,
+				class: 'badge-secondary'
+			});
+		}
+		if (l.visits && l.visits.length > 0) {
+			badges.push({
+				label: `🎯 ${l.visits.length} ${l.visits.length === 1 ? $t('adventures.visit') : $t('adventures.visits')}`,
+				class: 'badge-accent'
+			});
+		}
+		if (userHasVisited) {
+			badges.push({
+				label: `✅ ${$t('adventures.visited')}`,
+				class: 'badge-success'
+			});
+		} else {
+			badges.push({
+				label: `⏳ ${$t('adventures.not_visited')}`,
+				class: 'badge-warning'
+			});
+		}
+		if (l.is_public) {
+			badges.push({
+				label: `👁️ ${$t('adventures.public')}`,
+				class: 'badge-info'
+			});
+		} else {
+			badges.push({
+				label: `🔒 ${$t('adventures.private')}`,
+				class: 'badge-ghost'
+			});
+		}
+
+		return badges;
+	}
+
 	function getLodgingIcon(type: string) {
 		if (type in LODGING_TYPES_ICONS) {
 			return LODGING_TYPES_ICONS[type as keyof typeof LODGING_TYPES_ICONS];
-		} else {
-			return '🏨';
 		}
+		return '🏨';
 	}
 
 	function renderStars(rating: number) {
@@ -91,9 +134,7 @@
 		const label = getTimezoneLabel(zone);
 		return label === localTimeZone
 			? null
-			: `${$t('adventures.trip_timezone') ?? 'Trip TZ'}: ${label}. ${
-					$t('adventures.your_time') ?? 'Your time'
-				}: ${localTimeZone}.`;
+			: `${$t('adventures.trip_timezone') ?? 'Trip TZ'}: ${label}. ${$t('adventures.your_time') ?? 'Your time'}: ${localTimeZone}.`;
 	};
 	const shouldShowStayBadge = (zone?: string | null) =>
 		!!zone && getTimezoneLabel(zone) !== localTimeZone;
@@ -104,44 +145,41 @@
 		timezone: string | null
 	): string | null {
 		if (!checkIn && !checkOut) return null;
-
 		const formatLocal = (dateStr: string | null) => {
 			if (!dateStr || isAllDay(dateStr)) return null;
 			const dt = DateTime.fromISO(dateStr, { zone: timezone ?? 'UTC' });
 			if (!dt.isValid) return null;
 			return dt.setZone(localTimeZone).toLocaleString(DateTime.DATETIME_MED);
 		};
-
 		const inLocal = formatLocal(checkIn);
 		const outLocal = formatLocal(checkOut);
-
 		if (!inLocal && !outLocal) return null;
 		if (inLocal && outLocal) return `${inLocal} → ${outLocal}`;
 		return inLocal ?? outLocal ?? null;
 	}
 
-	const primaryStayTimezone = (timezone: string | null) => timezone;
+	function calculateNights(checkIn: string | null, checkOut: string | null): number | null {
+		if (!checkIn || !checkOut) return null;
+		const start = DateTime.fromISO(checkIn);
+		const end = DateTime.fromISO(checkOut);
+		if (!start.isValid || !end.isValid) return null;
+		return Math.ceil(end.diff(start, 'days').days);
+	}
+
+	$: localStayWindow = lodging
+		? formatLocalStayWindow(lodging.check_in, lodging.check_out, lodging.timezone)
+		: null;
+
+	$: showLocalStayTime = Boolean(
+		localStayWindow && lodging?.timezone && lodging.timezone !== localTimeZone
+	);
 
 	onMount(async () => {
 		if (data.props.lodging) {
 			lodging = data.props.lodging;
-			lodging.images.sort((a, b) => {
-				if (a.is_primary && !b.is_primary) {
-					return -1;
-				} else if (!a.is_primary && b.is_primary) {
-					return 1;
-				} else {
-					return 0;
-				}
-			});
-
-			// Sort visits by their start date (oldest first / chronological)
-			if (lodging.visits && lodging.visits.length > 1) {
-				lodging.visits.sort((a, b) => {
-					const aTs = DateTime.fromISO(a.start_date || a.created_at || '').toMillis() || 0;
-					const bTs = DateTime.fromISO(b.start_date || b.created_at || '').toMillis() || 0;
-					return aTs - bTs; // oldest first (chronological)
-				});
+			lodging.images = sortImagesByPrimary(lodging.images || []);
+			if (lodging.visits) {
+				lodging.visits = sortVisitsChronologically(lodging.visits);
 			}
 		} else {
 			notFound = true;
@@ -152,65 +190,32 @@
 		isImageModalOpen = false;
 	}
 
-	function openImageModal(imageIndex: number) {
-		lodging_images = lodging.images.map((img) => ({
-			image: img.image,
-			lodging: lodging
-		}));
-		modalInitialIndex = imageIndex;
+	function openImageModal(index: number) {
+		modalInitialIndex = index;
 		isImageModalOpen = true;
 	}
 
-	function calculateNights(checkIn: string | null, checkOut: string | null): number | null {
-		if (!checkIn || !checkOut) return null;
-
-		const start = DateTime.fromISO(checkIn);
-		const end = DateTime.fromISO(checkOut);
-
-		if (!start.isValid || !end.isValid) return null;
-
-		return Math.ceil(end.diff(start, 'days').days);
+	async function handleEditModalClose() {
+		try {
+			const res = await fetch(`/api/lodging/${lodging.id}`);
+			if (res.ok) {
+				lodging = await res.json();
+				ratingRefreshKey++;
+			}
+		} catch (e) {
+			console.error('Failed to refresh lodging:', e);
+		}
+		isEditModalOpen = false;
 	}
-
-	$: localStayWindow = lodging
-		? formatLocalStayWindow(lodging.check_in, lodging.check_out, lodging.timezone)
-		: null;
-
-	$: showLocalStayTime = Boolean(
-		localStayWindow && primaryStayTimezone(lodging?.timezone ?? null) !== localTimeZone
-	);
 </script>
 
 {#if notFound}
-	<div class="hero min-h-screen bg-gradient-to-br from-base-200 to-base-300 overflow-x-hidden">
-		<div class="hero-content text-center">
-			<div class="max-w-md">
-				<img src={Lost} alt="Lost" class="w-64 mx-auto mb-8 opacity-80" />
-				<h1 class="text-5xl font-bold text-primary mb-4">{$t('adventures.lodging_not_found')}</h1>
-				<p class="text-lg opacity-70 mb-8">{$t('adventures.location_not_found_desc')}</p>
-				<button class="btn btn-primary btn-lg" on:click={() => goto('/')}>
-					{$t('adventures.homepage')}
-				</button>
-			</div>
-		</div>
-	</div>
+	<EntityNotFound title={$t('adventures.lodging_not_found')} />
 {/if}
 
 {#if isEditModalOpen}
 	<LodgingModal
-		on:close={async () => {
-			// Re-fetch lodging data to get updated average_rating before closing
-			try {
-				const res = await fetch(`/api/lodging/${lodging.id}`);
-				if (res.ok) {
-					lodging = await res.json();
-					ratingRefreshKey++;
-				}
-			} catch (e) {
-				console.error('Failed to refresh lodging:', e);
-			}
-			isEditModalOpen = false;
-		}}
+		on:close={handleEditModalClose}
 		user={data.user}
 		lodgingToEdit={lodging}
 	/>
@@ -226,300 +231,35 @@
 {/if}
 
 {#if !lodging && !notFound}
-	<div class="hero min-h-screen overflow-x-hidden">
-		<div class="hero-content">
-			<span class="loading loading-spinner w-24 h-24 text-primary"></span>
-		</div>
-	</div>
+	<EntityLoading />
 {/if}
 
 {#if lodging}
-	{#if (data.user?.uuid && lodging.user && data.user.uuid === lodging.user) || (data.collaborativeMode && lodging.is_public)}
-		<div class="fixed bottom-6 right-6 z-50">
-			<button
-				class="btn btn-primary btn-circle w-16 h-16 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110"
-				on:click={() => (isEditModalOpen = true)}
-			>
-				<ClipboardList class="w-8 h-8" />
-			</button>
-		</div>
-	{/if}
+	<EntityEditFab show={canEdit} onClick={() => (isEditModalOpen = true)} />
 
 	<!-- Hero Section -->
-	<div class="relative">
-		<div
-			class="hero min-h-[60vh] relative overflow-hidden"
-			class:min-h-[30vh]={!lodging.images || lodging.images.length === 0}
-		>
-			<!-- Background: Images or Gradient -->
-			{#if lodging.images && lodging.images.length > 0}
-				<div class="hero-overlay bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-				{#each lodging.images as image, i}
-					<div
-						class="absolute inset-0 transition-opacity duration-500"
-						class:opacity-100={i === currentSlide}
-						class:opacity-0={i !== currentSlide}
-					>
-						<button
-							class="w-full h-full p-0 bg-transparent border-0"
-							on:click={() => openImageModal(i)}
-							aria-label={`View full image of ${lodging.name}`}
-						>
-							<img src={image.image} class="w-full h-full object-cover" alt={lodging.name} />
-						</button>
-					</div>
-				{/each}
-			{:else}
-				<div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20"></div>
-			{/if}
-
-			<!-- Content -->
-			<div
-				class="hero-content relative z-10 text-center"
-				class:text-white={lodging.images?.length > 0}
-			>
-				<div class="max-w-4xl">
-					<div class="flex justify-center items-center gap-3 mb-4">
-						<span class="text-5xl">{getLodgingIcon(lodging.type)}</span>
-						<h1 class="text-6xl font-bold drop-shadow-lg">{lodging.name}</h1>
-					</div>
-
-					<!-- Rating -->
-					{#if lodging.average_rating !== undefined && lodging.average_rating !== null}
-						<!-- Show average rating from all visits (collaborative mode) -->
-						<div class="flex flex-col items-center mb-6">
-							{#key ratingRefreshKey}
-								<StarRating rating={lodging.average_rating} size="2xl" readonly showValue={false} />
-							{/key}
-							<span class="text-sm opacity-70 mt-1">{$t('adventures.average_rating')} ({lodging.average_rating})</span>
-						</div>
-					{:else if lodging.rating !== undefined && lodging.rating !== null}
-						<div class="flex flex-col items-center mb-6">
-							{#key ratingRefreshKey}
-								<StarRating rating={lodging.rating} size="2xl" readonly showValue={false} />
-							{/key}
-						</div>
-					{/if}
-
-					<!-- Quick Info Badges -->
-					<div class="flex flex-wrap justify-center gap-4 mb-6">
-						{#if lodging.type}
-							<div class="badge badge-lg badge-primary font-semibold px-4 py-3">
-								{$t(`lodging.${lodging.type}`)}
-							</div>
-						{/if}
-						{#if lodging.location}
-							<div class="badge badge-lg badge-secondary font-semibold px-4 py-3">
-								📍 {lodging.location}
-							</div>
-						{/if}
-						{#if lodging.visits && lodging.visits.length > 0}
-							<div class="badge badge-lg badge-accent font-semibold px-4 py-3">
-								🎯 {lodging.visits.length}
-								{lodging.visits.length === 1 ? $t('adventures.visit') : $t('adventures.visits')}
-							</div>
-						{/if}
-						{#if userHasVisited}
-							<div class="badge badge-lg badge-success font-semibold px-4 py-3">
-								✅ {$t('adventures.visited')}
-							</div>
-						{:else}
-							<div class="badge badge-lg badge-warning font-semibold px-4 py-3">
-								⏳ {$t('adventures.not_visited')}
-							</div>
-						{/if}
-						{#if lodging.is_public}
-							<div class="badge badge-lg badge-info font-semibold px-4 py-3">
-								👁️ {$t('adventures.public')}
-							</div>
-						{:else}
-							<div class="badge badge-lg badge-ghost font-semibold px-4 py-3">
-								🔒 {$t('adventures.private')}
-							</div>
-						{/if}
-					</div>
-
-					<!-- Image Navigation (only shown when multiple images exist) -->
-					{#if lodging.images && lodging.images.length > 1}
-						<div class="w-full max-w-md mx-auto">
-							<!-- Navigation arrows and current position -->
-							<div class="flex items-center justify-center gap-4 mb-3">
-								<button
-									on:click={() =>
-										goToSlide(currentSlide > 0 ? currentSlide - 1 : lodging.images.length - 1)}
-									class="btn btn-circle btn-sm btn-primary"
-									aria-label={$t('adventures.previous_image')}
-								>
-									❮
-								</button>
-
-								<div class="text-sm font-medium bg-black/50 px-3 py-1 rounded-full">
-									{currentSlide + 1} / {lodging.images.length}
-								</div>
-
-								<button
-									on:click={() =>
-										goToSlide(currentSlide < lodging.images.length - 1 ? currentSlide + 1 : 0)}
-									class="btn btn-circle btn-sm btn-primary"
-									aria-label={$t('adventures.next_image')}
-								>
-									❯
-								</button>
-							</div>
-
-							<!-- Dot navigation -->
-							{#if lodging.images.length <= 12}
-								<div class="flex justify-center gap-2 flex-wrap">
-									{#each lodging.images as _, i}
-										<button
-											on:click={() => goToSlide(i)}
-											class="btn btn-circle btn-xs transition-all duration-200"
-											class:btn-primary={i === currentSlide}
-											class:btn-outline={i !== currentSlide}
-											class:opacity-50={i !== currentSlide}
-										>
-											{i + 1}
-										</button>
-									{/each}
-								</div>
-							{:else}
-								<div class="relative">
-									<div
-										class="absolute left-0 top-0 bottom-2 w-4 bg-gradient-to-r from-black/30 to-transparent pointer-events-none"
-									></div>
-									<div
-										class="absolute right-0 top-0 bottom-2 w-4 bg-gradient-to-l from-black/30 to-transparent pointer-events-none"
-									></div>
-								</div>
-							{/if}
-						</div>
-					{/if}
-				</div>
-			</div>
-		</div>
-	</div>
+	<EntityHeroSection
+		name={lodging.name}
+		icon={getLodgingIcon(lodging.type)}
+		images={lodging.images || []}
+		averageRating={lodging.average_rating}
+		rating={lodging.rating}
+		{ratingRefreshKey}
+		badges={heroBadges}
+		on:openImage={(e) => openImageModal(e.detail)}
+	/>
 
 	<!-- Main Content -->
 	<div class="container mx-auto px-2 sm:px-4 py-6 sm:py-8 max-w-7xl">
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
 			<!-- Left Column - Main Content -->
 			<div class="lg:col-span-2 space-y-6 sm:space-y-8">
-				<!-- Description Card -->
-				{#if lodging.description}
-					<div class="card bg-base-200 shadow-xl">
-						<div class="card-body">
-							<h2 class="card-title text-2xl mb-4">📝 {$t('adventures.description')}</h2>
-							<article class="prose max-w-none">
-								{@html DOMPurify.sanitize(renderMarkdown(lodging.description))}
-							</article>
-						</div>
-					</div>
-				{/if}
+				<EntityDescriptionCard description={lodging.description} />
 
-				<!-- Visits Timeline -->
-				{#if lodging.visits && lodging.visits.length > 0}
-					<div class="card bg-base-200 shadow-xl">
-						<div class="card-body">
-							<h2 class="card-title text-2xl mb-6">🎯 {$t('adventures.visits')}</h2>
-							<div class="space-y-4">
-								{#each lodging.visits as visit, index}
-									<div class="flex gap-4">
-										<div class="flex flex-col items-center">
-											<div class="w-4 h-4 bg-primary rounded-full"></div>
-											{#if index < lodging.visits.length - 1}
-												<div class="w-0.5 bg-primary/30 h-full min-h-12"></div>
-											{/if}
-										</div>
-										<div class="flex-1 pb-4">
-											<div class="card bg-base-100 shadow">
-												<div class="card-body p-4">
-													{#if visit.user_username}
-														<div class="flex items-center justify-between mb-2">
-															<div class="text-xs opacity-60">
-																{$t('adventures.added_by')} <a href="/profile/{visit.user_username}" class="font-semibold link link-hover link-primary">{visit.user_username}</a>
-															</div>
-															{#if visit.rating !== null && visit.rating !== undefined}
-																<StarRating rating={visit.rating} size="sm" readonly />
-															{/if}
-														</div>
-													{:else if visit.rating !== null && visit.rating !== undefined}
-														<div class="flex justify-end mb-2">
-															<StarRating rating={visit.rating} size="sm" readonly />
-														</div>
-													{/if}
-													{#if isAllDay(visit.start_date)}
-														<div class="flex items-center gap-2 mb-2">
-															<span class="badge badge-primary">All Day</span>
-															<span class="font-semibold">
-																{visit.start_date ? visit.start_date.split('T')[0] : ''} – {visit.end_date
-																	? visit.end_date.split('T')[0]
-																	: ''}
-															</span>
-														</div>
-													{:else}
-														<div class="space-y-2">
-															<div class="flex items-center gap-2">
-																<span class="badge badge-primary">🕓 {$t('adventures.timed')}</span>
-																{#if visit.timezone}
-																	<span class="badge badge-outline">{visit.timezone}</span>
-																{/if}
-															</div>
-															<div class="text-sm">
-																{#if visit.timezone}
-																	<strong>{$t('adventures.start')}:</strong>
-																	{DateTime.fromISO(visit.start_date, { zone: 'utc' })
-																		.setZone(visit.timezone)
-																		.toLocaleString(DateTime.DATETIME_MED)}<br />
-																	<strong>{$t('adventures.end')}:</strong>
-																	{DateTime.fromISO(visit.end_date, { zone: 'utc' })
-																		.setZone(visit.timezone)
-																		.toLocaleString(DateTime.DATETIME_MED)}
-																{:else}
-																	<strong>{$t('adventures.start')}:</strong>
-																	{DateTime.fromISO(visit.start_date).toLocaleString(
-																		DateTime.DATETIME_MED
-																	)}<br />
-																	<strong>{$t('adventures.end')}:</strong>
-																	{DateTime.fromISO(visit.end_date).toLocaleString(
-																		DateTime.DATETIME_MED
-																	)}
-																{/if}
-															</div>
-														</div>
-													{/if}
-													{#if visit.notes}
-														<div class="mt-3 p-3 bg-base-200 rounded-lg">
-															<p class="text-sm italic">"{visit.notes}"</p>
-														</div>
-													{/if}
-
-													<!-- Activities Section -->
-													{#if visit.activities && visit.activities.length > 0}
-														<div class="mt-4">
-															<h4 class="font-semibold mb-3 flex items-center gap-2">
-																🏃‍♂️ {$t('adventures.activities')} ({visit.activities.length})
-															</h4>
-															<div class="space-y-3">
-																{#each visit.activities as activity}
-																	<ActivityCard
-																		{activity}
-																		readOnly={true}
-																		{visit}
-																		measurementSystem={data.user?.measurement_system || 'metric'}
-																	/>
-																{/each}
-															</div>
-														</div>
-													{/if}
-												</div>
-											</div>
-										</div>
-									</div>
-								{/each}
-							</div>
-						</div>
-					</div>
-				{/if}
+				<EntityVisitsTimeline
+					visits={lodging.visits || []}
+					measurementSystem={data.user?.measurement_system || 'metric'}
+				/>
 
 				<!-- Map Section -->
 				{#if lodging.latitude && lodging.longitude}
@@ -555,9 +295,7 @@
 													</div>
 												{/if}
 												{#if lodging.location}
-													<div class="text-xs text-black">
-														📍 {lodging.location}
-													</div>
+													<div class="text-xs text-black">📍 {lodging.location}</div>
 												{/if}
 											</div>
 										</Popup>
@@ -683,8 +421,7 @@
 
 										{#if calculateNights(lodging.check_in, lodging.check_out)}
 											<p class="text-sm opacity-70">
-												{calculateNights(lodging.check_in, lodging.check_out)}
-												{$t('adventures.nights')}
+												{calculateNights(lodging.check_in, lodging.check_out)} {$t('adventures.nights')}
 											</p>
 										{/if}
 									</div>
@@ -755,42 +492,14 @@
 					</div>
 				</div>
 
-				<!-- Additional Images -->
-				{#if lodging.images && lodging.images.length > 0}
-					<div class="card bg-base-200 shadow-xl">
-						<div class="card-body">
-							<h2 class="card-title text-xl mb-4">🖼️ {$t('adventures.images')}</h2>
-							<div class="grid grid-cols-2 gap-2">
-								{#each lodging.images as image, i}
-									<button
-										class="aspect-square rounded-lg overflow-hidden hover:opacity-80 transition-opacity"
-										on:click={() => openImageModal(i)}
-									>
-										<img
-											src={image.image}
-											alt={`${lodging.name} - ${i + 1}`}
-											class="w-full h-full object-cover"
-										/>
-									</button>
-								{/each}
-							</div>
-						</div>
-					</div>
-				{/if}
+				<EntityImagesCard
+					images={lodging.images || []}
+					showPrimaryBadge={false}
+					showUserBadge={false}
+					on:openImage={(e) => openImageModal(e.detail)}
+				/>
 
-				<!-- Attachments -->
-				{#if lodging.attachments && lodging.attachments.length > 0}
-					<div class="card bg-base-200 shadow-xl">
-						<div class="card-body">
-							<h2 class="card-title text-xl mb-4">📎 {$t('adventures.attachments')}</h2>
-							<div class="space-y-2">
-								{#each lodging.attachments as attachment}
-									<AttachmentCard {attachment} />
-								{/each}
-							</div>
-						</div>
-					</div>
-				{/if}
+				<EntityAttachmentsCard attachments={lodging.attachments || []} />
 			</div>
 		</div>
 	</div>

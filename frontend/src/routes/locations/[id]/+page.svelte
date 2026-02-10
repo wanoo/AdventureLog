@@ -3,17 +3,13 @@
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
-	import Lost from '$lib/assets/undraw_lost.svg';
 	import { DefaultMarker, MapLibre, Popup, GeoJSON, LineLayer } from 'svelte-maplibre';
 	import { t } from 'svelte-i18n';
-	import { marked } from 'marked';
-	import DOMPurify from 'dompurify';
 	// @ts-ignore
 	import { DateTime } from 'luxon';
 
 	import LightbulbOn from '~icons/mdi/lightbulb-on';
 	import WeatherSunset from '~icons/mdi/weather-sunset';
-	import ClipboardList from '~icons/mdi/clipboard-list';
 	import ImageDisplayModal from '$lib/components/ImageDisplayModal.svelte';
 	import AttachmentCard from '$lib/components/cards/AttachmentCard.svelte';
 	import { getActivityColor, getBasemapUrl, isAllDay } from '$lib';
@@ -22,21 +18,34 @@
 	import NewLocationModal from '$lib/components/locations/LocationModal.svelte';
 	import CashMultiple from '~icons/mdi/cash-multiple';
 	import HistoryPanel from '$lib/components/HistoryPanel.svelte';
-	import StarRating from '$lib/components/StarRating.svelte';
 	import { DEFAULT_CURRENCY, formatMoney, toMoneyValue } from '$lib/money';
+
+	// Shared components
+	import {
+		EntityNotFound,
+		EntityLoading,
+		EntityHeroSection,
+		EntityDescriptionCard,
+		EntityVisitsTimeline,
+		EntityEditFab,
+		EntityAttachmentsCard,
+		EntityImagesCard,
+		sortImagesByPrimary,
+		sortVisitsChronologically
+	} from '$lib/components/shared/detail';
 
 	let geojson: any;
 
-	const renderMarkdown = (markdown: string) => {
-		return marked(markdown) as string;
-	};
-
 	export let data: PageData;
 	let measurementSystem = data.user?.measurement_system || 'metric';
-	console.log(data);
 
 	let adventure: AdditionalLocation;
-	let currentSlide = 0;
+	let notFound: boolean = false;
+	let isEditModalOpen: boolean = false;
+	let modalInitialIndex: number = 0;
+	let isImageModalOpen: boolean = false;
+	let history: any[] = [];
+	let ratingRefreshKey: number = 0;
 
 	$: adventurePriceLabel = adventure
 		? formatMoney(
@@ -53,38 +62,101 @@
 		adventure.is_visited = adventure.visits.length > 0;
 	}
 
-	function goToSlide(index: number) {
-		currentSlide = index;
+	$: canEdit = (data.user?.uuid && adventure?.user?.uuid && data.user.uuid === adventure.user.uuid) ||
+		(data.collaborativeMode && adventure?.is_public);
+
+	// Build hero badges
+	$: heroBadges = adventure ? buildHeroBadges(adventure) : [];
+
+	function buildHeroBadges(a: AdditionalLocation) {
+		const badges: { label: string; class: string; href?: string }[] = [];
+
+		if (a.category) {
+			badges.push({
+				label: `${a.category.display_name} ${a.category.icon}`,
+				class: 'badge-primary',
+				href: `/locations?types=${a.category.name}`
+			});
+		}
+		if (a.location) {
+			badges.push({
+				label: `📍 ${a.location}`,
+				class: 'badge-secondary'
+			});
+		}
+		if (a.visits && a.visits.length > 0) {
+			badges.push({
+				label: `🎯 ${a.visits.length} ${a.visits.length === 1 ? $t('adventures.visit') : $t('adventures.visits')}`,
+				class: 'badge-accent'
+			});
+		}
+		if (a.is_visited) {
+			badges.push({
+				label: `✅ ${$t('adventures.visited')}`,
+				class: 'badge-success'
+			});
+		} else {
+			badges.push({
+				label: `⏳ ${$t('adventures.not_visited')}`,
+				class: 'badge-warning'
+			});
+		}
+		if (a.trails && a.trails.length > 0) {
+			badges.push({
+				label: `🥾 ${a.trails.length} Trail${a.trails.length === 1 ? '' : 's'}`,
+				class: 'badge-info'
+			});
+		}
+
+		return badges;
 	}
 
-	let notFound: boolean = false;
-	let isEditModalOpen: boolean = false;
-	let adventure_images: { image: string; adventure: AdditionalLocation | null }[] = [];
-	let modalInitialIndex: number = 0;
-	let isImageModalOpen: boolean = false;
-	let history: any[] = [];
-	let ratingRefreshKey: number = 0;
+	function hasActivityGeojson(adv: AdditionalLocation) {
+		return adv.visits.some((visit) => visit.activities.some((activity) => activity.geojson));
+	}
+
+	function hasAttachmentGeojson(adv: AdditionalLocation) {
+		return adv.attachments.some((attachment) => attachment.geojson);
+	}
+
+	function getTotalActivities(adv: AdditionalLocation) {
+		return adv.visits.reduce(
+			(total, visit) => total + (visit.activities ? visit.activities.length : 0),
+			0
+		);
+	}
+
+	function getTotalDistance(adv: AdditionalLocation) {
+		const totalMeters = adv.visits.reduce(
+			(total, visit) =>
+				total +
+				(visit.activities
+					? visit.activities.reduce((sum, activity) => sum + (activity.distance || 0), 0)
+					: 0),
+			0
+		);
+		const totalKm = totalMeters / 1000;
+		return measurementSystem === 'imperial' ? totalKm * 0.621371 : totalKm;
+	}
+
+	function getTotalElevationGain(adv: AdditionalLocation) {
+		const totalMeters = adv.visits.reduce(
+			(total, visit) =>
+				total +
+				(visit.activities
+					? visit.activities.reduce((sum, activity) => sum + (activity.elevation_gain || 0), 0)
+					: 0),
+			0
+		);
+		return measurementSystem === 'imperial' ? totalMeters * 3.28084 : totalMeters;
+	}
 
 	onMount(async () => {
 		if (data.props.adventure) {
 			adventure = data.props.adventure;
-			adventure.images.sort((a, b) => {
-				if (a.is_primary && !b.is_primary) {
-					return -1;
-				} else if (!a.is_primary && b.is_primary) {
-					return 1;
-				} else {
-					return 0;
-				}
-			});
-
-			// Sort visits by their start date (oldest first / chronological). Fall back to created_at if start_date is missing.
-			if (adventure.visits && adventure.visits.length > 1) {
-				adventure.visits.sort((a, b) => {
-					const aTs = DateTime.fromISO(a.start_date || a.created_at || '').toMillis() || 0;
-					const bTs = DateTime.fromISO(b.start_date || b.created_at || '').toMillis() || 0;
-					return aTs - bTs; // oldest first (chronological)
-				});
+			adventure.images = sortImagesByPrimary(adventure.images || []);
+			if (adventure.visits) {
+				adventure.visits = sortVisitsChronologically(adventure.visits);
 			}
 
 			// Fetch history in collaborative mode
@@ -103,105 +175,47 @@
 		}
 	});
 
-	function hasActivityGeojson(adventure: AdditionalLocation) {
-		return adventure.visits.some((visit) => visit.activities.some((activity) => activity.geojson));
-	}
-
-	function hasAttachmentGeojson(adventure: AdditionalLocation) {
-		return adventure.attachments.some((attachment) => attachment.geojson);
-	}
-
-	function getTotalActivities(adventure: AdditionalLocation) {
-		return adventure.visits.reduce(
-			(total, visit) => total + (visit.activities ? visit.activities.length : 0),
-			0
-		);
-	}
-
-	function getTotalDistance(adventure: AdditionalLocation) {
-		const totalMeters = adventure.visits.reduce(
-			(total, visit) =>
-				total +
-				(visit.activities
-					? visit.activities.reduce((sum, activity) => sum + (activity.distance || 0), 0)
-					: 0),
-			0
-		);
-
-		// Convert meters to km, then to miles if using imperial system
-		const totalKm = totalMeters / 1000;
-		return measurementSystem === 'imperial' ? totalKm * 0.621371 : totalKm;
-	}
-
-	function getTotalElevationGain(adventure: AdditionalLocation) {
-		const totalMeters = adventure.visits.reduce(
-			(total, visit) =>
-				total +
-				(visit.activities
-					? visit.activities.reduce((sum, activity) => sum + (activity.elevation_gain || 0), 0)
-					: 0),
-			0
-		);
-
-		// Convert to feet if using imperial system
-		return measurementSystem === 'imperial' ? totalMeters * 3.28084 : totalMeters;
-	}
-
 	function closeImageModal() {
 		isImageModalOpen = false;
 	}
 
 	function openImageModal(imageIndex: number) {
-		adventure_images = adventure.images.map((img) => ({
-			image: img.image,
-			adventure: adventure
-		}));
 		modalInitialIndex = imageIndex;
 		isImageModalOpen = true;
+	}
+
+	async function handleEditModalClose() {
+		try {
+			const locationRes = await fetch(`/api/locations/${adventure.id}/`);
+			if (locationRes.ok) {
+				adventure = await locationRes.json();
+				ratingRefreshKey++;
+			}
+		} catch (e) {
+			console.error('Failed to refresh location:', e);
+		}
+		// Refresh history after save in collaborative mode
+		if (data.collaborativeMode && adventure.id) {
+			try {
+				const res = await fetch(`/api/locations/${adventure.id}/history/`);
+				if (res.ok) {
+					history = await res.json();
+				}
+			} catch (e) {
+				console.error('Failed to refresh history:', e);
+			}
+		}
+		isEditModalOpen = false;
 	}
 </script>
 
 {#if notFound}
-	<div class="hero min-h-screen bg-gradient-to-br from-base-200 to-base-300 overflow-x-hidden">
-		<div class="hero-content text-center">
-			<div class="max-w-md">
-				<img src={Lost} alt="Lost" class="w-64 mx-auto mb-8 opacity-80" />
-				<h1 class="text-5xl font-bold text-primary mb-4">{$t('adventures.location_not_found')}</h1>
-				<p class="text-lg opacity-70 mb-8">{$t('adventures.location_not_found_desc')}</p>
-				<button class="btn btn-primary btn-lg" on:click={() => goto('/')}>
-					{$t('adventures.homepage')}
-				</button>
-			</div>
-		</div>
-	</div>
+	<EntityNotFound title={$t('adventures.location_not_found')} />
 {/if}
 
 {#if isEditModalOpen}
 	<NewLocationModal
-		on:close={async () => {
-			// Re-fetch location data to get updated average_rating before closing
-			try {
-				const locationRes = await fetch(`/api/locations/${adventure.id}/`);
-				if (locationRes.ok) {
-					adventure = await locationRes.json();
-					ratingRefreshKey++; // Force rating component to re-render
-				}
-			} catch (e) {
-				console.error('Failed to refresh location:', e);
-			}
-			// Refresh history after save in collaborative mode
-			if (data.collaborativeMode && adventure.id) {
-				try {
-					const res = await fetch(`/api/locations/${adventure.id}/history/`);
-					if (res.ok) {
-						history = await res.json();
-					}
-				} catch (e) {
-					console.error('Failed to refresh history:', e);
-				}
-			}
-			isEditModalOpen = false;
-		}}
+		on:close={handleEditModalClose}
 		user={data.user}
 		locationToEdit={adventure}
 	/>
@@ -216,171 +230,22 @@
 {/if}
 
 {#if !adventure && !notFound}
-	<div class="hero min-h-screen overflow-x-hidden">
-		<div class="hero-content">
-			<span class="loading loading-spinner w-24 h-24 text-primary"></span>
-		</div>
-	</div>
+	<EntityLoading />
 {/if}
 
 {#if adventure}
-	{#if (data.user?.uuid && adventure.user?.uuid && data.user.uuid === adventure.user.uuid) || (data.collaborativeMode && adventure.is_public)}
-		<div class="fixed bottom-6 right-6 z-50">
-			<button
-				class="btn btn-primary btn-circle w-16 h-16 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110"
-				on:click={() => (isEditModalOpen = true)}
-			>
-				<ClipboardList class="w-8 h-8" />
-			</button>
-		</div>
-	{/if}
+	<EntityEditFab show={canEdit} onClick={() => (isEditModalOpen = true)} />
 
 	<!-- Hero Section -->
-	<div class="relative">
-		<div
-			class="hero min-h-[60vh] relative overflow-hidden"
-			class:min-h-[30vh]={!adventure.images || adventure.images.length === 0}
-		>
-			<!-- Background: Images or Gradient -->
-			{#if adventure.images && adventure.images.length > 0}
-				<div class="hero-overlay bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-				{#each adventure.images as image, i}
-					<div
-						class="absolute inset-0 transition-opacity duration-500"
-						class:opacity-100={i === currentSlide}
-						class:opacity-0={i !== currentSlide}
-					>
-						<button
-							class="w-full h-full p-0 bg-transparent border-0"
-							on:click={() => openImageModal(i)}
-							aria-label={`View full image of ${adventure.name}`}
-						>
-							<img src={image.image} class="w-full h-full object-cover" alt={adventure.name} />
-						</button>
-					</div>
-				{/each}
-			{:else}
-				<div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20"></div>
-			{/if}
-
-			<!-- Content -->
-			<div
-				class="hero-content relative z-10 text-center"
-				class:text-white={adventure.images?.length > 0}
-			>
-				<div class="max-w-4xl">
-					<h1 class="text-6xl font-bold mb-4 drop-shadow-lg">{adventure.name}</h1>
-
-					<!-- Rating -->
-					{#key ratingRefreshKey}
-						{#if adventure.average_rating !== undefined && adventure.average_rating !== null}
-							<!-- Show average rating from all visits (collaborative mode) -->
-							<div class="flex flex-col items-center mb-6">
-								<StarRating rating={adventure.average_rating} size="2xl" readonly showValue={false} />
-								<span class="text-sm opacity-70 mt-1">{$t('adventures.average_rating')} ({adventure.average_rating})</span>
-							</div>
-						{:else if adventure.rating !== undefined && adventure.rating !== null}
-							<div class="flex flex-col items-center mb-6">
-								<StarRating rating={adventure.rating} size="2xl" readonly showValue={false} />
-							</div>
-						{/if}
-					{/key}
-
-					<!-- Quick Info Badges -->
-					<div class="flex flex-wrap justify-center gap-4 mb-6">
-						<a
-							href="/locations?types={adventure.category?.name}"
-							class="badge badge-lg badge-primary font-semibold px-4 py-3 cursor-pointer hover:brightness-110 transition-all"
-						>
-							{adventure.category?.display_name}
-							{adventure.category?.icon}
-						</a>
-						{#if adventure.location}
-							<div class="badge badge-lg badge-secondary font-semibold px-4 py-3">
-								📍 {adventure.location}
-							</div>
-						{/if}
-						{#if adventure.visits.length > 0}
-							<div class="badge badge-lg badge-accent font-semibold px-4 py-3">
-								🎯 {adventure.visits.length}
-								{adventure.visits.length === 1 ? $t('adventures.visit') : $t('adventures.visits')}
-							</div>
-						{/if}
-						{#if adventure.is_visited}
-							<div class="badge badge-lg badge-success font-semibold px-4 py-3">
-								✅ {$t('adventures.visited')}
-							</div>
-						{:else}
-							<div class="badge badge-lg badge-warning font-semibold px-4 py-3">
-								⏳ {$t('adventures.not_visited')}
-							</div>
-						{/if}
-						{#if adventure.trails && adventure.trails.length > 0}
-							<div class="badge badge-lg badge-info font-semibold px-4 py-3">
-								🥾 {adventure.trails.length} Trail{adventure.trails.length === 1 ? '' : 's'}
-							</div>
-						{/if}
-					</div>
-
-					<!-- Image Navigation (only shown when multiple images exist) -->
-					{#if adventure.images && adventure.images.length > 1}
-						<div class="w-full max-w-md mx-auto">
-							<!-- Navigation arrows and current position -->
-							<div class="flex items-center justify-center gap-4 mb-3">
-								<button
-									on:click={() =>
-										goToSlide(currentSlide > 0 ? currentSlide - 1 : adventure.images.length - 1)}
-									class="btn btn-circle btn-sm btn-primary"
-									aria-label={$t('adventures.previous_image')}
-								>
-									❮
-								</button>
-
-								<div class="text-sm font-medium bg-black/50 px-3 py-1 rounded-full">
-									{currentSlide + 1} / {adventure.images.length}
-								</div>
-
-								<button
-									on:click={() =>
-										goToSlide(currentSlide < adventure.images.length - 1 ? currentSlide + 1 : 0)}
-									class="btn btn-circle btn-sm btn-primary"
-									aria-label={$t('adventures.next_image')}
-								>
-									❯
-								</button>
-							</div>
-
-							<!-- Dot navigation -->
-							{#if adventure.images.length <= 12}
-								<div class="flex justify-center gap-2 flex-wrap">
-									{#each adventure.images as _, i}
-										<button
-											on:click={() => goToSlide(i)}
-											class="btn btn-circle btn-xs transition-all duration-200"
-											class:btn-primary={i === currentSlide}
-											class:btn-outline={i !== currentSlide}
-											class:opacity-50={i !== currentSlide}
-										>
-											{i + 1}
-										</button>
-									{/each}
-								</div>
-							{:else}
-								<div class="relative">
-									<div
-										class="absolute left-0 top-0 bottom-2 w-4 bg-gradient-to-r from-black/30 to-transparent pointer-events-none"
-									></div>
-									<div
-										class="absolute right-0 top-0 bottom-2 w-4 bg-gradient-to-l from-black/30 to-transparent pointer-events-none"
-									></div>
-								</div>
-							{/if}
-						</div>
-					{/if}
-				</div>
-			</div>
-		</div>
-	</div>
+	<EntityHeroSection
+		name={adventure.name}
+		images={adventure.images || []}
+		averageRating={adventure.average_rating}
+		rating={adventure.rating}
+		{ratingRefreshKey}
+		badges={heroBadges}
+		on:openImage={(e) => openImageModal(e.detail)}
+	/>
 
 	<!-- Main Content -->
 	<div class="container mx-auto px-2 sm:px-4 py-6 sm:py-8 max-w-7xl">
@@ -394,17 +259,13 @@
 							<div class="flex items-center gap-4">
 								{#if adventure.user.profile_pic}
 									<div class="avatar">
-										<div
-											class="w-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2"
-										>
+										<div class="w-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
 											<img src={adventure.user.profile_pic} alt={adventure.user.username} />
 										</div>
 									</div>
 								{:else}
 									<div class="avatar placeholder">
-										<div
-											class="bg-primary text-primary-content w-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2"
-										>
+										<div class="bg-primary text-primary-content w-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
 											<span class="text-xl font-bold">
 												{adventure.user.first_name
 													? adventure.user.first_name.charAt(0)
@@ -435,12 +296,10 @@
 										</div>
 										{#if adventure.collections && adventure.collections.length > 0}
 											<div class="badge badge-sm badge-outline">
-												📚
-												<p>{adventure.collections.length} {$t('navbar.collections')}</p>
+												📚 {adventure.collections.length} {$t('navbar.collections')}
 											</div>
 										{/if}
 									</div>
-									<!-- Last Modified By -->
 									{#if adventure.last_modified_by}
 										<div class="text-xs opacity-60 mt-2">
 											{$t('adventures.last_edited_by')}
@@ -489,17 +348,7 @@
 					</div>
 				{/if}
 
-				<!-- Description Card -->
-				{#if adventure.description}
-					<div class="card bg-base-200 shadow-xl">
-						<div class="card-body">
-							<h2 class="card-title text-2xl mb-4">📝 {$t('adventures.description')}</h2>
-							<article class="prose max-w-none">
-								{@html DOMPurify.sanitize(renderMarkdown(adventure.description))}
-							</article>
-						</div>
-					</div>
-				{/if}
+				<EntityDescriptionCard description={adventure.description} />
 
 				<!-- Trails Section -->
 				{#if adventure.trails && adventure.trails.length > 0}
@@ -518,131 +367,11 @@
 					</div>
 				{/if}
 
-				<!-- Visits Timeline -->
-				{#if adventure.visits.length > 0}
-					<div class="card bg-base-200 shadow-xl">
-						<div class="card-body">
-							<h2 class="card-title text-2xl mb-6">🎯 {$t('adventures.visits')}</h2>
-							<div class="space-y-4">
-								{#each adventure.visits as visit, index}
-									<div class="flex gap-4">
-										<div class="flex flex-col items-center">
-											<div class="w-4 h-4 bg-primary rounded-full"></div>
-											{#if index < adventure.visits.length - 1}
-												<div class="w-0.5 bg-primary/30 h-full min-h-12"></div>
-											{/if}
-										</div>
-										<div class="flex-1 pb-4">
-											<div class="card bg-base-100 shadow">
-												<div class="card-body p-4">
-													{#if visit.user_username}
-														<div class="flex items-center justify-between mb-2">
-															<div class="text-xs opacity-60">
-																{$t('adventures.added_by')} <a href="/profile/{visit.user_username}" class="font-semibold link link-hover link-primary">{visit.user_username}</a>
-															</div>
-															{#if visit.rating !== null && visit.rating !== undefined}
-																<div class="rating rating-sm">
-																	{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
-																		<input
-																			type="radio"
-																			name="rating-visit-{visit.id}"
-																			class="mask mask-star-2 bg-warning"
-																			checked={star <= visit.rating}
-																			disabled
-																		/>
-																	{/each}
-																</div>
-															{/if}
-														</div>
-													{:else if visit.rating !== null && visit.rating !== undefined}
-														<div class="flex justify-end mb-2">
-															<div class="rating rating-sm">
-																{#each Array.from({ length: 5 }, (_, i) => i + 1) as star}
-																	<input
-																		type="radio"
-																		name="rating-visit-nousername-{visit.id}"
-																		class="mask mask-star-2 bg-warning"
-																		checked={star <= visit.rating}
-																		disabled
-																	/>
-																{/each}
-															</div>
-														</div>
-													{/if}
-													{#if isAllDay(visit.start_date)}
-														<div class="flex items-center gap-2 mb-2">
-															<span class="badge badge-primary">All Day</span>
-															<span class="font-semibold">
-																{visit.start_date ? visit.start_date.split('T')[0] : ''} – {visit.end_date
-																	? visit.end_date.split('T')[0]
-																	: ''}
-															</span>
-														</div>
-													{:else}
-														<div class="space-y-2">
-															<div class="flex items-center gap-2">
-																<span class="badge badge-primary">🕓 {$t('adventures.timed')}</span>
-																{#if visit.timezone}
-																	<span class="badge badge-outline">{visit.timezone}</span>
-																{/if}
-															</div>
-															<div class="text-sm">
-																{#if visit.timezone}
-																	<strong>{$t('adventures.start')}:</strong>
-																	{DateTime.fromISO(visit.start_date, { zone: 'utc' })
-																		.setZone(visit.timezone)
-																		.toLocaleString(DateTime.DATETIME_MED)}<br />
-																	<strong>{$t('adventures.end')}:</strong>
-																	{DateTime.fromISO(visit.end_date, { zone: 'utc' })
-																		.setZone(visit.timezone)
-																		.toLocaleString(DateTime.DATETIME_MED)}
-																{:else}
-																	<strong>Start:</strong>
-																	{DateTime.fromISO(visit.start_date).toLocaleString(
-																		DateTime.DATETIME_MED
-																	)}<br />
-																	<strong>End:</strong>
-																	{DateTime.fromISO(visit.end_date).toLocaleString(
-																		DateTime.DATETIME_MED
-																	)}
-																{/if}
-															</div>
-														</div>
-													{/if}
-													{#if visit.notes}
-														<div class="mt-3 p-3 bg-base-200 rounded-lg">
-															<p class="text-sm italic">"{visit.notes}"</p>
-														</div>
-													{/if}
-
-													<!-- Activities Section -->
-													{#if visit.activities && visit.activities.length > 0}
-														<div class="mt-4">
-															<h4 class="font-semibold mb-3 flex items-center gap-2">
-																🏃‍♂️ Activities ({visit.activities.length})
-															</h4>
-															<div class="space-y-3">
-																{#each visit.activities as activity}
-																	<ActivityCard
-																		{activity}
-																		readOnly={true}
-																		trails={adventure.trails}
-																		{visit}
-																		measurementSystem={data.user?.measurement_system || 'metric'}
-																	/>
-																{/each}
-															</div>
-														</div>
-													{/if}
-												</div>
-											</div>
-										</div>
-									</div>
-								{/each}
-							</div>
-						</div>
-					</div>
-				{/if}
+				<EntityVisitsTimeline
+					visits={adventure.visits || []}
+					measurementSystem={data.user?.measurement_system || 'metric'}
+					trails={adventure.trails || []}
+				/>
 
 				<!-- Map Section -->
 				{#if (adventure.longitude && adventure.latitude) || hasAttachmentGeojson(adventure) || hasActivityGeojson(adventure)}
@@ -652,34 +381,24 @@
 
 							{#if adventure.longitude && adventure.latitude}
 								<!-- Compact Coordinates Card -->
-								<div
-									class="card bg-gradient-to-br from-primary/5 to-secondary/5 shadow-lg mb-4 border border-primary/10"
-								>
+								<div class="card bg-gradient-to-br from-primary/5 to-secondary/5 shadow-lg mb-4 border border-primary/10">
 									<div class="card-body p-4">
 										<div class="flex items-center justify-between mb-3">
-											<h3 class="text-lg font-bold flex items-center gap-2">
-												🎯 {$t('adventures.coordinates')}
-											</h3>
+											<h3 class="text-lg font-bold flex items-center gap-2">🎯 {$t('adventures.coordinates')}</h3>
 										</div>
 
 										<div class="grid grid-cols-2 gap-3 mb-4">
 											<div class="text-center p-2 bg-base-200/70 rounded border border-primary/10">
-												<div class="text-xs text-primary/70 uppercase tracking-wide">
-													{$t('adventures.latitude')}
-												</div>
+												<div class="text-xs text-primary/70 uppercase tracking-wide">{$t('adventures.latitude')}</div>
 												<div class="text-lg font-bold text-primary">{adventure.latitude}°</div>
 											</div>
-											<div
-												class="text-center p-2 bg-base-200/70 rounded border border-secondary/10"
-											>
-												<div class="text-xs text-secondary/70 uppercase tracking-wide">
-													{$t('adventures.longitude')}
-												</div>
+											<div class="text-center p-2 bg-base-200/70 rounded border border-secondary/10">
+												<div class="text-xs text-secondary/70 uppercase tracking-wide">{$t('adventures.longitude')}</div>
 												<div class="text-lg font-bold text-secondary">{adventure.longitude}°</div>
 											</div>
 										</div>
 
-										<!-- Location Info (individual clickable items) -->
+										<!-- Location Info -->
 										{#if adventure.city || adventure.region || adventure.country}
 											<div class="flex flex-wrap justify-center gap-2 mb-4">
 												{#if adventure.city}
@@ -687,9 +406,7 @@
 														class="btn btn-xs btn-outline hover:btn-info"
 														on:click={() => {
 															if (adventure.country && adventure.region) {
-																goto(
-																	`/worldtravel/${adventure.country.country_code}/${adventure.region.id}`
-																);
+																goto(`/worldtravel/${adventure.country.country_code}/${adventure.region.id}`);
 															} else if (adventure.country) {
 																goto(`/worldtravel/${adventure.country.country_code}`);
 															}
@@ -703,9 +420,7 @@
 														class="btn btn-xs btn-outline hover:btn-warning"
 														on:click={() => {
 															if (adventure.country && adventure.region) {
-																goto(
-																	`/worldtravel/${adventure.country.country_code}/${adventure.region.id}`
-																);
+																goto(`/worldtravel/${adventure.country.country_code}/${adventure.region.id}`);
 															} else if (adventure.country) {
 																goto(`/worldtravel/${adventure.country.country_code}`);
 															}
@@ -720,11 +435,7 @@
 														on:click={() => goto(`/worldtravel/${adventure.country?.country_code}`)}
 													>
 														{#if adventure.country.flag_url}
-															<img
-																src={adventure.country.flag_url}
-																alt={adventure.country.name}
-																class="w-4 h-3 rounded"
-															/>
+															<img src={adventure.country.flag_url} alt={adventure.country.name} class="w-4 h-3 rounded" />
 														{:else}
 															🌎
 														{/if}
@@ -766,19 +477,13 @@
 										<div class="flex gap-2">
 											<button
 												class="btn btn-xs btn-ghost flex-1 text-xs"
-												on:click={() =>
-													navigator.clipboard.writeText(
-														`${adventure.latitude}, ${adventure.longitude}`
-													)}
+												on:click={() => navigator.clipboard.writeText(`${adventure.latitude}, ${adventure.longitude}`)}
 											>
 												📋 {$t('adventures.copy_coordinates')}
 											</button>
 											<button
 												class="btn btn-xs btn-ghost flex-1 text-xs"
-												on:click={() =>
-													navigator.clipboard.writeText(
-														`https://www.google.com/maps/@${adventure.latitude},${adventure.longitude},15z`
-													)}
+												on:click={() => navigator.clipboard.writeText(`https://www.google.com/maps/@${adventure.latitude},${adventure.longitude},15z`)}
 											>
 												🔗 {$t('adventures.copy_link')}
 											</button>
@@ -797,12 +502,7 @@
 								>
 									{#if geojson}
 										<GeoJSON data={geojson}>
-											<LineLayer
-												paint={{
-													'line-color': '#FF0000',
-													'line-width': 4
-												}}
-											/>
+											<LineLayer paint={{ 'line-color': '#FF0000', 'line-width': 4 }} />
 										</GeoJSON>
 									{/if}
 
@@ -826,13 +526,7 @@
 									{#each adventure.attachments as attachment}
 										{#if attachment.geojson}
 											<GeoJSON data={attachment.geojson}>
-												<LineLayer
-													paint={{
-														'line-color': '#00FF00',
-														'line-width': 2,
-														'line-opacity': 0.6
-													}}
-												/>
+												<LineLayer paint={{ 'line-color': '#00FF00', 'line-width': 2, 'line-opacity': 0.6 }} />
 											</GeoJSON>
 										{/if}
 									{/each}
@@ -847,8 +541,7 @@
 													</p>
 													{#if adventure.visits.length > 0}
 														<div class="text-xs text-black">
-															{adventure.visits.length}
-															{$t('adventures.visit')}{adventure.visits.length !== 1 ? 's' : ''}
+															{adventure.visits.length} {$t('adventures.visit')}{adventure.visits.length !== 1 ? 's' : ''}
 														</div>
 													{/if}
 												</div>
@@ -878,12 +571,12 @@
 									</div>
 								</div>
 							{/if}
-							{#if adventure.tags && adventure.tags?.length > 0}
+							{#if adventure.tags && adventure.tags.length > 0}
 								<div>
 									<div class="text-sm opacity-70 mb-1">{$t('adventures.tags')}</div>
 									<div class="flex flex-wrap gap-1">
-										{#each adventure.tags as activity}
-											<span class="badge badge-sm badge-outline">{activity}</span>
+										{#each adventure.tags as tag}
+											<span class="badge badge-sm badge-outline">{tag}</span>
 										{/each}
 									</div>
 								</div>
@@ -891,14 +584,8 @@
 							{#if adventure.link}
 								<div>
 									<div class="text-sm opacity-70 mb-1">{$t('adventures.link')}</div>
-									<a
-										href={adventure.link}
-										class="link link-primary text-sm break-all"
-										target="_blank"
-									>
-										{adventure.link.length > 30
-											? `${adventure.link.slice(0, 30)}...`
-											: adventure.link}
+									<a href={adventure.link} class="link link-primary text-sm break-all" target="_blank">
+										{adventure.link.length > 30 ? `${adventure.link.slice(0, 30)}...` : adventure.link}
 									</a>
 								</div>
 							{/if}
@@ -921,8 +608,7 @@
 										<div class="stat-title">Total Distance</div>
 										<div class="stat-value text-xl">
 											{getTotalDistance(adventure).toFixed(1)}
-											{#if measurementSystem === 'imperial'}mi
-											{:else}km{/if}
+											{measurementSystem === 'imperial' ? 'mi' : 'km'}
 										</div>
 									</div>
 								{/if}
@@ -931,8 +617,7 @@
 										<div class="stat-title">Total Elevation</div>
 										<div class="stat-value text-xl">
 											{getTotalElevationGain(adventure).toFixed(0)}
-											{#if measurementSystem === 'imperial'}ft
-											{:else}m{/if}
+											{measurementSystem === 'imperial' ? 'ft' : 'm'}
 										</div>
 									</div>
 								{/if}
@@ -952,9 +637,7 @@
 							<div class="space-y-3">
 								{#each adventure.sun_times as sun_time}
 									<div class="border-l-4 border-warning pl-3">
-										<div class="font-semibold text-sm">
-											{new Date(sun_time.date).toLocaleDateString()}
-										</div>
+										<div class="font-semibold text-sm">{new Date(sun_time.date).toLocaleDateString()}</div>
 										<div class="text-xs opacity-70">
 											{$t('adventures.sunrise')}: {sun_time.sunrise} • {$t('adventures.sunset')}: {sun_time.sunset}
 										</div>
@@ -965,57 +648,13 @@
 					</div>
 				{/if}
 
-				<!-- Attachments -->
-				{#if adventure.attachments && adventure.attachments.length > 0}
-					<div class="card bg-base-200 shadow-xl">
-						<div class="card-body">
-							<h3 class="card-title text-lg mb-4">
-								📎 {$t('adventures.attachments')}
-								<div class="tooltip" data-tip={$t('adventures.gpx_tip')}>
-									<LightbulbOn class="w-4 h-4 opacity-60" />
-								</div>
-							</h3>
-							<div class="space-y-2">
-								{#each adventure.attachments as attachment}
-									<AttachmentCard {attachment} />
-								{/each}
-							</div>
-						</div>
-					</div>
-				{/if}
+				<EntityAttachmentsCard attachments={adventure.attachments || []} showGpxTip={true} />
 
-				<!-- Additional Images -->
-				{#if adventure.images}
-					<div class="card bg-base-200 shadow-xl">
-						<div class="card-body">
-							<h3 class="card-title text-lg mb-4">🖼️ {$t('adventures.images')}</h3>
-							<div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-								{#each adventure.images as image, index}
-									<div class="relative group">
-										<div
-											class="aspect-square bg-cover bg-center rounded-lg cursor-pointer transition-transform duration-200 group-hover:scale-105"
-											style="background-image: url({image.image})"
-											on:click={() => openImageModal(index)}
-											on:keydown={(e) => e.key === 'Enter' && openImageModal(index)}
-											role="button"
-											tabindex="0"
-										></div>
-										{#if image.is_primary}
-											<div class="absolute top-1 right-1">
-												<span class="badge badge-primary badge-xs">{$t('settings.primary')}</span>
-											</div>
-										{/if}
-										{#if image.user_username}
-											<a href="/profile/{image.user_username}" class="absolute bottom-1 left-1">
-												<span class="badge badge-neutral badge-xs opacity-80 hover:badge-primary transition-colors">{image.user_username}</span>
-											</a>
-										{/if}
-									</div>
-								{/each}
-							</div>
-						</div>
-					</div>
-				{/if}
+				<EntityImagesCard
+					images={adventure.images || []}
+					columns={3}
+					on:openImage={(e) => openImageModal(e.detail)}
+				/>
 
 				<!-- History Panel (Collaborative Mode) -->
 				{#if data.collaborativeMode && history.length > 0}
@@ -1024,12 +663,10 @@
 						locationId={adventure.id}
 						canRevert={true}
 						on:reverted={async () => {
-							// Refresh history and location data after revert
 							const historyRes = await fetch(`/api/locations/${adventure.id}/history/`);
 							if (historyRes.ok) {
 								history = await historyRes.json();
 							}
-							// Reload the page to reflect reverted changes
 							window.location.reload();
 						}}
 					/>
