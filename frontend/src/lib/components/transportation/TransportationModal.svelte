@@ -23,6 +23,9 @@
 	// Whether a save/create occurred during this modal session
 	let didSave = false;
 
+	// Airport mode state (shared between QuickStart and Details)
+	let airportMode = false;
+
 	let entityModal: EntityModal;
 
 	let steps: ModalStep[] = [
@@ -152,12 +155,15 @@
 >
 	{#if steps[0].selected}
 		<TransportationQuickStart
+			bind:airportMode
 			on:cancel={close}
 			on:next={() => {
 				steps = navigateToStep(steps, 1);
 			}}
 			on:locationsSelected={(e) => {
-				const { origin, destination, airportMode } = e.detail;
+				const { origin, destination, airportMode: eventAirportMode } = e.detail;
+				// Update modal-level airportMode from event
+				airportMode = eventAirportMode;
 				if (origin) {
 					transportation.from_location = origin.location || origin.name;
 					transportation.origin_latitude = origin.latitude;
@@ -187,6 +193,7 @@
 			currentUser={user}
 			initialTransportation={transportation}
 			{collection}
+			bind:airportMode
 			bind:editingTransportation={transportation}
 			on:back={() => {
 				steps = navigateToStep(steps, 0);

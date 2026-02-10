@@ -21,7 +21,7 @@
 	const dispatch = createEventDispatcher();
 
 	let isReverseGeocoding = false;
-	let airportMode = false;
+	export let airportMode = false;
 	let previousTransportationType: string | null = null;
 
 	// Props
