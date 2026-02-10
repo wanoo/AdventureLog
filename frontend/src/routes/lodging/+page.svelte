@@ -249,6 +249,7 @@
 {#if isLodgingModalOpen}
 	<LodgingModal
 		on:close={() => (isLodgingModalOpen = false)}
+		user={data.user}
 		lodgingToEdit={lodgingToEdit}
 		bind:lodging={lodgingBeingUpdated}
 	/>

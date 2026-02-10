@@ -253,6 +253,7 @@
 {#if isTransportationModalOpen}
 	<TransportationModal
 		on:close={() => (isTransportationModalOpen = false)}
+		user={data.user}
 		transportationToEdit={transportationToEdit}
 		bind:transportation={transportationBeingUpdated}
 	/>
