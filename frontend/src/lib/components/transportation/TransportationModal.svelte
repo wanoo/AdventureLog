@@ -4,6 +4,7 @@
 	import { addToast } from '$lib/toasts';
 	import { t } from 'svelte-i18n';
 	import Plane from '~icons/mdi/airplane';
+	import TransportationQuickStart from './TransportationQuickStart.svelte';
 	import MediaStep from '../shared/MediaStep.svelte';
 	import TransportationDetails from './TransportationDetails.svelte';
 	import TransportationVisits from './TransportationVisits.svelte';
@@ -25,7 +26,8 @@
 	let entityModal: EntityModal;
 
 	let steps: ModalStep[] = [
-		{ name: $t('adventures.details'), selected: true, requires_id: false },
+		{ name: $t('adventures.quick_start'), selected: true, requires_id: false },
+		{ name: $t('adventures.details'), selected: false, requires_id: false },
 		{ name: $t('adventures.visits'), selected: false, requires_id: true },
 		{ name: $t('settings.media'), selected: false, requires_id: true }
 	];
@@ -104,6 +106,8 @@
 					visits: transportationToEdit.visits || [],
 					tags: transportationToEdit.tags || null
 				};
+				// When editing, skip quick start and go to details
+				steps = navigateToStep(steps, 1);
 			} else if (!transportation?.id) {
 				transportation = createEmptyTransportation();
 				storedInitialVisitDate = initialVisitDate;
@@ -147,6 +151,32 @@
 	on:stepsChange={handleStepsChange}
 >
 	{#if steps[0].selected}
+		<TransportationQuickStart
+			on:cancel={close}
+			on:next={() => {
+				steps = navigateToStep(steps, 1);
+			}}
+			on:locationsSelected={(e) => {
+				const { origin, destination } = e.detail;
+				if (origin) {
+					transportation.from_location = origin.location || origin.name;
+					transportation.origin_latitude = origin.latitude;
+					transportation.origin_longitude = origin.longitude;
+				}
+				if (destination) {
+					transportation.to_location = destination.location || destination.name;
+					transportation.destination_latitude = destination.latitude;
+					transportation.destination_longitude = destination.longitude;
+				}
+				// Auto-generate name if empty
+				if (!transportation.name && origin && destination) {
+					transportation.name = `${origin.name} → ${destination.name}`;
+				}
+				steps = navigateToStep(steps, 1);
+			}}
+		/>
+	{/if}
+	{#if steps[1].selected}
 		<TransportationDetails
 			currentUser={user}
 			initialTransportation={transportation}
@@ -160,16 +190,16 @@
 				didSave = true;
 
 				if (!transportation?.id) {
-					addToast('error', $t('adventures.lodging_save_error'));
-					steps = navigateToStep(steps, 0);
+					addToast('error', $t('adventures.transportation_save_error'));
+					steps = navigateToStep(steps, 1);
 					return;
 				}
 
-				steps = navigateToStep(steps, 1);
+				steps = navigateToStep(steps, 2);
 			}}
 		/>
 	{/if}
-	{#if steps[1].selected}
+	{#if steps[2].selected}
 		<TransportationVisits
 			{collection}
 			visits={transportation.visits || []}
@@ -177,10 +207,10 @@
 			initialVisitDate={storedInitialVisitDate}
 			currentUserUsername={user?.username || null}
 			on:back={() => {
-				steps = navigateToStep(steps, 0);
+				steps = navigateToStep(steps, 1);
 			}}
 			on:close={() => {
-				steps = navigateToStep(steps, 2);
+				steps = navigateToStep(steps, 3);
 			}}
 			on:visitAdded={(e) => {
 				const existingVisits = (transportation.visits || []).filter((v) => v.id !== e.detail.id);
@@ -191,13 +221,13 @@
 			}}
 		/>
 	{/if}
-	{#if steps[2].selected}
+	{#if steps[3].selected}
 		<MediaStep
 			bind:images={transportation.images}
 			bind:attachments={transportation.attachments}
 			itemName={transportation.name}
 			on:back={() => {
-				steps = navigateToStep(steps, 1);
+				steps = navigateToStep(steps, 2);
 			}}
 			on:close={close}
 			itemId={transportation.id}

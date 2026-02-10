@@ -4,6 +4,7 @@
 	import { addToast } from '$lib/toasts';
 	import { t } from 'svelte-i18n';
 	import Bed from '~icons/mdi/bed';
+	import LodgingQuickStart from './LodgingQuickStart.svelte';
 	import LodgingDetails from './LodgingDetails.svelte';
 	import MediaStep from '../shared/MediaStep.svelte';
 	import LodgingVisits from './LodgingVisits.svelte';
@@ -25,7 +26,8 @@
 	let entityModal: EntityModal;
 
 	let steps: ModalStep[] = [
-		{ name: $t('adventures.details'), selected: true, requires_id: false },
+		{ name: $t('adventures.quick_start'), selected: true, requires_id: false },
+		{ name: $t('adventures.details'), selected: false, requires_id: false },
 		{ name: $t('adventures.visits'), selected: false, requires_id: true },
 		{ name: $t('settings.media'), selected: false, requires_id: true }
 	];
@@ -92,6 +94,8 @@
 					visits: lodgingToEdit.visits || [],
 					tags: lodgingToEdit.tags || null
 				};
+				// When editing, skip quick start and go to details
+				steps = navigateToStep(steps, 1);
 			} else if (!lodging?.id) {
 				lodging = createEmptyLodging();
 				storedInitialVisitDate = initialVisitDate;
@@ -133,6 +137,22 @@
 	on:stepsChange={handleStepsChange}
 >
 	{#if steps[0].selected}
+		<LodgingQuickStart
+			on:cancel={close}
+			on:next={() => {
+				steps = navigateToStep(steps, 1);
+			}}
+			on:locationSelected={(e) => {
+				const { name, latitude, longitude, location } = e.detail;
+				if (name && !lodging.name) lodging.name = name;
+				lodging.latitude = latitude;
+				lodging.longitude = longitude;
+				lodging.location = location;
+				steps = navigateToStep(steps, 1);
+			}}
+		/>
+	{/if}
+	{#if steps[1].selected}
 		<LodgingDetails
 			currentUser={user}
 			initialLodging={lodging}
@@ -172,15 +192,15 @@
 
 				if (!lodging?.id) {
 					addToast('error', $t('adventures.lodging_save_error'));
-					steps = navigateToStep(steps, 0);
+					steps = navigateToStep(steps, 1);
 					return;
 				}
 
-				steps = navigateToStep(steps, 1);
+				steps = navigateToStep(steps, 2);
 			}}
 		/>
 	{/if}
-	{#if steps[1].selected}
+	{#if steps[2].selected}
 		<LodgingVisits
 			{collection}
 			visits={lodging.visits || []}
@@ -188,10 +208,10 @@
 			initialVisitDate={storedInitialVisitDate}
 			currentUserUsername={user?.username || null}
 			on:back={() => {
-				steps = navigateToStep(steps, 0);
+				steps = navigateToStep(steps, 1);
 			}}
 			on:close={() => {
-				steps = navigateToStep(steps, 2);
+				steps = navigateToStep(steps, 3);
 			}}
 			on:visitAdded={(e) => {
 				const existingVisits = (lodging.visits || []).filter((v) => v.id !== e.detail.id);
@@ -202,13 +222,13 @@
 			}}
 		/>
 	{/if}
-	{#if steps[2].selected}
+	{#if steps[3].selected}
 		<MediaStep
 			bind:images={lodging.images}
 			bind:attachments={lodging.attachments}
 			itemName={lodging.name}
 			on:back={() => {
-				steps = navigateToStep(steps, 1);
+				steps = navigateToStep(steps, 2);
 			}}
 			on:close={close}
 			itemId={lodging.id}
