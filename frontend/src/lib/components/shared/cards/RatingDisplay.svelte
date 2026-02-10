@@ -3,7 +3,7 @@
 
 	export let averageRating: number | null | undefined = null;
 	export let fallbackRating: number | null | undefined = null;
-	export let size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' = 'sm';
+	export let size: 'sm' | 'md' | 'lg' | 'xl' | '2xl' = 'sm';
 	export let showValue: boolean = true;
 </script>
 

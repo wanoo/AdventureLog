@@ -9,19 +9,16 @@
 	import { TRANSPORTATION_TYPES_ICONS } from '$lib';
 	import { formatAllDayDate, formatDateInTimezone } from '$lib/dateUtils';
 	import { isAllDay } from '$lib';
-	import { DEFAULT_CURRENCY, formatMoney, toMoneyValue } from '$lib/money';
-	import CardCarousel from '../CardCarousel.svelte';
+		import CardCarousel from '../CardCarousel.svelte';
 	import TransportationRoutePreview from './TransportationRoutePreview.svelte';
-	import StarRating from '../StarRating.svelte';
-	import Calendar from '~icons/mdi/calendar';
+		import Calendar from '~icons/mdi/calendar';
 	import CalendarRemove from '~icons/mdi/calendar-remove';
 	import Launch from '~icons/mdi/launch';
 	import Globe from '~icons/mdi/globe';
 	import { goto } from '$app/navigation';
 	import type { CollectionItineraryItem } from '$lib/types';
-	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge } from '../shared/cards';
+	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge } from '../shared/cards';
 	import {
-		getLocalTimezone,
 		getTimezoneLabel,
 		getTimezoneTip,
 		shouldShowTimezoneBadge
@@ -85,9 +82,6 @@
 	$: visitTimezone = firstVisit?.timezone ?? null;
 	$: hasExpandableDetails = Boolean(visitEndDate || travelDurationLabel);
 	$: if (!hasExpandableDetails) showMoreDetails = false;
-	$: transportationPriceLabel = formatMoney(
-		toMoneyValue(transportation.price, transportation.price_currency, DEFAULT_CURRENCY)
-	);
 
 	$: routeGeojson =
 		transportation?.attachments?.find((attachment) => attachment?.geojson)?.geojson ?? null;
@@ -390,9 +384,8 @@
 
 		<!-- Stats & Rating -->
 		<div class="flex flex-wrap items-center gap-2 text-sm">
-			{#if transportationPriceLabel}
-				<span class="badge badge-ghost badge-sm">💰 {transportationPriceLabel}</span>
-			{/if}
+			<PriceBadge price={transportation.price} currency={transportation.price_currency} />
+
 			{#if transportation.distance && !isNaN(+transportation.distance)}
 				<span class="badge badge-ghost badge-sm">
 					🌍 {user?.measurement_system === 'imperial'
@@ -405,17 +398,10 @@
 				<span class="badge badge-ghost badge-sm">⏱️ {travelDurationLabel}</span>
 			{/if}
 
-			{#if transportation.average_rating !== null && transportation.average_rating !== undefined}
-				<div class="flex items-center gap-1">
-					<StarRating rating={transportation.average_rating} size="sm" readonly />
-					<span class="text-xs text-base-content/60">({transportation.average_rating})</span>
-				</div>
-			{:else if transportation.rating}
-				<div class="flex items-center gap-1">
-					<StarRating rating={transportation.rating} size="sm" readonly />
-					<span class="text-xs text-base-content/60">({transportation.rating}/5)</span>
-				</div>
-			{/if}
+			<RatingDisplay
+				averageRating={transportation.average_rating}
+				fallbackRating={transportation.rating}
+			/>
 		</div>
 	</div>
 </div>

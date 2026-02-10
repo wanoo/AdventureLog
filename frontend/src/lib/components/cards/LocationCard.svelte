@@ -9,8 +9,6 @@
 	import TrashCan from '~icons/mdi/trash-can-outline';
 	import Calendar from '~icons/mdi/calendar';
 	import MapMarker from '~icons/mdi/map-marker';
-	import LinkIcon from '~icons/mdi/link-variant';
-	import Check from '~icons/mdi/check';
 	import { addToast } from '$lib/toasts';
 	import Link from '~icons/mdi/link-variant';
 	import LinkVariantRemove from '~icons/mdi/link-variant-remove';
@@ -19,12 +17,10 @@
 	import DeleteWarning from '../DeleteWarning.svelte';
 	import CardCarousel from '../CardCarousel.svelte';
 	import { t } from 'svelte-i18n';
-	import StarRating from '../StarRating.svelte';
 	import CollectionItineraryPlanner from '../collections/CollectionItineraryPlanner.svelte';
 	import CalendarRemove from '~icons/mdi/calendar-remove';
 	import Globe from '~icons/mdi/globe';
-	import { DEFAULT_CURRENCY, formatMoney, toMoneyValue } from '$lib/money';
-	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge } from '../shared/cards';
+	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge, CopyLinkButton } from '../shared/cards';
 
 	export let type: string | null = null;
 	export let user: User | null;
@@ -35,28 +31,11 @@
 
 	let isCollectionModalOpen: boolean = false;
 	let isWarningModalOpen: boolean = false;
-	let copied: boolean = false;
 	let actionsMenu: { close: () => void };
-
-	async function copyLink() {
-		try {
-			const url = `${location.origin}/locations/${adventure.id}`;
-			await navigator.clipboard.writeText(url);
-			copied = true;
-			setTimeout(() => (copied = false), 2000);
-		} catch (e) {
-			addToast('error', $t('adventures.copy_failed') || 'Copy failed');
-		}
-	}
 
 	export let adventure: Location;
 	let displayActivityTypes: string[] = [];
 	let remainingCount = 0;
-
-	// Price formatting
-	$: adventurePriceLabel = formatMoney(
-		toMoneyValue(adventure?.price, adventure?.price_currency, DEFAULT_CURRENCY)
-	);
 
 	// Process activity types for display
 	$: {
@@ -321,21 +300,7 @@
 
 							{#if adventure.is_public}
 								<li>
-									<button
-										on:click={() => {
-											close();
-											copyLink();
-										}}
-										class="flex items-center gap-2"
-									>
-										{#if copied}
-											<Check class="w-4 h-4 text-success" />
-											<span>{$t('adventures.link_copied')}</span>
-										{:else}
-											<LinkIcon class="w-4 h-4" />
-											{$t('adventures.copy_link')}
-										{/if}
-									</button>
+									<CopyLinkButton url={`${typeof window !== 'undefined' ? window.location.origin : ''}/locations/${adventure.id}`} />
 								</li>
 							{/if}
 
@@ -433,21 +398,12 @@
 				</div>
 			{/if}
 
-			{#if adventure.average_rating !== null && adventure.average_rating !== undefined}
-				<div class="flex items-center gap-1">
-					<StarRating rating={adventure.average_rating} size="sm" readonly />
-					<span class="text-xs text-base-content/60">({adventure.average_rating})</span>
-				</div>
-			{:else if adventure.rating}
-				<div class="flex items-center gap-1">
-					<StarRating rating={adventure.rating} size="sm" readonly />
-					<span class="text-xs text-base-content/60">({adventure.rating}/5)</span>
-				</div>
-			{/if}
+			<RatingDisplay
+				averageRating={adventure.average_rating}
+				fallbackRating={adventure.rating}
+			/>
 
-			{#if adventurePriceLabel}
-				<span class="badge badge-ghost badge-sm whitespace-nowrap">💰 {adventurePriceLabel}</span>
-			{/if}
+			<PriceBadge price={adventure.price} currency={adventure.price_currency} />
 		</div>
 
 		<!-- Tags (compact) -->

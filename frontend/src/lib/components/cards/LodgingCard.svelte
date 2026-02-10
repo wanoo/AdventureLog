@@ -10,9 +10,7 @@
 	import { formatDateInTimezone } from '$lib/dateUtils';
 	import { formatAllDayDate } from '$lib/dateUtils';
 	import { isAllDay } from '$lib';
-	import { DEFAULT_CURRENCY, formatMoney, toMoneyValue } from '$lib/money';
 	import CardCarousel from '../CardCarousel.svelte';
-	import StarRating from '../StarRating.svelte';
 	import MapMarker from '~icons/mdi/map-marker';
 	import CalendarRemove from '~icons/mdi/calendar-remove';
 	import Launch from '~icons/mdi/launch';
@@ -20,7 +18,7 @@
 	import { goto } from '$app/navigation';
 	import Calendar from '~icons/mdi/calendar';
 	import type { CollectionItineraryItem } from '$lib/types';
-	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge } from '../shared/cards';
+	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge } from '../shared/cards';
 	import {
 		getTimezoneLabel,
 		getTimezoneTip,
@@ -45,9 +43,6 @@
 
 	const hasTimePortion = (date: string | null) => !!date && !isAllDay(date);
 	const isTimedStay = (date: string | null) => hasTimePortion(date);
-	$: lodgingPriceLabel = formatMoney(
-		toMoneyValue(lodging.price, lodging.price_currency, DEFAULT_CURRENCY)
-	);
 
 	let showMoreDetails = false;
 	// Use first visit's dates for display
@@ -388,17 +383,10 @@
 
 		<!-- Rating & Info Badges -->
 		<div class="flex flex-wrap items-center gap-2 text-sm">
-			{#if lodging.average_rating !== null && lodging.average_rating !== undefined}
-				<div class="flex items-center gap-1">
-					<StarRating rating={lodging.average_rating} size="sm" readonly />
-					<span class="text-xs text-base-content/60">({lodging.average_rating})</span>
-				</div>
-			{:else if lodging.rating}
-				<div class="flex items-center gap-1">
-					<StarRating rating={lodging.rating} size="sm" readonly />
-					<span class="text-xs text-base-content/60">({lodging.rating}/5)</span>
-				</div>
-			{/if}
+			<RatingDisplay
+				averageRating={lodging.average_rating}
+				fallbackRating={lodging.rating}
+			/>
 
 			{#if lodging.user == user?.uuid || (collection && user && collection.shared_with?.includes(user.uuid))}
 				{#if lodging.reservation_number}
@@ -406,9 +394,7 @@
 						{$t('adventures.reservation')}: {lodging.reservation_number}
 					</span>
 				{/if}
-				{#if lodgingPriceLabel}
-					<span class="badge badge-ghost badge-sm">💰 {lodgingPriceLabel}</span>
-				{/if}
+				<PriceBadge price={lodging.price} currency={lodging.price_currency} />
 			{/if}
 		</div>
 	</div>

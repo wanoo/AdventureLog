@@ -28,8 +28,8 @@
 	import EyeOff from '~icons/mdi/eye-off';
 	import Check from '~icons/mdi/check';
 	import MapMarker from '~icons/mdi/map-marker-multiple';
-	import LinkIcon from '~icons/mdi/link';
 	import DownloadIcon from '~icons/mdi/download';
+	import { CopyLinkButton } from '../shared/cards';
 
 	const dispatch = createEventDispatcher();
 
@@ -38,19 +38,7 @@
 	export let user: User | null;
 	let isShareModalOpen: boolean = false;
 	let isTemplateModalOpen: boolean = false;
-	let copied: boolean = false;
 	let isDuplicating: boolean = false;
-
-	async function copyLink() {
-		try {
-			const url = `${location.origin}/collections/${collection.id}`;
-			await navigator.clipboard.writeText(url);
-			copied = true;
-			setTimeout(() => (copied = false), 2000);
-		} catch (e) {
-			addToast('error', $t('adventures.copy_failed') || 'Copy failed');
-		}
-	}
 
 	function editAdventure() {
 		dispatch('edit', collection);
@@ -363,15 +351,7 @@
 									</li>
 									{#if collection.is_public}
 										<li>
-											<button on:click={copyLink} class="flex items-center gap-2">
-												{#if copied}
-													<Check class="w-4 h-4 text-success" />
-													<span>{$t('adventures.link_copied')}</span>
-												{:else}
-													<LinkIcon class="w-4 h-4" />
-													{$t('adventures.copy_link')}
-												{/if}
-											</button>
+											<CopyLinkButton url={`${typeof window !== 'undefined' ? window.location.origin : ''}/collections/${collection.id}`} />
 										</li>
 									{/if}
 									{#if collection.is_archived}
