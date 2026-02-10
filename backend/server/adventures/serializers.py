@@ -9,6 +9,7 @@ from worldtravel.serializers import CountrySerializer, RegionSerializer, CitySer
 from geopy.distance import geodesic
 from integrations.models import ImmichIntegration
 from adventures.utils.geojson import gpx_to_geojson
+from adventures.utils.visit_status import VisitStatusMixin
 import gpxpy
 import logging
 
@@ -351,7 +352,12 @@ class CalendarLocationSerializer(serializers.ModelSerializer):
         }
 
                                    
-class LocationSerializer(CustomModelSerializer):
+class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
+    """
+    Serializer for Location objects.
+
+    Inherits get_is_visited from VisitStatusMixin.
+    """
     images = serializers.SerializerMethodField()
     visits = VisitSerializer(many=True, read_only=False, required=False)
     attachments = AttachmentSerializer(many=True, read_only=True)
@@ -624,23 +630,8 @@ class LocationSerializer(CustomModelSerializer):
                 }
             )
         return category
-    
-    def get_is_visited(self, obj):
-        # In collaborative mode, only count the current user's visits
-        if getattr(settings, 'COLLABORATIVE_MODE', False):
-            request = self.context.get('request')
-            if request and request.user.is_authenticated:
-                from django.utils import timezone
-                current_date = timezone.now().date()
-                # Only check visits made by the current user
-                user_visits = obj.visits.filter(user=request.user)
-                for visit in user_visits:
-                    start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
-                    if start_date and start_date <= current_date:
-                        return True
-                return False
-        # In normal mode, use the standard check
-        return obj.is_visited_status()
+
+    # get_is_visited is inherited from VisitStatusMixin
 
     def create(self, validated_data):
         category_data = validated_data.pop('category', None)
@@ -688,7 +679,8 @@ class LocationSerializer(CustomModelSerializer):
 
         return instance
     
-class MapPinSerializer(serializers.ModelSerializer):
+class MapPinSerializer(VisitStatusMixin, serializers.ModelSerializer):
+    """Lightweight serializer for location pins on the map. Inherits get_is_visited from VisitStatusMixin."""
     is_visited = serializers.SerializerMethodField()
     is_owned = serializers.SerializerMethodField()
     category = CategorySerializer(read_only=True, required=False)
@@ -698,22 +690,7 @@ class MapPinSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'category', 'is_owned', 'average_rating']
         read_only_fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'category', 'is_owned', 'average_rating']
 
-    def get_is_visited(self, obj):
-        # In collaborative mode, only count the current user's visits
-        if getattr(settings, 'COLLABORATIVE_MODE', False):
-            request = self.context.get('request')
-            if request and request.user.is_authenticated:
-                from django.utils import timezone
-                current_date = timezone.now().date()
-                # Only check visits made by the current user
-                user_visits = obj.visits.filter(user=request.user)
-                for visit in user_visits:
-                    start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
-                    if start_date and start_date <= current_date:
-                        return True
-                return False
-        # In normal mode, use the standard check
-        return obj.is_visited_status()
+    # get_is_visited is inherited from VisitStatusMixin
 
     def get_is_owned(self, obj):
         request = self.context.get('request')
@@ -722,8 +699,8 @@ class MapPinSerializer(serializers.ModelSerializer):
         return False
 
 
-class LodgingMapPinSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for lodging pins on the map."""
+class LodgingMapPinSerializer(VisitStatusMixin, serializers.ModelSerializer):
+    """Lightweight serializer for lodging pins on the map. Inherits get_is_visited from VisitStatusMixin."""
     is_visited = serializers.SerializerMethodField()
     is_owned = serializers.SerializerMethodField()
 
@@ -732,19 +709,7 @@ class LodgingMapPinSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'type', 'is_owned', 'average_rating']
         read_only_fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'type', 'is_owned', 'average_rating']
 
-    def get_is_visited(self, obj):
-        if getattr(settings, 'COLLABORATIVE_MODE', False):
-            request = self.context.get('request')
-            if request and request.user.is_authenticated:
-                from django.utils import timezone
-                current_date = timezone.now().date()
-                user_visits = obj.visits.filter(user=request.user)
-                for visit in user_visits:
-                    start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
-                    if start_date and start_date <= current_date:
-                        return True
-                return False
-        return obj.is_visited_status()
+    # get_is_visited is inherited from VisitStatusMixin
 
     def get_is_owned(self, obj):
         request = self.context.get('request')
@@ -753,8 +718,8 @@ class LodgingMapPinSerializer(serializers.ModelSerializer):
         return False
 
 
-class TransportationMapPinSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for transportation pins on the map."""
+class TransportationMapPinSerializer(VisitStatusMixin, serializers.ModelSerializer):
+    """Lightweight serializer for transportation pins on the map. Inherits get_is_visited from VisitStatusMixin."""
     is_visited = serializers.SerializerMethodField()
     is_owned = serializers.SerializerMethodField()
 
@@ -768,19 +733,7 @@ class TransportationMapPinSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields + ['average_rating']
 
-    def get_is_visited(self, obj):
-        if getattr(settings, 'COLLABORATIVE_MODE', False):
-            request = self.context.get('request')
-            if request and request.user.is_authenticated:
-                from django.utils import timezone
-                current_date = timezone.now().date()
-                user_visits = obj.visits.filter(user=request.user)
-                for visit in user_visits:
-                    start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
-                    if start_date and start_date <= current_date:
-                        return True
-                return False
-        return obj.is_visited_status()
+    # get_is_visited is inherited from VisitStatusMixin
 
     def get_is_owned(self, obj):
         request = self.context.get('request')
@@ -789,7 +742,7 @@ class TransportationMapPinSerializer(serializers.ModelSerializer):
         return False
 
 
-class TransportationSerializer(CustomModelSerializer):
+class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
     distance = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
     attachments = serializers.SerializerMethodField()
@@ -910,31 +863,10 @@ class TransportationSerializer(CustomModelSerializer):
             and dt_value.time().microsecond == 0
         )
 
-    def get_is_visited(self, obj):
-        """Check if this transportation has any visits with a start date in the past."""
-        from django.utils import timezone
-        current_date = timezone.now().date()
-
-        # In collaborative mode, only count the current user's visits
-        if getattr(settings, 'COLLABORATIVE_MODE', False):
-            request = self.context.get('request')
-            if request and request.user.is_authenticated:
-                user_visits = obj.visits.filter(user=request.user)
-                for visit in user_visits:
-                    start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
-                    if start_date and start_date <= current_date:
-                        return True
-                return False
-
-        # Normal mode: check all visits
-        for visit in obj.visits.all():
-            start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
-            if start_date and start_date <= current_date:
-                return True
-        return False
+    # get_is_visited inherited from VisitStatusMixin
 
 
-class LodgingSerializer(CustomModelSerializer):
+class LodgingSerializer(VisitStatusMixin, CustomModelSerializer):
     images = serializers.SerializerMethodField()
     attachments = serializers.SerializerMethodField()
     visits = VisitSerializer(many=True, read_only=True)
@@ -965,28 +897,7 @@ class LodgingSerializer(CustomModelSerializer):
         # Filter out None values from the serialized data
         return [attachment for attachment in serializer.data if attachment is not None]
 
-    def get_is_visited(self, obj):
-        """Check if this lodging has any visits with a start date in the past."""
-        from django.utils import timezone
-        current_date = timezone.now().date()
-
-        # In collaborative mode, only count the current user's visits
-        if getattr(settings, 'COLLABORATIVE_MODE', False):
-            request = self.context.get('request')
-            if request and request.user.is_authenticated:
-                user_visits = obj.visits.filter(user=request.user)
-                for visit in user_visits:
-                    start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
-                    if start_date and start_date <= current_date:
-                        return True
-                return False
-
-        # Normal mode: check all visits
-        for visit in obj.visits.all():
-            start_date = visit.start_date.date() if isinstance(visit.start_date, timezone.datetime) else visit.start_date
-            if start_date and start_date <= current_date:
-                return True
-        return False
+    # get_is_visited inherited from VisitStatusMixin
 
 
 class NoteSerializer(CustomModelSerializer):
