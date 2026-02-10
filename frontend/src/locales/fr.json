@@ -872,7 +872,13 @@
 		"linked_error": "Échec de la liaison du transport",
 		"departure": "Départ",
 		"arrival": "Arrivée",
-		"items": "éléments"
+		"items": "éléments",
+		"from": "De (Départ)",
+		"to": "Vers (Arrivée)",
+		"from_placeholder": "Entrez le lieu de départ...",
+		"to_placeholder": "Entrez le lieu d'arrivée...",
+		"click_map_hint": "Cliquez sur la carte pour définir le lieu de départ ou d'arrivée",
+		"airport_mode": "Mode de recherche d'aéroport"
 	},
 	"search": {
 		"cities": "Villes",
@@ -1049,6 +1055,7 @@
 		"create_new_lodging": "Nouveau logement",
 		"enter_lodging_name": "Entrez le nom de l'hébergement",
 		"enter_reservation_number": "Entrez le numéro de réservation",
+		"search_placeholder": "Entrez un hôtel, une adresse ou une ville...",
 		"update_lodging_details": "Mettre à jour les détails de l'hébergement",
 		"public_lodging": "Hébergement public",
 		"public_lodging_description": "Autoriser les autres utilisateurs à voir cet hébergement",

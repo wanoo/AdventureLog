@@ -13,8 +13,16 @@
 	import PinIcon from '~icons/mdi/map-marker';
 	import FlagIcon from '~icons/mdi/flag';
 	import SwapIcon from '~icons/mdi/swap-horizontal';
+	import PlaneIcon from '~icons/mdi/airplane';
 
 	const dispatch = createEventDispatcher();
+
+	// Airport mode toggle
+	export let airportMode = false;
+
+	// Airport codes
+	let originCode = '';
+	let destinationCode = '';
 
 	// Which location are we selecting?
 	let selectingMode: 'origin' | 'destination' = 'origin';
@@ -231,7 +239,8 @@
 						name: originLocation.name,
 						latitude: originMarker?.lat,
 						longitude: originMarker?.lng,
-						location: originLocation.location
+						location: originLocation.location,
+						code: airportMode ? originCode.trim().toUpperCase() : null
 					}
 				: null,
 			destination: destinationLocation
@@ -239,9 +248,11 @@
 						name: destinationLocation.name,
 						latitude: destinationMarker?.lat,
 						longitude: destinationMarker?.lng,
-						location: destinationLocation.location
+						location: destinationLocation.location,
+						code: airportMode ? destinationCode.trim().toUpperCase() : null
 					}
-				: null
+				: null,
+			airportMode
 		});
 	}
 
@@ -253,6 +264,15 @@
 </script>
 
 <div class="space-y-6">
+	<!-- Airport Mode Toggle -->
+	<div class="flex items-center justify-end">
+		<label class="label cursor-pointer gap-2">
+			<PlaneIcon class="w-4 h-4" />
+			<span class="label-text font-medium">{$t('transportation.airport_mode') || 'Airport Mode'}</span>
+			<input type="checkbox" class="toggle toggle-primary toggle-sm" bind:checked={airportMode} />
+		</label>
+	</div>
+
 	<!-- Origin & Destination Search -->
 	<div class="card bg-base-200/50 border border-base-300">
 		<div class="card-body p-6">
@@ -298,6 +318,17 @@
 									<div class="text-xs text-base-content/60 truncate">{result.location}</div>
 								</button>
 							{/each}
+						</div>
+					{/if}
+					{#if airportMode}
+						<div class="mt-2">
+							<input
+								type="text"
+								bind:value={originCode}
+								placeholder={$t('transportation.departure_code') || 'Airport code (e.g. JFK)'}
+								class="input input-bordered input-sm w-full max-w-[120px] uppercase"
+								maxlength="5"
+							/>
 						</div>
 					{/if}
 				</div>
@@ -354,6 +385,17 @@
 									<div class="text-xs text-base-content/60 truncate">{result.location}</div>
 								</button>
 							{/each}
+						</div>
+					{/if}
+					{#if airportMode}
+						<div class="mt-2">
+							<input
+								type="text"
+								bind:value={destinationCode}
+								placeholder={$t('transportation.arrival_code') || 'Airport code (e.g. LHR)'}
+								class="input input-bordered input-sm w-full max-w-[120px] uppercase"
+								maxlength="5"
+							/>
 						</div>
 					{/if}
 				</div>

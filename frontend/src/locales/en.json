@@ -872,7 +872,13 @@
 		"linked_error": "Failed to link transportation",
 		"departure": "Departure",
 		"arrival": "Arrival",
-		"items": "items"
+		"items": "items",
+		"from": "From (Departure)",
+		"to": "To (Arrival)",
+		"from_placeholder": "Enter departure location...",
+		"to_placeholder": "Enter arrival location...",
+		"click_map_hint": "Click on the map to set departure or arrival location",
+		"airport_mode": "Airport Mode"
 	},
 	"lodging": {
 		"new_lodging": "New Lodging",
@@ -897,6 +903,7 @@
 		"create_new_lodging": "New Lodging",
 		"enter_lodging_name": "Enter lodging name",
 		"enter_reservation_number": "Enter reservation number",
+		"search_placeholder": "Enter hotel, address, or city...",
 		"public_lodging": "Public Lodging",
 		"public_lodging_description": "Allow other users to view this lodging",
 		"move_to_collection_confirm": "This lodging is already in another collection. Move it to this collection?",

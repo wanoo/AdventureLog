@@ -157,16 +157,22 @@
 				steps = navigateToStep(steps, 1);
 			}}
 			on:locationsSelected={(e) => {
-				const { origin, destination } = e.detail;
+				const { origin, destination, airportMode } = e.detail;
 				if (origin) {
 					transportation.from_location = origin.location || origin.name;
 					transportation.origin_latitude = origin.latitude;
 					transportation.origin_longitude = origin.longitude;
+					if (origin.code) transportation.start_code = origin.code;
 				}
 				if (destination) {
 					transportation.to_location = destination.location || destination.name;
 					transportation.destination_latitude = destination.latitude;
 					transportation.destination_longitude = destination.longitude;
+					if (destination.code) transportation.end_code = destination.code;
+				}
+				// Set type to plane if airport mode was used
+				if (airportMode && !transportation.type) {
+					transportation.type = 'plane';
 				}
 				// Auto-generate name if empty
 				if (!transportation.name && origin && destination) {
