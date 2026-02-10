@@ -2,8 +2,7 @@ import logging
 from django.utils import timezone
 from django.db import transaction
 from django.core.exceptions import PermissionDenied
-from django.db.models import Q, Max, Prefetch
-from django.db.models.functions import Lower
+from django.db.models import Q, Prefetch
 from django.conf import settings
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -16,15 +15,25 @@ from django.contrib.contenttypes.models import ContentType
 from adventures.permissions import IsOwnerOrSharedWithFullAccess
 from adventures.serializers import LocationSerializer, MapPinSerializer, CalendarLocationSerializer, AuditLogSerializer
 from adventures.utils import pagination
+from adventures.utils.filtering import FilteringMixin
+from adventures.utils.viewset_mixins import SortingMixin
 
-class LocationViewSet(viewsets.ModelViewSet):
+class LocationViewSet(FilteringMixin, SortingMixin, viewsets.ModelViewSet):
     """
     ViewSet for managing Adventure objects with support for filtering, sorting,
     and sharing functionality.
+
+    Inherits filtering and sorting from mixins:
+    - FilteringMixin: _apply_visit_filtering, _apply_public_filtering,
+                      _apply_ownership_filtering, _apply_rating_filtering
+    - SortingMixin: _apply_ordering (apply_sorting is overridden for location-specific logic)
     """
     serializer_class = LocationSerializer
     permission_classes = [IsOwnerOrSharedWithFullAccess]
     pagination_class = pagination.StandardResultsSetPagination
+
+    # Override valid_order_fields from SortingMixin
+    valid_order_fields = ['name', 'type', 'last_visit', 'rating', 'updated_at', 'created_at']
 
     # ==================== QUERYSET & PERMISSIONS ====================
 
@@ -62,55 +71,21 @@ class LocationViewSet(viewsets.ModelViewSet):
     # ==================== SORTING & FILTERING ====================
 
     def apply_sorting(self, queryset):
-        """Apply sorting and collection filtering to queryset."""
-        order_by = self.request.query_params.get('order_by', 'updated_at')
-        order_direction = self.request.query_params.get('order_direction', 'asc')
+        """
+        Apply sorting and collection filtering to queryset.
+
+        Extends SortingMixin.apply_sorting with location-specific
+        include_collections filter.
+        """
+        # Use parent sorting logic from SortingMixin
+        queryset = super().apply_sorting(queryset)
+
+        # Location-specific: filter by collection membership
         include_collections = self.request.query_params.get('include_collections', 'true')
-
-        # Validate parameters
-        valid_order_by = ['name', 'type', 'last_visit', 'rating', 'updated_at', 'created_at']
-        if order_by not in valid_order_by:
-            order_by = 'updated_at'
-
-        if order_direction not in ['asc', 'desc']:
-            order_direction = 'asc'
-
-        # Apply sorting logic
-        queryset = self._apply_ordering(queryset, order_by, order_direction)
-
-        # Filter locations without collections if requested
         if include_collections == 'false':
             queryset = queryset.filter(collections__isnull=True)
 
         return queryset
-
-    def _apply_ordering(self, queryset, order_by, order_direction):
-        """Apply ordering to queryset based on field type."""
-        if order_by == 'last_visit':
-            queryset = queryset.annotate(
-                latest_visit=Max('visits__start_date')
-            ).filter(latest_visit__isnull=False)
-            ordering = 'latest_visit'
-        elif order_by == 'name':
-            queryset = queryset.annotate(lower_name=Lower('name'))
-            ordering = 'lower_name'
-        elif order_by == 'rating':
-            queryset = queryset.filter(average_rating__isnull=False)
-            ordering = 'average_rating'
-        elif order_by == 'updated_at':
-            # Special handling for updated_at (reverse default order)
-            ordering = '-updated_at' if order_direction == 'asc' else 'updated_at'
-            return queryset.order_by(ordering)
-        elif order_by == 'created_at':
-            ordering = 'created_at'
-        else:
-            ordering = order_by
-
-        # Apply direction
-        if order_direction == 'desc':
-            ordering = f'-{ordering}'
-
-        return queryset.order_by(ordering)
 
     # ==================== CRUD OPERATIONS ====================
 
@@ -522,69 +497,11 @@ class LocationViewSet(viewsets.ModelViewSet):
                         f"You don't have permission to add location to collection '{collection.name}'"
                     )
 
-    def _apply_visit_filtering(self, queryset, request):
-        """Apply visit status filtering to queryset."""
-        is_visited_param = request.query_params.get('is_visited')
-        if is_visited_param is None:
-            return queryset
-
-        # Convert parameter to boolean
-        if is_visited_param.lower() == 'true':
-            is_visited_bool = True
-        elif is_visited_param.lower() == 'false':
-            is_visited_bool = False
-        else:
-            return queryset
-
-        # Apply visit filtering
-        now = timezone.now().date()
-        if is_visited_bool:
-            queryset = queryset.filter(visits__start_date__lte=now).distinct()
-        else:
-            queryset = queryset.exclude(visits__start_date__lte=now).distinct()
-
-        return queryset
-
-    def _apply_public_filtering(self, queryset, request):
-        """Apply public/private filtering to queryset."""
-        is_public_param = request.query_params.get('is_public')
-        if is_public_param is None or is_public_param == 'all':
-            return queryset
-
-        if is_public_param.lower() == 'true':
-            queryset = queryset.filter(is_public=True)
-        elif is_public_param.lower() == 'false':
-            queryset = queryset.filter(is_public=False)
-
-        return queryset
-
-    def _apply_ownership_filtering(self, queryset, request):
-        """Apply ownership filtering to queryset (mine, public, all)."""
-        ownership_param = request.query_params.get('ownership')
-        if ownership_param is None or ownership_param == 'all':
-            return queryset
-
-        if ownership_param.lower() == 'mine':
-            queryset = queryset.filter(user=request.user)
-        elif ownership_param.lower() == 'public':
-            queryset = queryset.filter(is_public=True).exclude(user=request.user)
-
-        return queryset
-
-    def _apply_rating_filtering(self, queryset, request):
-        """Apply minimum rating filtering to queryset."""
-        min_rating_param = request.query_params.get('min_rating')
-        if min_rating_param is None or min_rating_param == 'all':
-            return queryset
-
-        try:
-            min_rating = float(min_rating_param)
-            if min_rating > 0:
-                queryset = queryset.filter(average_rating__gte=min_rating)
-        except (ValueError, TypeError):
-            pass
-
-        return queryset
+    # Filter methods inherited from FilteringMixin:
+    # - _apply_visit_filtering
+    # - _apply_public_filtering
+    # - _apply_ownership_filtering
+    # - _apply_rating_filtering
 
     def _has_adventure_access(self, adventure, user):
         """Check if user has access to adventure."""

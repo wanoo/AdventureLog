@@ -1,9 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Q, Max
-from django.db.models.functions import Lower
-from django.utils import timezone
+from django.db.models import Q
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from adventures.models import Transportation, TRANSPORTATION_TYPES, AuditLog, ContentImage, ContentAttachment
@@ -11,133 +9,25 @@ from adventures.serializers import TransportationSerializer, TransportationMapPi
 from rest_framework.exceptions import PermissionDenied
 from adventures.permissions import IsOwnerOrSharedWithFullAccess
 from adventures.utils import pagination
+from adventures.utils.filtering import FilteringMixin
+from adventures.utils.viewset_mixins import ViewsetUtilsMixin
 
-class TransportationViewSet(viewsets.ModelViewSet):
+class TransportationViewSet(FilteringMixin, ViewsetUtilsMixin, viewsets.ModelViewSet):
+    """
+    ViewSet for managing Transportation objects.
+
+    Inherits filtering and sorting from mixins:
+    - FilteringMixin: _apply_visit_filtering, _apply_public_filtering,
+                      _apply_ownership_filtering, _apply_rating_filtering
+    - ViewsetUtilsMixin: apply_sorting, paginate_and_respond
+    """
     queryset = Transportation.objects.all()
     serializer_class = TransportationSerializer
     permission_classes = [IsOwnerOrSharedWithFullAccess]
     pagination_class = pagination.StandardResultsSetPagination
 
-    # ==================== SORTING & FILTERING ====================
-
-    def apply_sorting(self, queryset):
-        """Apply sorting to queryset."""
-        order_by = self.request.query_params.get('order_by', 'updated_at')
-        order_direction = self.request.query_params.get('order_direction', 'asc')
-
-        # Validate parameters
-        valid_order_by = ['name', 'last_visit', 'rating', 'updated_at', 'created_at']
-        if order_by not in valid_order_by:
-            order_by = 'updated_at'
-
-        if order_direction not in ['asc', 'desc']:
-            order_direction = 'asc'
-
-        return self._apply_ordering(queryset, order_by, order_direction)
-
-    def _apply_ordering(self, queryset, order_by, order_direction):
-        """Apply ordering to queryset based on field type."""
-        if order_by == 'last_visit':
-            queryset = queryset.annotate(
-                latest_visit=Max('visits__start_date')
-            ).filter(latest_visit__isnull=False)
-            ordering = 'latest_visit'
-        elif order_by == 'name':
-            queryset = queryset.annotate(lower_name=Lower('name'))
-            ordering = 'lower_name'
-        elif order_by == 'rating':
-            queryset = queryset.filter(average_rating__isnull=False)
-            ordering = 'average_rating'
-        elif order_by == 'updated_at':
-            # Special handling for updated_at (reverse default order)
-            ordering = '-updated_at' if order_direction == 'asc' else 'updated_at'
-            return queryset.order_by(ordering)
-        elif order_by == 'created_at':
-            ordering = 'created_at'
-        else:
-            ordering = order_by
-
-        # Apply direction
-        if order_direction == 'desc':
-            ordering = f'-{ordering}'
-
-        return queryset.order_by(ordering)
-
-    def paginate_and_respond(self, queryset, request):
-        """Paginate queryset and return response."""
-        paginator = self.pagination_class()
-        page = paginator.paginate_queryset(queryset, request)
-
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def _apply_visit_filtering(self, queryset, request):
-        """Apply visit status filtering to queryset."""
-        is_visited_param = request.query_params.get('is_visited')
-        if is_visited_param is None or is_visited_param == 'all':
-            return queryset
-
-        # Convert parameter to boolean
-        if is_visited_param.lower() == 'true':
-            is_visited_bool = True
-        elif is_visited_param.lower() == 'false':
-            is_visited_bool = False
-        else:
-            return queryset
-
-        # Apply visit filtering
-        now = timezone.now().date()
-        if is_visited_bool:
-            queryset = queryset.filter(visits__start_date__lte=now).distinct()
-        else:
-            queryset = queryset.exclude(visits__start_date__lte=now).distinct()
-
-        return queryset
-
-    def _apply_public_filtering(self, queryset, request):
-        """Apply public/private filtering to queryset."""
-        is_public_param = request.query_params.get('is_public')
-        if is_public_param is None or is_public_param == 'all':
-            return queryset
-
-        if is_public_param.lower() == 'true':
-            queryset = queryset.filter(is_public=True)
-        elif is_public_param.lower() == 'false':
-            queryset = queryset.filter(is_public=False)
-
-        return queryset
-
-    def _apply_ownership_filtering(self, queryset, request):
-        """Apply ownership filtering to queryset (mine, public, all)."""
-        ownership_param = request.query_params.get('ownership')
-        if ownership_param is None or ownership_param == 'all':
-            return queryset
-
-        if ownership_param.lower() == 'mine':
-            queryset = queryset.filter(user=request.user)
-        elif ownership_param.lower() == 'public':
-            queryset = queryset.filter(is_public=True).exclude(user=request.user)
-
-        return queryset
-
-    def _apply_rating_filtering(self, queryset, request):
-        """Apply minimum rating filtering to queryset."""
-        min_rating_param = request.query_params.get('min_rating')
-        if min_rating_param is None or min_rating_param == 'all':
-            return queryset
-
-        try:
-            min_rating = float(min_rating_param)
-            if min_rating > 0:
-                queryset = queryset.filter(average_rating__gte=min_rating)
-        except (ValueError, TypeError):
-            pass
-
-        return queryset
+    # Override valid_order_fields from SortingMixin
+    valid_order_fields = ['name', 'last_visit', 'rating', 'updated_at', 'created_at']
 
     # ==================== CUSTOM ACTIONS ====================
 
