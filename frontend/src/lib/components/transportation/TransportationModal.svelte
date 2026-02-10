@@ -166,7 +166,6 @@
 
 				steps = navigateToStep(steps, 1);
 			}}
-			initialVisitDate={storedInitialVisitDate}
 		/>
 	{/if}
 	{#if steps[1].selected}

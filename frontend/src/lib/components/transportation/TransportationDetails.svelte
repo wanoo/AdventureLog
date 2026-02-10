@@ -1,28 +1,22 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
-	import { updateLocalDate, updateUTCDate, validateDateRange } from '$lib/dateUtils';
-	import type { Collection, Lodging, Transportation, MoneyValue } from '$lib/types';
+	import type { Collection, Transportation, MoneyValue, User } from '$lib/types';
 	import LocationSearchMap from '../shared/LocationSearchMap.svelte';
-
-	// Icons
-	import MapIcon from '~icons/mdi/map';
-
-	import InfoIcon from '~icons/mdi/information';
-	import GenerateIcon from '~icons/mdi/lightning-bolt';
-	import ArrowLeftIcon from '~icons/mdi/arrow-left';
-	import SaveIcon from '~icons/mdi/content-save';
-	import type { Category, User } from '$lib/types';
-	import { TRANSPORTATION_TYPES_ICONS } from '$lib';
-	import MarkdownEditor from '../MarkdownEditor.svelte';
-	import TimezoneSelector from '../TimezoneSelector.svelte';
-	import TagComplete from '../TagComplete.svelte';
 	import MoneyInput from '../shared/MoneyInput.svelte';
-	import { TagsCard, DetailsActionButtons } from '../shared/form';
+	import {
+		InfoCard,
+		NameField,
+		LinkField,
+		PublicToggle,
+		DescriptionWithGenerate,
+		TagsCard,
+		DetailsActionButtons
+	} from '../shared/form';
+	import { TRANSPORTATION_TYPES_ICONS } from '$lib';
 	import { DEFAULT_CURRENCY, normalizeMoneyPayload, toMoneyValue } from '$lib/money';
-	// @ts-ignore
-	import { DateTime } from 'luxon';
-	import { isAllDay } from '$lib';
+	import MapIcon from '~icons/mdi/map';
+	import InfoIcon from '~icons/mdi/information';
 
 	const dispatch = createEventDispatcher();
 
@@ -30,31 +24,18 @@
 	let airportMode = false;
 	let previousTransportationType: string | null = null;
 
-	let initialSelection: {
-		name: string;
-		lat: number;
-		lng: number;
-		location: string;
-		category?: any;
-	} | null = null;
-
-	// Props (would be passed in from parent component)
+	// Props
 	export let initialTransportation: any = null;
 	export let currentUser: any = null;
 	export let editingTransportation: any = null;
 	export let collection: Collection | null = null;
-	export let initialVisitDate: string | null = null; // Used to pre-fill visit date when adding from itinerary planner
 
-	// Form data properties
+	// Form data
 	let transportation: any = {
 		name: '',
 		type: '',
 		description: '',
 		link: '',
-		date: null,
-		end_date: null,
-		start_timezone: null,
-		end_timezone: null,
 		flight_number: null,
 		from_location: null,
 		to_location: null,
@@ -71,41 +52,19 @@
 		price_currency: DEFAULT_CURRENCY,
 		tags: []
 	};
-	const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-	let selectedStartTimezone: string = browserTimezone;
-	let selectedEndTimezone: string = browserTimezone;
-	let localStartDate: string = '';
-	let localEndDate: string = '';
-	let allDay: boolean = true;
-	let constrainDates: boolean = true;
-	let fullStartDate: string = '';
-	let fullEndDate: string = '';
+
 	let startCodeField: string = '';
 	let endCodeField: string = '';
 
 	let user: User | null = null;
 	let transportationToEdit: Transportation | null = null;
-	let wikiError = '';
-	let isGeneratingDesc = false;
-	let ownerUser: User | null = null;
-	let dateError = '';
 	let moneyValue: MoneyValue = { amount: null, currency: DEFAULT_CURRENCY };
 	let preferredCurrency: string = DEFAULT_CURRENCY;
 
 	$: user = currentUser;
 	$: transportationToEdit = editingTransportation;
-	// Set the full date range for constraining purposes (from collection)
-	$: if (collection && collection.start_date && collection.end_date) {
-		fullStartDate = `${collection.start_date}T00:00`;
-		fullEndDate = `${collection.end_date}T23:59`;
-	}
-	// Only assign timezones when this is a timed transportation. Keep timezones null for all-day entries.
+	$: preferredCurrency = user?.default_currency || DEFAULT_CURRENCY;
 	$: {
-		const departureZone = selectedStartTimezone || browserTimezone;
-		const arrivalZone = selectedEndTimezone || departureZone;
-		transportation.start_timezone = allDay ? null : departureZone;
-		transportation.end_timezone = allDay ? null : arrivalZone;
-		preferredCurrency = user?.default_currency || DEFAULT_CURRENCY;
 		const isNewTransportation = !(initialTransportation && initialTransportation.id);
 		const isEditing = Boolean(editingTransportation && editingTransportation.id);
 		if (isNewTransportation && !isEditing && transportation.price_currency === DEFAULT_CURRENCY) {
@@ -115,26 +74,6 @@
 			transportation.price === null
 				? { amount: null, currency: transportation.price_currency || null }
 				: toMoneyValue(transportation.price, transportation.price_currency, preferredCurrency);
-	}
-
-	function handleStartCodeInput(value: string) {
-		startCodeField = value;
-		transportation.start_code = normalizeCode(value);
-	}
-
-	function handleEndCodeInput(value: string) {
-		endCodeField = value;
-		transportation.end_code = normalizeCode(value);
-	}
-
-	function handleStartCodeEvent(event: Event) {
-		const target = event.target as HTMLInputElement;
-		handleStartCodeInput(target?.value || '');
-	}
-
-	function handleEndCodeEvent(event: Event) {
-		const target = event.target as HTMLInputElement;
-		handleEndCodeInput(target?.value || '');
 	}
 
 	function normalizeCode(code: string | null): string | null {
@@ -151,18 +90,26 @@
 		transportation.end_code = null;
 	}
 
-	// Track previous airport mode to detect when user disables it
+	function handleStartCodeEvent(event: Event) {
+		const target = event.target as HTMLInputElement;
+		startCodeField = target?.value || '';
+		transportation.start_code = normalizeCode(startCodeField);
+	}
+
+	function handleEndCodeEvent(event: Event) {
+		const target = event.target as HTMLInputElement;
+		endCodeField = target?.value || '';
+		transportation.end_code = normalizeCode(endCodeField);
+	}
+
+	// Track airport mode changes
 	let prevAirportMode = airportMode;
 	$: if (prevAirportMode !== airportMode) {
 		prevAirportMode = airportMode;
-		// When airport mode is disabled, clear airport codes
-		if (!airportMode) {
-			clearAirportCodes();
-		}
+		if (!airportMode) clearAirportCodes();
 	}
 
-	// Auto-enable airport mode only when transportation type CHANGES to plane
-	// Do not continuously re-enable - respect user's manual toggle
+	// Auto-enable airport mode when type changes to plane
 	$: if (
 		transportation.type === 'plane' &&
 		previousTransportationType !== 'plane' &&
@@ -174,18 +121,6 @@
 		previousTransportationType = transportation.type;
 	}
 
-	// Reactive constraints
-	$: constraintStartDate = allDay
-		? fullStartDate && fullStartDate.includes('T')
-			? fullStartDate.split('T')[0]
-			: ''
-		: fullStartDate || '';
-	$: constraintEndDate = allDay
-		? fullEndDate && fullEndDate.includes('T')
-			? fullEndDate.split('T')[0]
-			: ''
-		: fullEndDate || '';
-
 	function handleTransportationUpdate(
 		event: CustomEvent<{
 			start: { name: string; lat: number; lng: number; location: string; code?: string | null };
@@ -194,21 +129,18 @@
 	) {
 		const { start, end } = event.detail;
 
-		// Update from location - use name (e.g., "John F. Kennedy International Airport") not location (full address)
 		transportation.from_location = start.name;
 		transportation.origin_latitude = start.lat;
 		transportation.origin_longitude = start.lng;
 		transportation.start_code = normalizeCode(start.code || '');
 		startCodeField = startCodeField || transportation.start_code || '';
 
-		// Update to location - use name (e.g., "Zurich Airport") not location (full address)
 		transportation.to_location = end.name;
 		transportation.destination_latitude = end.lat;
 		transportation.destination_longitude = end.lng;
 		transportation.end_code = normalizeCode(end.code || '');
 		endCodeField = endCodeField || transportation.end_code || '';
 
-		// Update name if empty (use route)
 		if (!transportation.name) {
 			transportation.name = `${start.name} → ${end.name}`;
 		}
@@ -225,175 +157,19 @@
 		transportation.end_code = null;
 	}
 
-	function handleAllDayToggle() {
-		if (allDay) {
-			localStartDate = localStartDate ? localStartDate.split('T')[0] : '';
-			localEndDate = localEndDate ? localEndDate.split('T')[0] : '';
-			// Clear timezones for all-day transportation
-			transportation.start_timezone = null;
-			transportation.end_timezone = null;
-		} else {
-			localStartDate = localStartDate ? `${localStartDate}T00:00` : '';
-			localEndDate = localEndDate ? `${localEndDate}T23:59` : '';
-			// Restore selected timezones when switching back to timed
-			selectedEndTimezone = selectedEndTimezone || selectedStartTimezone;
-			transportation.start_timezone = selectedStartTimezone;
-			transportation.end_timezone = selectedEndTimezone;
-		}
-
-		syncAndValidateDates(false);
-	}
-
-	function handleLocalDateChange() {
-		syncAndValidateDates(false);
-	}
-
-	function syncAndValidateDates(autoFillEnd: boolean): boolean {
-		dateError = '';
-
-		const departureZone = selectedStartTimezone || browserTimezone;
-		const arrivalZone = selectedEndTimezone || departureZone;
-
-		if (localEndDate && !localStartDate) {
-			dateError = 'Start date is required when end date is provided';
-			localEndDate = '';
-			transportation.end_date = null;
-		}
-
-		transportation.date = localStartDate
-			? updateUTCDate({ localDate: localStartDate, timezone: departureZone, allDay }).utcDate
-			: null;
-		transportation.end_date = localEndDate
-			? updateUTCDate({ localDate: localEndDate, timezone: arrivalZone, allDay }).utcDate
-			: null;
-
-		if (!localEndDate && localStartDate && autoFillEnd) {
-			const start = allDay
-				? DateTime.fromISO(localStartDate, { zone: 'UTC' })
-				: DateTime.fromISO(localStartDate, { zone: departureZone });
-			if (start.isValid) {
-				if (allDay) {
-					const defaultEnd = start.plus({ days: 1 }).toISODate();
-					if (defaultEnd) {
-						localEndDate = defaultEnd;
-						transportation.end_date = updateUTCDate({
-							localDate: defaultEnd,
-							timezone: arrivalZone,
-							allDay
-						}).utcDate;
-					}
-				} else {
-					const defaultEnd = start
-						.setZone(arrivalZone)
-						.plus({ days: 1 })
-						.set({ hour: 9, minute: 0, second: 0, millisecond: 0 });
-					const defaultEndLocal = defaultEnd.toISO({
-						suppressSeconds: true,
-						suppressMilliseconds: true,
-						includeOffset: false
-					});
-					if (defaultEndLocal) {
-						localEndDate = defaultEndLocal.slice(0, 16);
-						transportation.end_date = updateUTCDate({
-							localDate: localEndDate,
-							timezone: arrivalZone,
-							allDay
-						}).utcDate;
-					}
-				}
-			}
-		}
-
-		if (transportation.date || transportation.end_date) {
-			// validate start/end dates (constraints are handled elsewhere)
-			const validation = validateDateRange(
-				transportation.date || '',
-				transportation.end_date || ''
-			);
-			if (!validation.valid) {
-				dateError = validation.error || 'Invalid date range';
-				transportation.end_date = null;
-				localEndDate = '';
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	async function generateDesc() {
-		if (!transportation.name) return;
-
-		isGeneratingDesc = true;
-		wikiError = '';
-
-		try {
-			// Mock Wikipedia API call - replace with actual implementation
-			const response = await fetch(
-				`/api/generate/desc/?name=${encodeURIComponent(transportation.name)}`
-			);
-			if (response.ok) {
-				const data = await response.json();
-				transportation.description = data.extract || '';
-			} else {
-				wikiError = `${$t('adventures.wikipedia_error') || 'Error fetching description from Wikipedia'}`;
-			}
-		} catch (error) {
-			wikiError = `${$t('adventures.wikipedia_error') || ''}`;
-		} finally {
-			isGeneratingDesc = false;
-		}
-	}
-
 	async function handleSave() {
-		if (!transportation.name || !transportation.type) {
-			return;
-		}
+		if (!transportation.name || !transportation.type) return;
 
-		const departureZone = selectedStartTimezone || browserTimezone;
-		const arrivalZone = selectedEndTimezone || departureZone;
-
-		// Ensure timezones are only persisted for timed transportation
-		transportation.start_timezone = allDay ? null : departureZone;
-		transportation.end_timezone = allDay ? null : arrivalZone;
-
-		// Normalize codes before sending
 		transportation.start_code = normalizeCode(startCodeField || transportation.start_code);
 		transportation.end_code = normalizeCode(endCodeField || transportation.end_code);
 
-		if (!syncAndValidateDates(true)) {
-			return;
-		}
+		// Round coordinates
+		['origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude'].forEach(field => {
+			if (transportation[field] !== null && typeof transportation[field] === 'number') {
+				transportation[field] = parseFloat(transportation[field].toFixed(6));
+			}
+		});
 
-		// round origin and destination coordinates to 6 decimal places
-		if (
-			transportation.origin_latitude !== null &&
-			typeof transportation.origin_latitude === 'number'
-		) {
-			transportation.origin_latitude = parseFloat(transportation.origin_latitude.toFixed(6));
-		}
-		if (
-			transportation.origin_longitude !== null &&
-			typeof transportation.origin_longitude === 'number'
-		) {
-			transportation.origin_longitude = parseFloat(transportation.origin_longitude.toFixed(6));
-		}
-		if (
-			transportation.destination_latitude !== null &&
-			typeof transportation.destination_latitude === 'number'
-		) {
-			transportation.destination_latitude = parseFloat(
-				transportation.destination_latitude.toFixed(6)
-			);
-		}
-		if (
-			transportation.destination_longitude !== null &&
-			typeof transportation.destination_longitude === 'number'
-		) {
-			transportation.destination_longitude = parseFloat(
-				transportation.destination_longitude.toFixed(6)
-			);
-		}
 		if (collection && collection.id) {
 			if (!transportation.collections || transportation.collections.length === 0) {
 				transportation.collections = [collection.id];
@@ -402,11 +178,8 @@
 			}
 		}
 
-		// Build payload and avoid sending an empty `collections` array when editing
 		let payload: any = { ...transportation };
 
-		// Normalize price and currency
-		// Normalize price and currency consistently, but send explicit nulls when cleared
 		if (transportation.price === null) {
 			payload.price = null;
 			payload.price_currency = null;
@@ -414,46 +187,35 @@
 			payload = normalizeMoneyPayload(payload, 'price', 'price_currency', preferredCurrency);
 		}
 
-		// Remove empty link to avoid URL validation errors
 		if (!payload.link || payload.link.trim() === '') {
 			delete payload.link;
 		}
 
-		// If we're editing and the original had collections, but the form's collections
-		// is empty (i.e. user didn't modify collections), omit collections from payload so the
-		// server doesn't clear them unintentionally.
 		if (transportationToEdit && transportationToEdit.id) {
 			if (
 				(!payload.collections || payload.collections.length === 0) &&
-				transportationToEdit.collections && transportationToEdit.collections.length > 0
+				transportationToEdit.collections &&
+				transportationToEdit.collections.length > 0
 			) {
 				delete payload.collections;
 			}
 
-			let res = await fetch(`/api/transportations/${transportationToEdit.id}`, {
+			const res = await fetch(`/api/transportations/${transportationToEdit.id}`, {
 				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json'
-				},
+				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(payload)
 			});
-			let updatedLocation = await res.json();
-			transportation = updatedLocation;
+			transportation = await res.json();
 		} else {
-			let res = await fetch(`/api/transportations`, {
+			const res = await fetch(`/api/transportations`, {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
+				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(payload)
 			});
-			let newTransportation = await res.json();
-			transportation = newTransportation;
+			transportation = await res.json();
 		}
 
-		dispatch('save', {
-			...transportation
-		});
+		dispatch('save', { ...transportation });
 	}
 
 	function handleBack() {
@@ -461,54 +223,7 @@
 	}
 
 	onMount(() => {
-		// Prefer transportation-specific timezones if present, otherwise keep current selection
-		if (initialTransportation?.start_timezone) {
-			selectedStartTimezone = initialTransportation.start_timezone;
-		}
-		if (initialTransportation?.end_timezone) {
-			selectedEndTimezone = initialTransportation.end_timezone;
-		} else if (initialTransportation?.start_timezone) {
-			selectedEndTimezone = initialTransportation.start_timezone;
-		}
-
-		// Determine if existing dates are all-day using shared helper
-		if (initialTransportation?.date) {
-			allDay = isAllDay(initialTransportation.date);
-		}
-
-		const departureZone = selectedStartTimezone || browserTimezone;
-		const arrivalZone = selectedEndTimezone || departureZone;
-
-		// Keep transportation timezones null for all-day entries, otherwise use selected values
-		transportation.start_timezone = allDay ? null : departureZone;
-		transportation.end_timezone = allDay ? null : arrivalZone;
-
-		// Convert UTC dates to local display, respecting all-day formatting
-		if (initialTransportation?.date) {
-			if (allDay) {
-				localStartDate = initialTransportation.date.split('T')[0];
-			} else {
-				const result = updateLocalDate({
-					utcDate: initialTransportation.date,
-					timezone: departureZone
-				});
-				localStartDate = result.localDate;
-			}
-		}
-		if (initialTransportation?.end_date) {
-			if (allDay) {
-				localEndDate = initialTransportation.end_date.split('T')[0];
-			} else {
-				const result = updateLocalDate({
-					utcDate: initialTransportation.end_date,
-					timezone: arrivalZone
-				});
-				localEndDate = result.localDate;
-			}
-		}
-
 		if (initialTransportation && typeof initialTransportation === 'object') {
-			// Populate all fields from initialTransportation
 			transportation.name = initialTransportation.name || '';
 			transportation.type = initialTransportation.type || '';
 			transportation.link = initialTransportation.link || '';
@@ -518,17 +233,10 @@
 			transportation.start_code = initialTransportation.start_code || null;
 			transportation.end_code = initialTransportation.end_code || null;
 			transportation.distance = initialTransportation.distance || null;
-			transportation.price = initialTransportation.price
-				? Number(initialTransportation.price)
-				: null;
+			transportation.price = initialTransportation.price ? Number(initialTransportation.price) : null;
 			transportation.price_currency = initialTransportation.price_currency || preferredCurrency;
-			moneyValue = toMoneyValue(
-				transportation.price,
-				transportation.price_currency,
-				preferredCurrency
-			);
+			moneyValue = toMoneyValue(transportation.price, transportation.price_currency, preferredCurrency);
 
-			// Populate origin/destination data
 			transportation.from_location = initialTransportation.from_location || null;
 			transportation.to_location = initialTransportation.to_location || null;
 			transportation.origin_latitude = initialTransportation.origin_latitude || null;
@@ -538,263 +246,162 @@
 			startCodeField = transportation.start_code || '';
 			endCodeField = transportation.end_code || '';
 
-			// Populate tags
 			if (initialTransportation.tags && Array.isArray(initialTransportation.tags)) {
 				transportation.tags = initialTransportation.tags;
 			}
-
-			if (initialTransportation.user) {
-				ownerUser = initialTransportation.user;
-			}
 		}
-
-		// If adding from itinerary, pre-fill all-day stay with next-day checkout
-		if (!initialTransportation?.date && initialVisitDate && !localStartDate) {
-			const start = DateTime.fromISO(initialVisitDate, { zone: 'UTC' });
-			if (start.isValid) {
-				allDay = true;
-				localStartDate = start.toISODate() || '';
-				const nextDay = start.plus({ days: 1 }).toISODate();
-				localEndDate = nextDay || '';
-
-				syncAndValidateDates(false);
-			}
-		}
-
-		return () => {
-			// no-op
-		};
 	});
 </script>
 
 <div class="min-h-screen bg-gradient-to-br from-base-200/30 via-base-100 to-primary/5 p-6">
 	<div class="max-w-full mx-auto space-y-6">
-		<!-- Location Search & Map Section - FIRST! -->
-		<div class="card bg-base-100 border border-base-300 shadow-lg">
-			<div class="card-body p-6">
-				<div class="flex items-center gap-3 mb-6">
-					<div class="p-2 bg-secondary/10 rounded-lg">
-						<MapIcon class="w-5 h-5 text-secondary" />
-					</div>
-					<div>
-						<h2 class="text-xl font-bold">{$t('adventures.location_map')}</h2>
-					</div>
-				</div>
-
-				<LocationSearchMap
-					bind:isReverseGeocoding
-					transportationMode={true}
-					bind:airportMode
-					showDisplayNameInput={false}
-					initialStartLocation={initialTransportation?.origin_latitude &&
-					initialTransportation?.origin_longitude
-						? {
-								name: initialTransportation.from_location || '',
-								lat: Number(initialTransportation.origin_latitude),
-								lng: Number(initialTransportation.origin_longitude),
-								location: initialTransportation.from_location || ''
-							}
-						: null}
-					initialEndLocation={initialTransportation?.destination_latitude &&
-					initialTransportation?.destination_longitude
-						? {
-								name: initialTransportation.to_location || '',
-								lat: Number(initialTransportation.destination_latitude),
-								lng: Number(initialTransportation.destination_longitude),
-								location: initialTransportation.to_location || ''
-							}
-						: null}
-					initialStartCode={initialTransportation?.start_code || null}
-					initialEndCode={initialTransportation?.end_code || null}
-					on:transportationUpdate={handleTransportationUpdate}
-					on:clear={handleLocationClear}
-				/>
-			</div>
-		</div>
+		<!-- Location Search & Map Section -->
+		<InfoCard
+			title={$t('adventures.location_map')}
+			icon={MapIcon}
+			iconColorClass="text-secondary"
+			iconBgClass="bg-secondary/10"
+		>
+			<LocationSearchMap
+				bind:isReverseGeocoding
+				transportationMode={true}
+				bind:airportMode
+				showDisplayNameInput={false}
+				initialStartLocation={initialTransportation?.origin_latitude && initialTransportation?.origin_longitude
+					? {
+							name: initialTransportation.from_location || '',
+							lat: Number(initialTransportation.origin_latitude),
+							lng: Number(initialTransportation.origin_longitude),
+							location: initialTransportation.from_location || ''
+						}
+					: null}
+				initialEndLocation={initialTransportation?.destination_latitude && initialTransportation?.destination_longitude
+					? {
+							name: initialTransportation.to_location || '',
+							lat: Number(initialTransportation.destination_latitude),
+							lng: Number(initialTransportation.destination_longitude),
+							location: initialTransportation.to_location || ''
+						}
+					: null}
+				initialStartCode={initialTransportation?.start_code || null}
+				initialEndCode={initialTransportation?.end_code || null}
+				on:transportationUpdate={handleTransportationUpdate}
+				on:clear={handleLocationClear}
+			/>
+		</InfoCard>
 
 		<!-- Basic Information Section -->
-		<div class="card bg-base-100 border border-base-300 shadow-lg">
-			<div class="card-body p-6">
-				<div class="flex items-center gap-3 mb-6">
-					<div class="p-2 bg-primary/10 rounded-lg">
-						<InfoIcon class="w-5 h-5 text-primary" />
+		<InfoCard title={$t('adventures.basic_information')} icon={InfoIcon}>
+			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+				<!-- Left Column -->
+				<div class="space-y-4">
+					<NameField
+						bind:value={transportation.name}
+						placeholder={$t('transportation.enter_transportation_name')}
+					/>
+
+					<!-- Type Field -->
+					<div class="form-control">
+						<label class="label" for="type">
+							<span class="label-text font-medium">
+								{$t('transportation.type')} <span class="text-error">*</span>
+							</span>
+						</label>
+						<select
+							class="select select-bordered w-full bg-base-100/80 focus:bg-base-100"
+							name="type"
+							id="type"
+							required
+							bind:value={transportation.type}
+						>
+							<option disabled value="">{$t('transportation.select_type')}</option>
+							{#each Object.entries(TRANSPORTATION_TYPES_ICONS) as [key, icon]}
+								<option value={key}>{icon} {key.charAt(0).toUpperCase() + key.slice(1)}</option>
+							{/each}
+						</select>
 					</div>
-					<h2 class="text-xl font-bold">{$t('adventures.basic_information')}</h2>
+
+					<!-- Flight Number -->
+					<div class="form-control">
+						<label class="label" for="flight_number">
+							<span class="label-text font-medium">{$t('transportation.flight_number')}</span>
+						</label>
+						<input
+							type="text"
+							id="flight_number"
+							bind:value={transportation.flight_number}
+							class="input input-bordered bg-base-100/80 focus:bg-base-100"
+							placeholder={$t('transportation.enter_flight_number')}
+						/>
+					</div>
+
+					<!-- Start/End Codes -->
+					{#if transportation.type === 'plane' || airportMode}
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+							<div class="form-control">
+								<label class="label" for="start_code">
+									<span class="label-text font-medium">
+										{$t('transportation.departure_code') || 'Departure code'}
+									</span>
+								</label>
+								<input
+									type="text"
+									id="start_code"
+									value={startCodeField}
+									on:input={handleStartCodeEvent}
+									class="input input-bordered bg-base-100/80 focus:bg-base-100 uppercase"
+									maxlength="5"
+									placeholder={airportMode ? 'JFK' : $t('transportation.departure_code')}
+								/>
+							</div>
+							<div class="form-control">
+								<label class="label" for="end_code">
+									<span class="label-text font-medium">
+										{$t('transportation.arrival_code') || 'Arrival code'}
+									</span>
+								</label>
+								<input
+									type="text"
+									id="end_code"
+									value={endCodeField}
+									on:input={handleEndCodeEvent}
+									class="input input-bordered bg-base-100/80 focus:bg-base-100 uppercase"
+									maxlength="5"
+									placeholder={airportMode ? 'LHR' : $t('transportation.arrival_code')}
+								/>
+							</div>
+						</div>
+					{/if}
 				</div>
 
-				<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-					<!-- Left Column -->
-					<div class="space-y-4">
-						<!-- Name Field -->
-						<div class="form-control">
-							<label class="label" for="name">
-								<span class="label-text font-medium">
-									{$t('adventures.name')} <span class="text-error">*</span>
-								</span>
-							</label>
-							<input
-								type="text"
-								id="name"
-								bind:value={transportation.name}
-								class="input input-bordered bg-base-100/80 focus:bg-base-100"
-								placeholder={$t('transportation.enter_transportation_name')}
-								required
-							/>
-						</div>
+				<!-- Right Column -->
+				<div class="space-y-4">
+					<LinkField bind:value={transportation.link} placeholder={$t('transportation.enter_link')} />
 
-						<!-- Type Field -->
-						<div class="form-control">
-							<label class="label" for="type">
-								<span class="label-text font-medium"
-									>{$t('transportation.type')} <span class="text-error">*</span></span
-								>
-							</label>
-							<select
-								class="select select-bordered w-full bg-base-100/80 focus:bg-base-100"
-								name="type"
-								id="type"
-								required
-								bind:value={transportation.type}
-							>
-								<option disabled value="">{$t('transportation.select_type')}</option>
-								{#each Object.entries(TRANSPORTATION_TYPES_ICONS) as [key, icon]}
-									<option value={key}>{icon} {key.charAt(0).toUpperCase() + key.slice(1)}</option>
-								{/each}
-							</select>
-						</div>
+					<PublicToggle
+						bind:checked={transportation.is_public}
+						label={$t('transportation.public_transportation')}
+						description={$t('transportation.public_transportation_description')}
+					/>
 
-						<!-- Flight Number Field -->
-						<div class="form-control">
-							<label class="label" for="flight_number">
-								<span class="label-text font-medium">{$t('transportation.flight_number')}</span>
-							</label>
-							<input
-								type="text"
-								id="flight_number"
-								bind:value={transportation.flight_number}
-								class="input input-bordered bg-base-100/80 focus:bg-base-100"
-								placeholder={$t('transportation.enter_flight_number')}
-							/>
-						</div>
+					<MoneyInput
+						label={$t('adventures.price')}
+						value={moneyValue}
+						on:change={(event) => {
+							transportation.price = event.detail.amount;
+							transportation.price_currency =
+								event.detail.amount === null ? null : event.detail.currency || preferredCurrency;
+						}}
+					/>
 
-						<!-- Start/End Codes -->
-						{#if transportation.type === 'plane' || airportMode}
-							<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-								<div class="form-control">
-									<label class="label" for="start_code">
-										<span class="label-text font-medium"
-											>{$t('transportation.departure_code') || 'Departure code'}</span
-										>
-									</label>
-									<input
-										type="text"
-										id="start_code"
-										value={startCodeField}
-										on:input={handleStartCodeEvent}
-										class="input input-bordered bg-base-100/80 focus:bg-base-100 uppercase"
-										maxlength="5"
-										placeholder={airportMode ? 'JFK' : $t('transportation.departure_code')}
-									/>
-								</div>
-								<div class="form-control">
-									<label class="label" for="end_code">
-										<span class="label-text font-medium"
-											>{$t('transportation.arrival_code') || 'Arrival code'}</span
-										>
-									</label>
-									<input
-										type="text"
-										id="end_code"
-										value={endCodeField}
-										on:input={handleEndCodeEvent}
-										class="input input-bordered bg-base-100/80 focus:bg-base-100 uppercase"
-										maxlength="5"
-										placeholder={airportMode ? 'LHR' : $t('transportation.arrival_code')}
-									/>
-								</div>
-							</div>
-						{/if}
-					</div>
-
-					<!-- Right Column -->
-					<div class="space-y-4">
-						<!-- Link Field -->
-						<div class="form-control">
-							<label class="label" for="link">
-								<span class="label-text font-medium">{$t('adventures.link')}</span>
-							</label>
-							<input
-								type="url"
-								id="link"
-								bind:value={transportation.link}
-								class="input input-bordered bg-base-100/80 focus:bg-base-100"
-								placeholder={$t('transportation.enter_link')}
-							/>
-						</div>
-
-						<!-- Public Toggle -->
-						<div class="form-control">
-							<label class="label cursor-pointer justify-start gap-4" for="is_public">
-								<input
-									type="checkbox"
-									class="toggle toggle-primary"
-									id="is_public"
-									bind:checked={transportation.is_public}
-								/>
-								<div>
-									<span class="label-text font-medium">{$t('transportation.public_transportation')}</span>
-									<p class="text-sm text-base-content/60">
-										{$t('transportation.public_transportation_description')}
-									</p>
-								</div>
-							</label>
-						</div>
-
-						<MoneyInput
-							label={$t('adventures.price')}
-							value={moneyValue}
-							on:change={(event) => {
-								transportation.price = event.detail.amount;
-								transportation.price_currency =
-									event.detail.amount === null ? null : event.detail.currency || preferredCurrency;
-							}}
-						/>
-
-						<!-- Description Field -->
-						<div class="form-control">
-							<label class="label" for="description">
-								<span class="label-text font-medium">{$t('adventures.description')}</span>
-							</label>
-							<MarkdownEditor bind:text={transportation.description} editor_height="h-32" />
-
-							<div class="flex items-center gap-4 mt-3">
-								<button
-									type="button"
-									class="btn btn-neutral btn-sm gap-2"
-									on:click={generateDesc}
-									disabled={!transportation.name || isGeneratingDesc || !transportation.type}
-								>
-									{#if isGeneratingDesc}
-										<span class="loading loading-spinner loading-xs"></span>
-									{:else}
-										<GenerateIcon class="w-4 h-4" />
-									{/if}
-									{$t('adventures.generate_desc')}
-								</button>
-								{#if wikiError}
-									<div class="alert alert-error alert-sm">
-										<InfoIcon class="w-4 h-4" />
-										<span class="text-sm">{wikiError}</span>
-									</div>
-								{/if}
-							</div>
-						</div>
-					</div>
+					<DescriptionWithGenerate
+						bind:text={transportation.description}
+						entityName={transportation.name}
+						disabled={!transportation.type}
+					/>
 				</div>
 			</div>
-		</div>
-
-		<!-- Dates are now handled via Visits -->
+		</InfoCard>
 
 		<!-- Tags Section -->
 		<TagsCard bind:tags={transportation.tags} />
