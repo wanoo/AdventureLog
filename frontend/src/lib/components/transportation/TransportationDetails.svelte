@@ -119,6 +119,10 @@
 			searchMode = 'train';
 		} else if (transportation.type === 'bus' && searchMode === 'location') {
 			searchMode = 'bus';
+		} else if (transportation.type === 'cab' && searchMode === 'location') {
+			searchMode = 'cab';
+		} else if (transportation.type === 'vtc' && searchMode === 'location') {
+			searchMode = 'vtc';
 		}
 	}
 

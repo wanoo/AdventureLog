@@ -13,10 +13,12 @@
 	import AirplaneIcon from '~icons/mdi/airplane';
 	import TrainIcon from '~icons/mdi/train';
 	import BusIcon from '~icons/mdi/bus';
+	import TaxiIcon from '~icons/mdi/taxi';
+	import CarIcon from '~icons/mdi/car';
 	import SwapIcon from '~icons/mdi/swap-horizontal';
 
 	// Search mode type for transportation
-	export type SearchMode = 'location' | 'airport' | 'train' | 'bus';
+	export type SearchMode = 'location' | 'airport' | 'train' | 'bus' | 'cab' | 'vtc';
 
 	// Search mode configuration
 	const SEARCH_MODE_CONFIG: Record<SearchMode, {
@@ -41,7 +43,7 @@
 			icon: AirplaneIcon
 		},
 		train: {
-			suffix: ' Train Station',
+			suffix: ' Station',
 			departureLabel: 'adventures.departure_station',
 			arrivalLabel: 'adventures.arrival_station',
 			placeholder: 'adventures.station_name_examples',
@@ -53,6 +55,20 @@
 			arrivalLabel: 'adventures.arrival_stop',
 			placeholder: 'adventures.bus_stop_examples',
 			icon: BusIcon
+		},
+		cab: {
+			suffix: '',
+			departureLabel: 'adventures.pickup_location',
+			arrivalLabel: 'adventures.dropoff_location',
+			placeholder: 'adventures.address_examples',
+			icon: TaxiIcon
+		},
+		vtc: {
+			suffix: '',
+			departureLabel: 'adventures.pickup_location',
+			arrivalLabel: 'adventures.dropoff_location',
+			placeholder: 'adventures.address_examples',
+			icon: CarIcon
 		}
 	};
 
@@ -747,6 +763,26 @@
 					>
 						<BusIcon class="w-4 h-4" />
 						{$t('adventures.bus') || 'Bus'}
+					</button>
+					<button
+						type="button"
+						class="btn btn-sm gap-1"
+						class:btn-primary={searchMode === 'cab'}
+						class:btn-ghost={searchMode !== 'cab'}
+						on:click={() => (searchMode = 'cab')}
+					>
+						<TaxiIcon class="w-4 h-4" />
+						{$t('adventures.cab') || 'Cab'}
+					</button>
+					<button
+						type="button"
+						class="btn btn-sm gap-1"
+						class:btn-primary={searchMode === 'vtc'}
+						class:btn-ghost={searchMode !== 'vtc'}
+						on:click={() => (searchMode = 'vtc')}
+					>
+						<CarIcon class="w-4 h-4" />
+						{$t('adventures.vtc') || 'VTC'}
 					</button>
 				</div>
 			</div>
