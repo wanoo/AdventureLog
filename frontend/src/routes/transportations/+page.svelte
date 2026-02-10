@@ -256,6 +256,7 @@
 		user={data.user}
 		transportationToEdit={transportationToEdit}
 		bind:transportation={transportationBeingUpdated}
+		collaborativeMode={data.collaborativeMode}
 	/>
 {/if}
 

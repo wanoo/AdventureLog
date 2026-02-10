@@ -47,10 +47,9 @@
 	let ratingRefreshKey: number = 0;
 	let history: any[] = [];
 
-	// Check if current user has visited
-	$: userHasVisited = lodging?.visits?.some(
-		(v) => v.user_username === data.user?.username
-	) ?? false;
+	// Note: is_visited is computed by the backend (VisitStatusMixin)
+	// It checks: visit date is in the past AND (in collab mode) only current user's visits
+	$: userHasVisited = lodging?.is_visited ?? false;
 
 	$: lodgingPriceLabel = lodging
 		? formatMoney(
@@ -243,6 +242,7 @@
 		on:close={handleEditModalClose}
 		user={data.user}
 		lodgingToEdit={lodging}
+		collaborativeMode={data.collaborativeMode}
 	/>
 {/if}
 

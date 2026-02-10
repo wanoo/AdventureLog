@@ -12,6 +12,7 @@
 	export let user: User | null = null;
 	export let collection: Collection | null = null;
 	export let initialVisitDate: string | null = null;
+	export let collaborativeMode: boolean = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -204,6 +205,7 @@
 			start_date={transportation.visits?.[0]?.start_date ?? null}
 			end_date={transportation.visits?.[0]?.end_date ?? null}
 			{user}
+			{collaborativeMode}
 		/>
 	{/if}
 </EntityModal>

@@ -294,6 +294,7 @@
 		user={data.user}
 		locationToEdit={adventureToEdit}
 		bind:location={locationBeingUpdated}
+		collaborativeMode={data.collaborativeMode}
 	/>
 {/if}
 

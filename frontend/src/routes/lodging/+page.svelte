@@ -252,6 +252,7 @@
 		user={data.user}
 		lodgingToEdit={lodgingToEdit}
 		bind:lodging={lodgingBeingUpdated}
+		collaborativeMode={data.collaborativeMode}
 	/>
 {/if}
 

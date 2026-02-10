@@ -52,10 +52,9 @@
 	let history: any[] = [];
 	let ratingRefreshKey: number = 0;
 
-	// Check if current user has visited
-	$: userHasVisited = transportation?.visits?.some(
-		(v) => v.user_username === data.user?.username
-	) ?? false;
+	// Note: is_visited is computed by the backend (VisitStatusMixin)
+	// It checks: visit date is in the past AND (in collab mode) only current user's visits
+	$: userHasVisited = transportation?.is_visited ?? false;
 
 	$: transportationPriceLabel = transportation
 		? formatMoney(
@@ -352,6 +351,7 @@
 		on:close={handleEditModalClose}
 		user={data.user}
 		transportationToEdit={transportation}
+		collaborativeMode={data.collaborativeMode}
 	/>
 {/if}
 

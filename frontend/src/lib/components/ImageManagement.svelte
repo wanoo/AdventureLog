@@ -22,6 +22,13 @@
 	export let defaultSearchTerm: string = '';
 	export let immichIntegration: boolean = false;
 	export let copyImmichLocally: boolean = false;
+	export let collaborativeMode: boolean = false;
+
+	// In collaborative mode, only show delete button for images the user owns
+	function canDeleteImage(image: ContentImage): boolean {
+		if (!collaborativeMode) return true; // Non-collab: anyone with access can delete
+		return image.is_owner === true; // Collab: only owner can delete
+	}
 
 	// Component state
 	let fileInput: HTMLInputElement;
@@ -511,15 +518,17 @@
 								</button>
 							{/if}
 
-							<button
-								type="button"
-								class="btn btn-error btn-sm tooltip tooltip-top"
-								data-tip="Remove Image"
-								on:click={() => image.id && removeImage(image.id)}
-								disabled={!image.id}
-							>
-								<TrashIcon class="h-4 w-4" />
-							</button>
+							{#if canDeleteImage(image)}
+								<button
+									type="button"
+									class="btn btn-error btn-sm tooltip tooltip-top"
+									data-tip="Remove Image"
+									on:click={() => image.id && removeImage(image.id)}
+									disabled={!image.id}
+								>
+									<TrashIcon class="h-4 w-4" />
+								</button>
+							{/if}
 						</div>
 
 						<!-- Primary Badge -->

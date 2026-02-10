@@ -51,6 +51,7 @@ export type ContentImage = {
 	is_primary: boolean;
 	immich_id: string | null;
 	user_username?: string | null;
+	is_owner?: boolean;
 };
 
 export type Location = {
@@ -356,6 +357,7 @@ export type Attachment = {
 	user_username?: string;
 	name: string;
 	geojson: any | null; // GeoJSON representation of the attachment if the file is a GPX
+	is_owner?: boolean;
 };
 
 export type Lodging = {

@@ -13,6 +13,7 @@
 	export let collection: Collection | null = null;
 	export let initialLatLng: { lat: number; lng: number } | null = null;
 	export let initialVisitDate: string | null = null;
+	export let collaborativeMode: boolean = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -207,6 +208,7 @@
 			itemId={location.id}
 			on:next={close}
 			measurementSystem={user?.measurement_system || 'metric'}
+			{collaborativeMode}
 		/>
 	{/if}
 </EntityModal>

@@ -44,11 +44,19 @@ def _serialize_collaborator(user, owner_id=None, request_user=None):
 
 class ContentImageSerializer(CustomModelSerializer):
     user_username = serializers.CharField(source='user.username', read_only=True, default=None)
+    is_owner = serializers.SerializerMethodField()
 
     class Meta:
         model = ContentImage
-        fields = ['id', 'image', 'is_primary', 'user', 'immich_id', 'user_username']
-        read_only_fields = ['id', 'user', 'user_username']
+        fields = ['id', 'image', 'is_primary', 'user', 'immich_id', 'user_username', 'is_owner']
+        read_only_fields = ['id', 'user', 'user_username', 'is_owner']
+
+    def get_is_owner(self, obj):
+        """Check if the current user owns this image (can delete it)."""
+        request = self.context.get('request')
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            return obj.user == request.user
+        return False
 
     def to_representation(self, instance):
         # If immich_id is set, check for user integration once
@@ -77,11 +85,19 @@ class AttachmentSerializer(CustomModelSerializer):
     extension = serializers.SerializerMethodField()
     geojson = serializers.SerializerMethodField()
     user_username = serializers.CharField(source='user.username', read_only=True, default=None)
+    is_owner = serializers.SerializerMethodField()
 
     class Meta:
         model = ContentAttachment
-        fields = ['id', 'file', 'extension', 'name', 'user', 'geojson', 'user_username']
-        read_only_fields = ['id', 'user', 'user_username']
+        fields = ['id', 'file', 'extension', 'name', 'user', 'geojson', 'user_username', 'is_owner']
+        read_only_fields = ['id', 'user', 'user_username', 'is_owner']
+
+    def get_is_owner(self, obj):
+        """Check if the current user owns this attachment (can delete it)."""
+        request = self.context.get('request')
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            return obj.user == request.user
+        return False
 
     def get_extension(self, obj):
         return obj.file.name.split('.')[-1]

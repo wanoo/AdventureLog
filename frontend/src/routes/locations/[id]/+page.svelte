@@ -57,10 +57,9 @@
 			)
 		: null;
 
-	// Reactively update is_visited based on visits array
-	$: if (adventure && adventure.visits) {
-		adventure.is_visited = adventure.visits.length > 0;
-	}
+	// Note: is_visited is computed by the backend (VisitStatusMixin)
+	// It checks: visit date is in the past AND (in collab mode) only current user's visits
+	// Do NOT override it here - use the value from the API directly
 
 	$: canEdit = (data.user?.uuid && adventure?.user?.uuid && data.user.uuid === adventure.user.uuid) ||
 		(data.collaborativeMode && adventure?.is_public);
@@ -218,6 +217,7 @@
 		on:close={handleEditModalClose}
 		user={data.user}
 		locationToEdit={adventure}
+		collaborativeMode={data.collaborativeMode}
 	/>
 {/if}
 

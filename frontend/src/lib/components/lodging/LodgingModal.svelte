@@ -12,6 +12,7 @@
 	export let user: User | null = null;
 	export let collection: Collection | null = null;
 	export let initialVisitDate: string | null = null;
+	export let collaborativeMode: boolean = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -212,6 +213,7 @@
 			on:close={close}
 			itemId={lodging.id}
 			contentType="lodging"
+			{collaborativeMode}
 		/>
 	{/if}
 </EntityModal>
