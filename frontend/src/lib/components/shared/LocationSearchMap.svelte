@@ -722,69 +722,67 @@
 	<div class="space-y-4">
 		<!-- Transportation Mode Selector -->
 		{#if transportationMode}
-			<div class="p-3 bg-primary/10 rounded-lg border border-primary/30">
-				<div class="flex flex-wrap gap-2 justify-center">
-					<button
-						type="button"
-						class="btn btn-sm gap-1"
-						class:btn-primary={searchMode === 'location'}
-						class:btn-ghost={searchMode !== 'location'}
-						on:click={() => (searchMode = 'location')}
-					>
-						<PinIcon class="w-4 h-4" />
-						{$t('adventures.location') || 'Location'}
-					</button>
-					<button
-						type="button"
-						class="btn btn-sm gap-1"
-						class:btn-primary={searchMode === 'airport'}
-						class:btn-ghost={searchMode !== 'airport'}
-						on:click={() => (searchMode = 'airport')}
-					>
-						<AirplaneIcon class="w-4 h-4" />
-						{$t('adventures.airport') || 'Airport'}
-					</button>
-					<button
-						type="button"
-						class="btn btn-sm gap-1"
-						class:btn-primary={searchMode === 'train'}
-						class:btn-ghost={searchMode !== 'train'}
-						on:click={() => (searchMode = 'train')}
-					>
-						<TrainIcon class="w-4 h-4" />
-						{$t('adventures.train') || 'Train'}
-					</button>
-					<button
-						type="button"
-						class="btn btn-sm gap-1"
-						class:btn-primary={searchMode === 'bus'}
-						class:btn-ghost={searchMode !== 'bus'}
-						on:click={() => (searchMode = 'bus')}
-					>
-						<BusIcon class="w-4 h-4" />
-						{$t('adventures.bus') || 'Bus'}
-					</button>
-					<button
-						type="button"
-						class="btn btn-sm gap-1"
-						class:btn-primary={searchMode === 'cab'}
-						class:btn-ghost={searchMode !== 'cab'}
-						on:click={() => (searchMode = 'cab')}
-					>
-						<TaxiIcon class="w-4 h-4" />
-						{$t('adventures.cab') || 'Cab'}
-					</button>
-					<button
-						type="button"
-						class="btn btn-sm gap-1"
-						class:btn-primary={searchMode === 'vtc'}
-						class:btn-ghost={searchMode !== 'vtc'}
-						on:click={() => (searchMode = 'vtc')}
-					>
-						<CarIcon class="w-4 h-4" />
-						{$t('adventures.vtc') || 'VTC'}
-					</button>
-				</div>
+			<div class="flex gap-1 justify-center flex-wrap">
+				<button
+					type="button"
+					class="btn btn-sm btn-square"
+					class:btn-primary={searchMode === 'location'}
+					class:btn-ghost={searchMode !== 'location'}
+					on:click={() => (searchMode = 'location')}
+					title={$t('adventures.location') || 'Location'}
+				>
+					<PinIcon class="w-4 h-4" />
+				</button>
+				<button
+					type="button"
+					class="btn btn-sm btn-square"
+					class:btn-primary={searchMode === 'airport'}
+					class:btn-ghost={searchMode !== 'airport'}
+					on:click={() => (searchMode = 'airport')}
+					title={$t('adventures.airport') || 'Airport'}
+				>
+					<AirplaneIcon class="w-4 h-4" />
+				</button>
+				<button
+					type="button"
+					class="btn btn-sm btn-square"
+					class:btn-primary={searchMode === 'train'}
+					class:btn-ghost={searchMode !== 'train'}
+					on:click={() => (searchMode = 'train')}
+					title={$t('adventures.train') || 'Train'}
+				>
+					<TrainIcon class="w-4 h-4" />
+				</button>
+				<button
+					type="button"
+					class="btn btn-sm btn-square"
+					class:btn-primary={searchMode === 'bus'}
+					class:btn-ghost={searchMode !== 'bus'}
+					on:click={() => (searchMode = 'bus')}
+					title={$t('adventures.bus') || 'Bus'}
+				>
+					<BusIcon class="w-4 h-4" />
+				</button>
+				<button
+					type="button"
+					class="btn btn-sm btn-square"
+					class:btn-primary={searchMode === 'cab'}
+					class:btn-ghost={searchMode !== 'cab'}
+					on:click={() => (searchMode = 'cab')}
+					title={$t('adventures.cab') || 'Cab'}
+				>
+					<TaxiIcon class="w-4 h-4" />
+				</button>
+				<button
+					type="button"
+					class="btn btn-sm btn-square"
+					class:btn-primary={searchMode === 'vtc'}
+					class:btn-ghost={searchMode !== 'vtc'}
+					on:click={() => (searchMode = 'vtc')}
+					title={$t('adventures.vtc') || 'VTC'}
+				>
+					<CarIcon class="w-4 h-4" />
+				</button>
 			</div>
 		{/if}
 

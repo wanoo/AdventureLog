@@ -276,6 +276,8 @@ export let TRANSPORTATION_TYPES_ICONS = {
 	boat: '⛵',
 	bike: '🚲',
 	walking: '🚶',
+	cab: '🚕',
+	vtc: '🚙',
 	other: '❓'
 };
 
