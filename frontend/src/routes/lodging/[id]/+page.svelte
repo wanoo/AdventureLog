@@ -21,6 +21,7 @@
 	import { formatDateInTimezone, formatAllDayDate } from '$lib/dateUtils';
 	import LodgingModal from '$lib/components/lodging/LodgingModal.svelte';
 	import { DEFAULT_CURRENCY, formatMoney, toMoneyValue } from '$lib/money';
+	import HistoryPanel from '$lib/components/HistoryPanel.svelte';
 
 	// Shared components
 	import {
@@ -44,6 +45,7 @@
 	let isImageModalOpen: boolean = false;
 	let isEditModalOpen: boolean = false;
 	let ratingRefreshKey: number = 0;
+	let history: any[] = [];
 
 	// Check if current user has visited
 	$: userHasVisited = lodging?.visits?.some(
@@ -181,6 +183,18 @@
 			if (lodging.visits) {
 				lodging.visits = sortVisitsChronologically(lodging.visits);
 			}
+
+			// Fetch history in collaborative mode
+			if (data.collaborativeMode) {
+				try {
+					const res = await fetch(`/api/lodging/${lodging.id}/history/`);
+					if (res.ok) {
+						history = await res.json();
+					}
+				} catch (e) {
+					console.error('Failed to fetch history:', e);
+				}
+			}
 		} else {
 			notFound = true;
 		}
@@ -204,6 +218,17 @@
 			}
 		} catch (e) {
 			console.error('Failed to refresh lodging:', e);
+		}
+		// Refresh history after save in collaborative mode
+		if (data.collaborativeMode && lodging.id) {
+			try {
+				const res = await fetch(`/api/lodging/${lodging.id}/history/`);
+				if (res.ok) {
+					history = await res.json();
+				}
+			} catch (e) {
+				console.error('Failed to refresh history:', e);
+			}
 		}
 		isEditModalOpen = false;
 	}
@@ -500,6 +525,23 @@
 				/>
 
 				<EntityAttachmentsCard attachments={lodging.attachments || []} />
+
+				<!-- History Panel (Collaborative Mode) -->
+				{#if data.collaborativeMode && history.length > 0}
+					<HistoryPanel
+						{history}
+						itemId={lodging.id}
+						apiEndpoint="lodging"
+						canRevert={true}
+						on:reverted={async () => {
+							const historyRes = await fetch(`/api/lodging/${lodging.id}/history/`);
+							if (historyRes.ok) {
+								history = await historyRes.json();
+							}
+							window.location.reload();
+						}}
+					/>
+				{/if}
 			</div>
 		</div>
 	</div>

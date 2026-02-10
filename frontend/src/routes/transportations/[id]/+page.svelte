@@ -22,6 +22,7 @@
 	import { formatDateInTimezone, formatAllDayDate } from '$lib/dateUtils';
 	import TransportationModal from '$lib/components/transportation/TransportationModal.svelte';
 	import { DEFAULT_CURRENCY, formatMoney, toMoneyValue } from '$lib/money';
+	import HistoryPanel from '$lib/components/HistoryPanel.svelte';
 
 	// Shared components
 	import {
@@ -48,6 +49,7 @@
 	let isEditModalOpen: boolean = false;
 	let localTravelWindow: string | null = null;
 	let showLocalTripTime: boolean = false;
+	let history: any[] = [];
 	let ratingRefreshKey: number = 0;
 
 	// Check if current user has visited
@@ -290,6 +292,18 @@
 			if (transportation.visits) {
 				transportation.visits = sortVisitsChronologically(transportation.visits);
 			}
+
+			// Fetch history in collaborative mode
+			if (data.collaborativeMode) {
+				try {
+					const res = await fetch(`/api/transportations/${transportation.id}/history/`);
+					if (res.ok) {
+						history = await res.json();
+					}
+				} catch (e) {
+					console.error('Failed to fetch history:', e);
+				}
+			}
 		} else {
 			notFound = true;
 		}
@@ -313,6 +327,17 @@
 			}
 		} catch (e) {
 			console.error('Failed to refresh transportation:', e);
+		}
+		// Refresh history after save in collaborative mode
+		if (data.collaborativeMode && transportation.id) {
+			try {
+				const res = await fetch(`/api/transportations/${transportation.id}/history/`);
+				if (res.ok) {
+					history = await res.json();
+				}
+			} catch (e) {
+				console.error('Failed to refresh history:', e);
+			}
 		}
 		isEditModalOpen = false;
 	}
@@ -737,6 +762,23 @@
 				/>
 
 				<EntityAttachmentsCard attachments={transportation.attachments || []} />
+
+				<!-- History Panel (Collaborative Mode) -->
+				{#if data.collaborativeMode && history.length > 0}
+					<HistoryPanel
+						{history}
+						itemId={transportation.id}
+						apiEndpoint="transportations"
+						canRevert={true}
+						on:reverted={async () => {
+							const historyRes = await fetch(`/api/transportations/${transportation.id}/history/`);
+							if (historyRes.ok) {
+								history = await historyRes.json();
+							}
+							window.location.reload();
+						}}
+					/>
+				{/if}
 			</div>
 		</div>
 	</div>
