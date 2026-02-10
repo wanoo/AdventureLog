@@ -207,23 +207,6 @@
 
 <div class="min-h-screen bg-gradient-to-br from-base-200/30 via-base-100 to-primary/5 p-6">
 	<div class="max-w-full mx-auto space-y-6">
-		<!-- Location Search & Map Section -->
-		<InfoCard
-			title={$t('adventures.location_map')}
-			icon={MapIcon}
-			iconColorClass="text-secondary"
-			iconBgClass="bg-secondary/10"
-		>
-			<LocationSearchMap
-				{initialSelection}
-				bind:isReverseGeocoding
-				bind:displayName={lodging.location}
-				displayNamePosition="after"
-				on:update={handleLocationUpdate}
-				on:clear={handleLocationClear}
-			/>
-		</InfoCard>
-
 		<!-- Basic Information Section -->
 		<InfoCard title={$t('adventures.basic_information')} icon={InfoIcon}>
 			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -235,7 +218,7 @@
 					<div class="form-control">
 						<label class="label" for="type">
 							<span class="label-text font-medium">
-								{$t('transportation.type')} <span class="text-error">*</span>
+								{$t('lodging.type')} <span class="text-error">*</span>
 							</span>
 						</label>
 						<select
@@ -245,7 +228,7 @@
 							required
 							bind:value={lodging.type}
 						>
-							<option disabled value="">{$t('transportation.select_type')}</option>
+							<option disabled value="">{$t('lodging.select_type')}</option>
 							<option value="hotel">{$t('lodging.hotel')}</option>
 							<option value="hostel">{$t('lodging.hostel')}</option>
 							<option value="resort">{$t('lodging.resort')}</option>
@@ -273,17 +256,6 @@
 							placeholder={$t('lodging.enter_reservation_number')}
 						/>
 					</div>
-				</div>
-
-				<!-- Right Column -->
-				<div class="space-y-4">
-					<LinkField bind:value={lodging.link} placeholder={$t('transportation.enter_link')} />
-
-					<PublicToggle
-						bind:checked={lodging.is_public}
-						label={$t('lodging.public_lodging')}
-						description={$t('lodging.public_lodging_description')}
-					/>
 
 					<MoneyInput
 						label={$t('adventures.price')}
@@ -293,6 +265,17 @@
 							lodging.price_currency =
 								event.detail.amount === null ? null : event.detail.currency || preferredCurrency;
 						}}
+					/>
+				</div>
+
+				<!-- Right Column -->
+				<div class="space-y-4">
+					<LinkField bind:value={lodging.link} placeholder={$t('lodging.enter_link')} />
+
+					<PublicToggle
+						bind:checked={lodging.is_public}
+						label={$t('lodging.public_lodging')}
+						description={$t('lodging.public_lodging_description')}
 					/>
 
 					<DescriptionWithGenerate
@@ -307,10 +290,29 @@
 		<!-- Tags Section -->
 		<TagsCard bind:tags={lodging.tags} />
 
+		<!-- Location Search & Map Section -->
+		<InfoCard
+			title={$t('adventures.location_map')}
+			icon={MapIcon}
+			iconColorClass="text-secondary"
+			iconBgClass="bg-secondary/10"
+		>
+			<LocationSearchMap
+				{initialSelection}
+				bind:isReverseGeocoding
+				bind:displayName={lodging.location}
+				displayNamePosition="before"
+				on:update={handleLocationUpdate}
+				on:clear={handleLocationClear}
+			/>
+		</InfoCard>
+
 		<!-- Action Buttons -->
 		<DetailsActionButtons
+			showBack={true}
 			disabled={!lodging.name || !lodging.type || isReverseGeocoding}
 			isProcessing={isReverseGeocoding}
+			on:back={handleBack}
 			on:save={handleSave}
 		/>
 	</div>

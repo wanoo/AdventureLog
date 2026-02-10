@@ -255,41 +255,6 @@
 
 <div class="min-h-screen bg-gradient-to-br from-base-200/30 via-base-100 to-primary/5 p-6">
 	<div class="max-w-full mx-auto space-y-6">
-		<!-- Location Search & Map Section -->
-		<InfoCard
-			title={$t('adventures.location_map')}
-			icon={MapIcon}
-			iconColorClass="text-secondary"
-			iconBgClass="bg-secondary/10"
-		>
-			<LocationSearchMap
-				bind:isReverseGeocoding
-				transportationMode={true}
-				bind:airportMode
-				showDisplayNameInput={false}
-				initialStartLocation={initialTransportation?.origin_latitude && initialTransportation?.origin_longitude
-					? {
-							name: initialTransportation.from_location || '',
-							lat: Number(initialTransportation.origin_latitude),
-							lng: Number(initialTransportation.origin_longitude),
-							location: initialTransportation.from_location || ''
-						}
-					: null}
-				initialEndLocation={initialTransportation?.destination_latitude && initialTransportation?.destination_longitude
-					? {
-							name: initialTransportation.to_location || '',
-							lat: Number(initialTransportation.destination_latitude),
-							lng: Number(initialTransportation.destination_longitude),
-							location: initialTransportation.to_location || ''
-						}
-					: null}
-				initialStartCode={initialTransportation?.start_code || null}
-				initialEndCode={initialTransportation?.end_code || null}
-				on:transportationUpdate={handleTransportationUpdate}
-				on:clear={handleLocationClear}
-			/>
-		</InfoCard>
-
 		<!-- Basic Information Section -->
 		<InfoCard title={$t('adventures.basic_information')} icon={InfoIcon}>
 			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -372,6 +337,16 @@
 							</div>
 						</div>
 					{/if}
+
+					<MoneyInput
+						label={$t('adventures.price')}
+						value={moneyValue}
+						on:change={(event) => {
+							transportation.price = event.detail.amount;
+							transportation.price_currency =
+								event.detail.amount === null ? null : event.detail.currency || preferredCurrency;
+						}}
+					/>
 				</div>
 
 				<!-- Right Column -->
@@ -382,16 +357,6 @@
 						bind:checked={transportation.is_public}
 						label={$t('transportation.public_transportation')}
 						description={$t('transportation.public_transportation_description')}
-					/>
-
-					<MoneyInput
-						label={$t('adventures.price')}
-						value={moneyValue}
-						on:change={(event) => {
-							transportation.price = event.detail.amount;
-							transportation.price_currency =
-								event.detail.amount === null ? null : event.detail.currency || preferredCurrency;
-						}}
 					/>
 
 					<DescriptionWithGenerate
@@ -406,10 +371,47 @@
 		<!-- Tags Section -->
 		<TagsCard bind:tags={transportation.tags} />
 
+		<!-- Location Search & Map Section -->
+		<InfoCard
+			title={$t('adventures.location_map')}
+			icon={MapIcon}
+			iconColorClass="text-secondary"
+			iconBgClass="bg-secondary/10"
+		>
+			<LocationSearchMap
+				bind:isReverseGeocoding
+				transportationMode={true}
+				bind:airportMode
+				showDisplayNameInput={false}
+				initialStartLocation={initialTransportation?.origin_latitude && initialTransportation?.origin_longitude
+					? {
+							name: initialTransportation.from_location || '',
+							lat: Number(initialTransportation.origin_latitude),
+							lng: Number(initialTransportation.origin_longitude),
+							location: initialTransportation.from_location || ''
+						}
+					: null}
+				initialEndLocation={initialTransportation?.destination_latitude && initialTransportation?.destination_longitude
+					? {
+							name: initialTransportation.to_location || '',
+							lat: Number(initialTransportation.destination_latitude),
+							lng: Number(initialTransportation.destination_longitude),
+							location: initialTransportation.to_location || ''
+						}
+					: null}
+				initialStartCode={initialTransportation?.start_code || null}
+				initialEndCode={initialTransportation?.end_code || null}
+				on:transportationUpdate={handleTransportationUpdate}
+				on:clear={handleLocationClear}
+			/>
+		</InfoCard>
+
 		<!-- Action Buttons -->
 		<DetailsActionButtons
+			showBack={true}
 			disabled={!transportation.name || !transportation.type || isReverseGeocoding}
 			isProcessing={isReverseGeocoding}
+			on:back={handleBack}
 			on:save={handleSave}
 		/>
 	</div>

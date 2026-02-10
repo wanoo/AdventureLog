@@ -1054,7 +1054,9 @@
 		"public_lodging_description": "Autoriser les autres utilisateurs à voir cet hébergement",
 		"move_to_collection_confirm": "Cet hébergement est déjà dans une autre collection. Le déplacer vers cette collection ?",
 		"linked_success": "Hébergement lié avec succès",
-		"linked_error": "Échec de la liaison de l'hébergement"
+		"linked_error": "Échec de la liaison de l'hébergement",
+		"type": "Type",
+		"select_type": "Sélectionner un type"
 	},
 	"google_maps": {
 		"google_maps_integration_desc": "Connectez votre compte Google Maps pour obtenir des résultats de recherche et recommandations de recherche de haute qualité.",

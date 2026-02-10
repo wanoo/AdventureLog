@@ -858,7 +858,9 @@
 		"public_transportation_description": "Andere gebruikers toestaan dit vervoer te bekijken",
 		"move_to_collection_confirm": "Dit vervoer zit al in een andere collectie. Naar deze collectie verplaatsen?",
 		"linked_success": "Vervoer succesvol gekoppeld",
-		"linked_error": "Koppelen van vervoer mislukt"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"search": {
 		"cities": "Steden",
@@ -1034,7 +1036,9 @@
 		"public_lodging_description": "Andere gebruikers toestaan deze accommodatie te bekijken",
 		"move_to_collection_confirm": "Deze accommodatie zit al in een andere collectie. Naar deze collectie verplaatsen?",
 		"linked_success": "Accommodatie succesvol gekoppeld",
-		"linked_error": "Koppelen van accommodatie mislukt"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"google_maps": {
 		"google_maps_integration_desc": "Sluit uw Google Maps-account aan om zoekresultaten en aanbevelingen van hoge kwaliteit te krijgen.",

@@ -858,7 +858,9 @@
 		"public_transportation_description": "Engedélyezze más felhasználóknak, hogy megtekinthessék ezt a közlekedést",
 		"move_to_collection_confirm": "Ez a közlekedés már egy másik gyűjteményben van. Áthelyezi ebbe a gyűjteménybe?",
 		"linked_success": "Közlekedés sikeresen összekapcsolva",
-		"linked_error": "Nem sikerült összekapcsolni a közlekedést"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"lodging": {
 		"new_lodging": "Új szállás",
@@ -887,7 +889,9 @@
 		"public_lodging_description": "Engedélyezze más felhasználóknak, hogy megtekinthessék ezt a szállást",
 		"move_to_collection_confirm": "Ez a szállás már egy másik gyűjteményben van. Áthelyezi ebbe a gyűjteménybe?",
 		"linked_success": "Szállás sikeresen összekapcsolva",
-		"linked_error": "Nem sikerült összekapcsolni a szállást"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"search": {
 		"result": "Találat",

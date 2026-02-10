@@ -858,7 +858,9 @@
 		"public_transportation_description": "Pozwól innym użytkownikom zobaczyć ten transport",
 		"move_to_collection_confirm": "Ten transport jest już w innej kolekcji. Przenieść do tej kolekcji?",
 		"linked_success": "Transport powiązany pomyślnie",
-		"linked_error": "Nie udało się powiązać transportu"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"search": {
 		"cities": "Miasta",
@@ -1034,7 +1036,9 @@
 		"public_lodging_description": "Pozwól innym użytkownikom zobaczyć to zakwaterowanie",
 		"move_to_collection_confirm": "To zakwaterowanie jest już w innej kolekcji. Przenieść do tej kolekcji?",
 		"linked_success": "Zakwaterowanie powiązane pomyślnie",
-		"linked_error": "Nie udało się powiązać zakwaterowania"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"google_maps": {
 		"google_maps_integration_desc": "Połącz swoje konto Google Maps, aby uzyskać wysokiej jakości wyniki wyszukiwania i zalecenia dotyczące lokalizacji.",

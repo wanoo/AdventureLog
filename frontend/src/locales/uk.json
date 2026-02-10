@@ -675,7 +675,9 @@
 		"public_lodging_description": "Дозволити іншим користувачам переглядати це житло",
 		"move_to_collection_confirm": "Це житло вже знаходиться в іншій колекції. Перемістити до цієї колекції?",
 		"linked_success": "Житло успішно зв'язано",
-		"linked_error": "Не вдалося зв'язати житло"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"map": {
 		"add_location": "Додати нове місце",
@@ -1008,7 +1010,9 @@
 		"public_transportation_description": "Дозволити іншим користувачам переглядати цей транспорт",
 		"move_to_collection_confirm": "Цей транспорт вже знаходиться в іншій колекції. Перемістити до цієї колекції?",
 		"linked_success": "Транспорт успішно зв'язано",
-		"linked_error": "Не вдалося зв'язати транспорт"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"users": {
 		"no_users_found": "Не знайдено користувачів із загальнодоступними профілями."

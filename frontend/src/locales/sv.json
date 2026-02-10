@@ -853,7 +853,9 @@
 		"public_transportation_description": "Tillåt andra användare att se denna transport",
 		"move_to_collection_confirm": "Denna transport finns redan i en annan samling. Flytta till denna samling?",
 		"linked_success": "Transport länkad framgångsrikt",
-		"linked_error": "Kunde inte länka transport"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"search": {
 		"cities": "Städer",
@@ -1029,7 +1031,9 @@
 		"public_lodging_description": "Tillåt andra användare att se detta boende",
 		"move_to_collection_confirm": "Detta boende finns redan i en annan samling. Flytta till denna samling?",
 		"linked_success": "Boende länkat framgångsrikt",
-		"linked_error": "Kunde inte länka boende"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"google_maps": {
 		"google_maps_integration_desc": "Anslut ditt Google Maps-konto för att få sökresultat och rekommendationer av hög kvalitet.",

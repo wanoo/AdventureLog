@@ -858,7 +858,9 @@
 		"public_transportation_description": "允许其他用户查看此交通",
 		"move_to_collection_confirm": "此交通已在另一个收藏夹中。是否移动到此收藏夹？",
 		"linked_success": "交通链接成功",
-		"linked_error": "链接交通失败"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"search": {
 		"cities": "城市",
@@ -1034,7 +1036,9 @@
 		"public_lodging_description": "允许其他用户查看此住宿",
 		"move_to_collection_confirm": "此住宿已在另一个收藏夹中。是否移动到此收藏夹？",
 		"linked_success": "住宿链接成功",
-		"linked_error": "链接住宿失败"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"google_maps": {
 		"google_maps_integration_desc": "连接您的Google Maps帐户以获取高质量的地点搜索结果和建议。",

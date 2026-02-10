@@ -680,7 +680,9 @@
 		"public_lodging_description": "他のユーザーがこの宿泊施設を表示できるようにする",
 		"move_to_collection_confirm": "この宿泊施設は既に別のコレクションにあります。このコレクションに移動しますか？",
 		"linked_success": "宿泊施設を正常にリンクしました",
-		"linked_error": "宿泊施設のリンクに失敗しました"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"map": {
 		"add_location": "新しい場所を追加します",
@@ -1013,7 +1015,9 @@
 		"public_transportation_description": "他のユーザーがこの交通機関を表示できるようにする",
 		"move_to_collection_confirm": "この交通機関は既に別のコレクションにあります。このコレクションに移動しますか？",
 		"linked_success": "交通機関を正常にリンクしました",
-		"linked_error": "交通機関のリンクに失敗しました"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"users": {
 		"no_users_found": "パブリックプロファイルで見つかったユーザーは見つかりませんでした。"

@@ -858,7 +858,9 @@
 		"public_transportation_description": "Разрешить другим пользователям видеть этот транспорт",
 		"move_to_collection_confirm": "Этот транспорт уже находится в другой коллекции. Переместить в эту коллекцию?",
 		"linked_success": "Транспорт успешно связан",
-		"linked_error": "Не удалось связать транспорт"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"lodging": {
 		"new_lodging": "Новое жилье",
@@ -887,7 +889,9 @@
 		"public_lodging_description": "Разрешить другим пользователям видеть это жильё",
 		"move_to_collection_confirm": "Это жильё уже находится в другой коллекции. Переместить в эту коллекцию?",
 		"linked_success": "Жильё успешно связано",
-		"linked_error": "Не удалось связать жильё"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"search": {
 		"cities": "Города",

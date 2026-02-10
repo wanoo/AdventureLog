@@ -680,7 +680,9 @@
 		"public_lodging_description": "السماح للمستخدمين الآخرين بمشاهدة هذه الإقامة",
 		"move_to_collection_confirm": "هذه الإقامة موجودة بالفعل في مجموعة أخرى. هل تريد نقلها إلى هذه المجموعة؟",
 		"linked_success": "تم ربط الإقامة بنجاح",
-		"linked_error": "فشل ربط الإقامة"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"map": {
 		"add_location": "أضف موقعًا جديدًا",
@@ -1013,7 +1015,9 @@
 		"public_transportation_description": "السماح للمستخدمين الآخرين بمشاهدة هذا النقل",
 		"move_to_collection_confirm": "هذا النقل موجود بالفعل في مجموعة أخرى. هل تريد نقله إلى هذه المجموعة؟",
 		"linked_success": "تم ربط النقل بنجاح",
-		"linked_error": "فشل ربط النقل"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"users": {
 		"no_users_found": "لم يتم العثور على مستخدمين مع ملفات تعريف عامة."

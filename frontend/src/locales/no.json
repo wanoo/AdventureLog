@@ -858,7 +858,9 @@
 		"public_transportation_description": "Tillat andre brukere å se denne transporten",
 		"move_to_collection_confirm": "Denne transporten er allerede i en annen samling. Flytte til denne samlingen?",
 		"linked_success": "Transport koblet vellykket",
-		"linked_error": "Kunne ikke koble transport"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"lodging": {
 		"new_lodging": "Ny overnatting",
@@ -887,7 +889,9 @@
 		"public_lodging_description": "Tillat andre brukere å se denne overnattingen",
 		"move_to_collection_confirm": "Denne overnattingen er allerede i en annen samling. Flytte til denne samlingen?",
 		"linked_success": "Overnatting koblet vellykket",
-		"linked_error": "Kunne ikke koble overnatting"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"search": {
 		"cities": "Byer",

@@ -901,7 +901,9 @@
 		"public_lodging_description": "Allow other users to view this lodging",
 		"move_to_collection_confirm": "This lodging is already in another collection. Move it to this collection?",
 		"linked_success": "Lodging linked successfully",
-		"linked_error": "Failed to link lodging"
+		"linked_error": "Failed to link lodging",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"search": {
 		"result": "Result",

@@ -937,7 +937,9 @@
 		"public_transportation_description": "다른 사용자가 이 교통수단을 볼 수 있도록 허용",
 		"move_to_collection_confirm": "이 교통수단은 이미 다른 컬렉션에 있습니다. 이 컬렉션으로 이동하시겠습니까?",
 		"linked_success": "교통수단이 성공적으로 연결되었습니다",
-		"linked_error": "교통수단 연결에 실패했습니다"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"users": {
 		"no_users_found": "공개 프로필인 사용자가 없습니다."
@@ -1034,7 +1036,9 @@
 		"public_lodging_description": "다른 사용자가 이 숙박시설을 볼 수 있도록 허용",
 		"move_to_collection_confirm": "이 숙박시설은 이미 다른 컬렉션에 있습니다. 이 컬렉션으로 이동하시겠습니까?",
 		"linked_success": "숙박시설이 성공적으로 연결되었습니다",
-		"linked_error": "숙박시설 연결에 실패했습니다"
+		"linked_error": "",
+		"type": "Type",
+		"select_type": "Select a type"
 	},
 	"google_maps": {
 		"google_maps_integration_desc": "Google지도 계정을 연결하여 고품질 위치 검색 결과 및 권장 사항을 얻으십시오.",
