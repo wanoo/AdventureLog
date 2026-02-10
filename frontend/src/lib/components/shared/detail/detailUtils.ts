@@ -68,6 +68,21 @@ export function shouldShowTimezoneBadge(zone?: string | null): boolean {
 }
 
 /**
+ * Generate timezone tooltip text (pass translated strings)
+ */
+export function getTimezoneTip(
+	zone: string | null | undefined,
+	tripTzLabel: string = 'Trip TZ',
+	yourTimeLabel: string = 'Your time'
+): string | null {
+	if (!zone) return null;
+	const label = getTimezoneLabel(zone);
+	const local = getLocalTimezone();
+	if (label === local) return null;
+	return `${tripTzLabel}: ${label}. ${yourTimeLabel}: ${local}.`;
+}
+
+/**
  * Format date in a specific timezone
  */
 export function formatInTimezone(dateStr: string, timezone?: string | null): string {

@@ -21,6 +21,11 @@
 	import Calendar from '~icons/mdi/calendar';
 	import type { CollectionItineraryItem } from '$lib/types';
 	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge } from '../shared/cards';
+	import {
+		getTimezoneLabel,
+		getTimezoneTip,
+		shouldShowTimezoneBadge
+	} from '../shared/detail/detailUtils';
 
 	let actionsMenu: { close: () => void };
 
@@ -34,20 +39,10 @@
 		}
 	}
 
-	const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'UTC';
-	const getTimezoneLabel = (zone?: string | null) => zone ?? localTimeZone;
-	const getTimezoneTip = (zone?: string | null) => {
-		const label = getTimezoneLabel(zone);
-		return label === localTimeZone
-			? null
-			: `${$t('adventures.trip_timezone') ?? 'Trip TZ'}: ${label}. ${
-					$t('adventures.your_time') ?? 'Your time'
-				}: ${localTimeZone}.`;
-	};
-	const shouldShowTzBadge = (zone?: string | null) => {
-		if (!zone) return false;
-		return getTimezoneLabel(zone) !== localTimeZone;
-	};
+	// Use shared timezone utilities
+	$: timezoneTip = (zone?: string | null) =>
+		getTimezoneTip(zone, $t('adventures.trip_timezone') ?? 'Trip TZ', $t('adventures.your_time') ?? 'Your time');
+
 	const hasTimePortion = (date: string | null) => !!date && !isAllDay(date);
 	const isTimedStay = (date: string | null) => hasTimePortion(date);
 	$: lodgingPriceLabel = formatMoney(
@@ -280,9 +275,9 @@
 									</div>
 								</div>
 
-								{#if hasTimePortion(visitStartDate) && shouldShowTzBadge(visitTimezone)}
+								{#if hasTimePortion(visitStartDate) && shouldShowTimezoneBadge(visitTimezone)}
 									<div class="flex items-center gap-2 text-xs text-base-content/70">
-										<div class="tooltip" data-tip={getTimezoneTip(visitTimezone) ?? undefined}>
+										<div class="tooltip" data-tip={timezoneTip(visitTimezone) ?? undefined}>
 											<span class="badge badge-ghost badge-sm">
 												{getTimezoneLabel(visitTimezone)}
 											</span>
@@ -322,9 +317,9 @@
 										</div>
 									</div>
 
-									{#if hasTimePortion(visitEndDate) && shouldShowTzBadge(visitTimezone)}
+									{#if hasTimePortion(visitEndDate) && shouldShowTimezoneBadge(visitTimezone)}
 										<div class="flex items-center gap-2 text-xs text-base-content/70">
-											<div class="tooltip" data-tip={getTimezoneTip(visitTimezone) ?? undefined}>
+											<div class="tooltip" data-tip={timezoneTip(visitTimezone) ?? undefined}>
 												<span class="badge badge-ghost badge-sm">
 													{getTimezoneLabel(visitTimezone)}
 												</span>
@@ -351,9 +346,9 @@
 							</div>
 						</div>
 
-						{#if hasTimePortion(visitStartDate) && shouldShowTzBadge(visitTimezone)}
+						{#if hasTimePortion(visitStartDate) && shouldShowTimezoneBadge(visitTimezone)}
 							<div class="flex items-center gap-2 text-xs text-base-content/70">
-								<div class="tooltip" data-tip={getTimezoneTip(visitTimezone) ?? undefined}>
+								<div class="tooltip" data-tip={timezoneTip(visitTimezone) ?? undefined}>
 									<span class="badge badge-ghost badge-sm">
 										{getTimezoneLabel(visitTimezone)}
 									</span>
@@ -377,9 +372,9 @@
 							</div>
 						</div>
 
-						{#if hasTimePortion(visitEndDate) && shouldShowTzBadge(visitTimezone)}
+						{#if hasTimePortion(visitEndDate) && shouldShowTimezoneBadge(visitTimezone)}
 							<div class="flex items-center gap-2 text-xs text-base-content/70">
-								<div class="tooltip" data-tip={getTimezoneTip(visitTimezone) ?? undefined}>
+								<div class="tooltip" data-tip={timezoneTip(visitTimezone) ?? undefined}>
 									<span class="badge badge-ghost badge-sm">
 										{getTimezoneLabel(visitTimezone)}
 									</span>

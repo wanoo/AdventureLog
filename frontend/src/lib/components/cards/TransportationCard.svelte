@@ -20,6 +20,12 @@
 	import { goto } from '$app/navigation';
 	import type { CollectionItineraryItem } from '$lib/types';
 	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge } from '../shared/cards';
+	import {
+		getLocalTimezone,
+		getTimezoneLabel,
+		getTimezoneTip,
+		shouldShowTimezoneBadge
+	} from '../shared/detail/detailUtils';
 
 	let actionsMenu: { close: () => void };
 
@@ -33,17 +39,9 @@
 
 	const dispatch = createEventDispatcher();
 
-	const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'UTC';
-
-	const getTimezoneLabel = (zone?: string | null) => zone ?? localTimeZone;
-	const getTimezoneTip = (zone?: string | null) => {
-		const label = getTimezoneLabel(zone);
-		return label === localTimeZone
-			? null
-			: `${$t('adventures.trip_timezone') ?? 'Trip TZ'}: ${label}. ${
-					$t('adventures.your_time') ?? 'Your time'
-				}: ${localTimeZone}.`;
-	};
+	// Use shared timezone utilities
+	$: timezoneTip = (zone?: string | null) =>
+		getTimezoneTip(zone, $t('adventures.trip_timezone') ?? 'Trip TZ', $t('adventures.your_time') ?? 'Your time');
 
 	export let transportation: Transportation;
 	export let user: User | null = null;
@@ -332,7 +330,7 @@
 						<div class="flex items-center gap-2 text-xs text-base-content/70">
 							<div
 								class="tooltip"
-								data-tip={getTimezoneTip(visitTimezone) ?? undefined}
+								data-tip={timezoneTip(visitTimezone) ?? undefined}
 							>
 								<span class="badge badge-ghost badge-sm">
 									{getTimezoneLabel(visitTimezone)}
@@ -375,7 +373,7 @@
 									<div class="flex items-center gap-2 text-xs text-base-content/70">
 										<div
 											class="tooltip"
-											data-tip={getTimezoneTip(visitTimezone) ?? undefined}
+											data-tip={timezoneTip(visitTimezone) ?? undefined}
 										>
 											<span class="badge badge-ghost badge-sm">
 												{getTimezoneLabel(visitTimezone)}
