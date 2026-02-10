@@ -69,7 +69,7 @@ def build_content_access_query(user):
         # Transportation shared via collections
         (
             Q(content_type=transportation_ct) &
-            Q(object_id__in=Transportation.objects.filter(collection__shared_with=user).values_list('id', flat=True))
+            Q(object_id__in=Transportation.objects.filter(collections__shared_with=user).values_list('id', flat=True))
         ) |
 
         # === NOTES ===
@@ -93,7 +93,7 @@ def build_content_access_query(user):
         # Lodging shared via collections
         (
             Q(content_type=lodging_ct) &
-            Q(object_id__in=Lodging.objects.filter(collection__shared_with=user).values_list('id', flat=True))
+            Q(object_id__in=Lodging.objects.filter(collections__shared_with=user).values_list('id', flat=True))
         ) |
 
         # === VISITS ===
