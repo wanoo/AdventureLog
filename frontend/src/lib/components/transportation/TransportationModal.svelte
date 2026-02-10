@@ -182,6 +182,8 @@
 					if (searchMode === 'airport') transportation.type = 'plane';
 					else if (searchMode === 'train') transportation.type = 'train';
 					else if (searchMode === 'bus') transportation.type = 'bus';
+					else if (searchMode === 'cab') transportation.type = 'cab';
+					else if (searchMode === 'vtc') transportation.type = 'vtc';
 				}
 				// Auto-generate name if empty
 				if (!transportation.name && origin && destination) {

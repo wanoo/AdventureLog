@@ -14,7 +14,7 @@
 	import TrainIcon from '~icons/mdi/train';
 	import BusIcon from '~icons/mdi/bus';
 	import TaxiIcon from '~icons/mdi/taxi';
-	import CarIcon from '~icons/mdi/car';
+	import LimoIcon from '~icons/mdi/car-estate';
 	import SwapIcon from '~icons/mdi/swap-horizontal';
 
 	// Search mode type for transportation
@@ -68,7 +68,7 @@
 			departureLabel: 'adventures.pickup_location',
 			arrivalLabel: 'adventures.dropoff_location',
 			placeholder: 'adventures.address_examples',
-			icon: CarIcon
+			icon: LimoIcon
 		}
 	};
 
@@ -725,63 +725,63 @@
 			<div class="flex gap-1 justify-center flex-wrap">
 				<button
 					type="button"
-					class="btn btn-sm btn-square"
+					class="btn btn-xs gap-0.5 px-2"
 					class:btn-primary={searchMode === 'location'}
 					class:btn-ghost={searchMode !== 'location'}
 					on:click={() => (searchMode = 'location')}
-					title={$t('adventures.location') || 'Location'}
 				>
-					<PinIcon class="w-4 h-4" />
+					<PinIcon class="w-3.5 h-3.5" />
+					<span class="text-xs">Addr</span>
 				</button>
 				<button
 					type="button"
-					class="btn btn-sm btn-square"
+					class="btn btn-xs gap-0.5 px-2"
 					class:btn-primary={searchMode === 'airport'}
 					class:btn-ghost={searchMode !== 'airport'}
 					on:click={() => (searchMode = 'airport')}
-					title={$t('adventures.airport') || 'Airport'}
 				>
-					<AirplaneIcon class="w-4 h-4" />
+					<AirplaneIcon class="w-3.5 h-3.5" />
+					<span class="text-xs">Air</span>
 				</button>
 				<button
 					type="button"
-					class="btn btn-sm btn-square"
+					class="btn btn-xs gap-0.5 px-2"
 					class:btn-primary={searchMode === 'train'}
 					class:btn-ghost={searchMode !== 'train'}
 					on:click={() => (searchMode = 'train')}
-					title={$t('adventures.train') || 'Train'}
 				>
-					<TrainIcon class="w-4 h-4" />
+					<TrainIcon class="w-3.5 h-3.5" />
+					<span class="text-xs">Train</span>
 				</button>
 				<button
 					type="button"
-					class="btn btn-sm btn-square"
+					class="btn btn-xs gap-0.5 px-2"
 					class:btn-primary={searchMode === 'bus'}
 					class:btn-ghost={searchMode !== 'bus'}
 					on:click={() => (searchMode = 'bus')}
-					title={$t('adventures.bus') || 'Bus'}
 				>
-					<BusIcon class="w-4 h-4" />
+					<BusIcon class="w-3.5 h-3.5" />
+					<span class="text-xs">Bus</span>
 				</button>
 				<button
 					type="button"
-					class="btn btn-sm btn-square"
+					class="btn btn-xs gap-0.5 px-2"
 					class:btn-primary={searchMode === 'cab'}
 					class:btn-ghost={searchMode !== 'cab'}
 					on:click={() => (searchMode = 'cab')}
-					title={$t('adventures.cab') || 'Cab'}
 				>
-					<TaxiIcon class="w-4 h-4" />
+					<TaxiIcon class="w-3.5 h-3.5" />
+					<span class="text-xs">Taxi</span>
 				</button>
 				<button
 					type="button"
-					class="btn btn-sm btn-square"
+					class="btn btn-xs gap-0.5 px-2"
 					class:btn-primary={searchMode === 'vtc'}
 					class:btn-ghost={searchMode !== 'vtc'}
 					on:click={() => (searchMode = 'vtc')}
-					title={$t('adventures.vtc') || 'VTC'}
 				>
-					<CarIcon class="w-4 h-4" />
+					<LimoIcon class="w-3.5 h-3.5" />
+					<span class="text-xs">VTC</span>
 				</button>
 			</div>
 		{/if}
