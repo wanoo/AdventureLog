@@ -28,7 +28,6 @@
 	let modal: HTMLDialogElement;
 
 	onMount(() => {
-		modal = document.getElementById(modalId) as HTMLDialogElement;
 		modal?.showModal();
 	});
 
@@ -52,7 +51,7 @@
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-<dialog id={modalId} class="modal backdrop-blur-sm">
+<dialog bind:this={modal} id={modalId} class="modal backdrop-blur-sm">
 	<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div
