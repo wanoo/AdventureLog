@@ -173,7 +173,9 @@
 	}
 
 	// Helper to check if we're in a station/airport mode (not plain location)
-	$: isStationMode = searchMode !== 'location';
+	// Modes that show codes/badges: airport, train, bus (not cab/vtc which behave like address)
+	$: isStationMode = searchMode === 'airport' || searchMode === 'train' || searchMode === 'bus';
+	$: isAirportMode = searchMode === 'airport';
 
 	// Transportation mode variables
 	let startSearchQuery = '';
@@ -465,8 +467,9 @@
 
 		const typedQuery = startSearchQuery;
 
-		// Only auto-derive and surface codes in airport mode
-		if (isStationMode) {
+		// Handle codes based on mode
+		if (isAirportMode) {
+			// Airport mode: derive IATA codes
 			const airportCodeMatch = searchResult.name.match(/\(([A-Z]{3})\)/);
 			startSearchQuery = airportCodeMatch ? airportCodeMatch[1] : searchResult.name;
 			startCode = resolveCode(searchResult, typedQuery);
@@ -477,12 +480,22 @@
 			if (startCode) {
 				startSearchQuery = startCode;
 			}
+		} else if (isStationMode) {
+			// Train/bus mode: will use city name after reverse geocode
+			startSearchQuery = searchResult.location || searchResult.name;
+			startCode = null; // Will be set after reverse geocode
 		} else {
+			// Address/cab/vtc mode: no codes
 			startSearchQuery = searchResult.location || searchResult.name;
 			startCode = null;
 		}
 
 		await performDetailedReverseGeocode(searchResult.lat, searchResult.lng, 'start');
+
+		// For train/bus, set code to city name after reverse geocode
+		if (isStationMode && !isAirportMode && startLocationData?.city?.name) {
+			startCode = startLocationData.city.name;
+		}
 		updateMapBounds();
 		emitTransportationUpdate();
 	}
@@ -494,8 +507,9 @@
 
 		const typedQuery = endSearchQuery;
 
-		// Only auto-derive and surface codes in airport mode
-		if (isStationMode) {
+		// Handle codes based on mode
+		if (isAirportMode) {
+			// Airport mode: derive IATA codes
 			const airportCodeMatch = searchResult.name.match(/\(([A-Z]{3})\)/);
 			endSearchQuery = airportCodeMatch ? airportCodeMatch[1] : searchResult.name;
 			endCode = resolveCode(searchResult, typedQuery);
@@ -506,12 +520,22 @@
 			if (endCode) {
 				endSearchQuery = endCode;
 			}
+		} else if (isStationMode) {
+			// Train/bus mode: will use city name after reverse geocode
+			endSearchQuery = searchResult.location || searchResult.name;
+			endCode = null; // Will be set after reverse geocode
 		} else {
+			// Address/cab/vtc mode: no codes
 			endSearchQuery = searchResult.location || searchResult.name;
 			endCode = null;
 		}
 
 		await performDetailedReverseGeocode(searchResult.lat, searchResult.lng, 'end');
+
+		// For train/bus, set code to city name after reverse geocode
+		if (isStationMode && !isAirportMode && endLocationData?.city?.name) {
+			endCode = endLocationData.city.name;
+		}
 		updateMapBounds();
 		emitTransportationUpdate();
 	}

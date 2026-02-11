@@ -165,20 +165,14 @@
 				const { origin, destination, searchMode: eventSearchMode } = e.detail;
 				// Update modal-level searchMode from event
 				searchMode = eventSearchMode;
-				// For cab/vtc, prefer city name; for others use full location
-				const useCityName = eventSearchMode === 'cab' || eventSearchMode === 'vtc';
 				if (origin) {
-					transportation.from_location = useCityName
-						? (origin.city || origin.name || origin.location)
-						: (origin.location || origin.name);
+					transportation.from_location = origin.location || origin.name;
 					transportation.origin_latitude = origin.latitude;
 					transportation.origin_longitude = origin.longitude;
 					if (origin.code) transportation.start_code = origin.code;
 				}
 				if (destination) {
-					transportation.to_location = useCityName
-						? (destination.city || destination.name || destination.location)
-						: (destination.location || destination.name);
+					transportation.to_location = destination.location || destination.name;
 					transportation.destination_latitude = destination.latitude;
 					transportation.destination_longitude = destination.longitude;
 					if (destination.code) transportation.end_code = destination.code;
