@@ -252,6 +252,21 @@
 		}, 100);
 	}
 
+	// Helper to extract a meaningful name from geocoding result
+	function extractName(result: any): string {
+		// If name exists and is not just a number, use it
+		if (result.name && !/^\d+$/.test(result.name.trim())) {
+			return result.name;
+		}
+		// Fallback: use first part of display_name (before first comma)
+		if (result.display_name) {
+			const firstPart = result.display_name.split(',')[0].trim();
+			if (firstPart) return firstPart;
+		}
+		// Last resort: return the name or empty string
+		return result.name || '';
+	}
+
 	async function searchLocations(query: string) {
 		if (!query.trim() || query.length < 3) {
 			searchResults = [];
@@ -268,7 +283,7 @@
 
 			searchResults = results.map((result: any) => ({
 				id: result.name + result.lat + result.lon,
-				name: result.name,
+				name: extractName(result),
 				lat: parseFloat(result.lat),
 				lng: parseFloat(result.lon),
 				type: result.type,
@@ -301,7 +316,7 @@
 
 			startSearchResults = results.map((result: any) => ({
 				id: result.name + result.lat + result.lon,
-				name: result.name,
+				name: extractName(result),
 				lat: parseFloat(result.lat),
 				lng: parseFloat(result.lon),
 				type: result.type,
@@ -334,7 +349,7 @@
 
 			endSearchResults = results.map((result: any) => ({
 				id: result.name + result.lat + result.lon,
-				name: result.name,
+				name: extractName(result),
 				lat: parseFloat(result.lat),
 				lng: parseFloat(result.lon),
 				type: result.type,
