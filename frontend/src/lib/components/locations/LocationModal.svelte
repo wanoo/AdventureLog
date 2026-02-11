@@ -150,7 +150,7 @@
 		/>
 	{/if}
 	{#if steps[1].selected}
-		{#key `${location.latitude}-${location.longitude}`}
+		{#key `${location.latitude}-${location.longitude}-${location.name}`}
 		<LocationDetails
 			currentUser={user}
 			initialLocation={location}

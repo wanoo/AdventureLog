@@ -194,7 +194,7 @@
 		/>
 	{/if}
 	{#if steps[1].selected}
-		{#key `${transportation.origin_latitude}-${transportation.origin_longitude}-${transportation.destination_latitude}-${transportation.destination_longitude}`}
+		{#key `${transportation.origin_latitude}-${transportation.origin_longitude}-${transportation.destination_latitude}-${transportation.destination_longitude}-${transportation.name}`}
 		<TransportationDetails
 			currentUser={user}
 			initialTransportation={transportation}
