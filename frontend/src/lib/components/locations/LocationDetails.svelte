@@ -3,20 +3,9 @@
 	import { t } from 'svelte-i18n';
 	import CategoryDropdown from '../CategoryDropdown.svelte';
 	import LocationSearchMap from '../shared/LocationSearchMap.svelte';
-	import MoneyInput from '../shared/MoneyInput.svelte';
-	import {
-		InfoCard,
-		NameField,
-		LinkField,
-		PublicToggle,
-		DescriptionWithGenerate,
-		TagsCard,
-		DetailsActionButtons
-	} from '../shared/form';
+	import { EntityDetailsBase } from '../shared/modal';
 	import { DEFAULT_CURRENCY, normalizeMoneyPayload, toMoneyValue } from '$lib/money';
 	import type { Category, Collection, Location, MoneyValue, User } from '$lib/types';
-	import MapIcon from '~icons/mdi/map';
-	import InfoIcon from '~icons/mdi/information';
 
 	const dispatch = createEventDispatcher();
 
@@ -105,6 +94,14 @@
 		location.latitude = null;
 		location.longitude = null;
 		location.location = '';
+	}
+
+	function handleMoneyChange(event: CustomEvent<{ amount: number | null; currency: string | null }>) {
+		location.price = event.detail.amount;
+		location.price_currency = event.detail.currency;
+		if (location.price !== null && !location.price_currency) {
+			location.price_currency = defaultCurrency;
+		}
 	}
 
 	async function handleSave() {
@@ -217,94 +214,54 @@
 	});
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-base-200/30 via-base-100 to-primary/5 p-6">
-	<div class="max-w-full mx-auto space-y-6">
-		<!-- Basic Information Section -->
-		<InfoCard title={$t('adventures.basic_information')} icon={InfoIcon}>
-			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				<!-- Left Column -->
-				<div class="space-y-4">
-					<NameField bind:value={location.name} placeholder="Enter location name" />
-
-					<!-- Category Field -->
-					<div class="form-control">
-						<label class="label" for="category">
-							<span class="label-text font-medium">
-								{$t('adventures.category')} <span class="text-error">*</span>
-							</span>
-						</label>
-						{#if (user && ownerUser && user.uuid == ownerUser.uuid) || !ownerUser}
-							<CategoryDropdown bind:selected_category={location.category} />
-						{:else}
-							<div class="flex items-center gap-3 p-3 bg-base-100/80 border border-base-300 rounded-lg">
-								{#if location.category?.icon}
-									<span class="text-xl flex-shrink-0">{location.category.icon}</span>
-								{/if}
-								<span class="font-medium">
-									{location.category?.display_name || location.category?.name}
-								</span>
-							</div>
-						{/if}
-					</div>
-
-					<MoneyInput
-						label={$t('adventures.price')}
-						value={moneyValue}
-						on:change={(event) => {
-							location.price = event.detail.amount;
-							location.price_currency = event.detail.currency;
-							if (location.price !== null && !location.price_currency) {
-								location.price_currency = defaultCurrency;
-							}
-						}}
-					/>
+<EntityDetailsBase
+	bind:name={location.name}
+	bind:description={location.description}
+	bind:link={location.link}
+	bind:is_public={location.is_public}
+	bind:tags={location.tags}
+	{moneyValue}
+	namePlaceholder="Enter location name"
+	publicLabel={$t('adventures.public_location')}
+	publicDescription={$t('adventures.public_location_description')}
+	entityNameForGenerate={location.name}
+	isProcessing={isReverseGeocoding}
+	disabled={!location.name || !location.category || isReverseGeocoding}
+	on:save={handleSave}
+	on:back={handleBack}
+	on:change={handleMoneyChange}
+>
+	<svelte:fragment slot="type-field">
+		<!-- Category Field -->
+		<div class="form-control">
+			<label class="label" for="category">
+				<span class="label-text font-medium">
+					{$t('adventures.category')} <span class="text-error">*</span>
+				</span>
+			</label>
+			{#if (user && ownerUser && user.uuid == ownerUser.uuid) || !ownerUser}
+				<CategoryDropdown bind:selected_category={location.category} />
+			{:else}
+				<div class="flex items-center gap-3 p-3 bg-base-100/80 border border-base-300 rounded-lg">
+					{#if location.category?.icon}
+						<span class="text-xl flex-shrink-0">{location.category.icon}</span>
+					{/if}
+					<span class="font-medium">
+						{location.category?.display_name || location.category?.name}
+					</span>
 				</div>
+			{/if}
+		</div>
+	</svelte:fragment>
 
-				<!-- Right Column -->
-				<div class="space-y-4">
-					<LinkField bind:value={location.link} />
-
-					<PublicToggle
-						bind:checked={location.is_public}
-						label={$t('adventures.public_location')}
-						description={$t('adventures.public_location_description')}
-					/>
-
-					<DescriptionWithGenerate
-						bind:text={location.description}
-						entityName={location.name}
-					/>
-				</div>
-			</div>
-		</InfoCard>
-
-		<!-- Tags Section -->
-		<TagsCard bind:tags={location.tags} />
-
-		<!-- Location Selection Section -->
-		<InfoCard
-			title={$t('adventures.location_map')}
-			icon={MapIcon}
-			iconColorClass="text-secondary"
-			iconBgClass="bg-secondary/10"
-		>
-			<LocationSearchMap
-				{initialSelection}
-				bind:isReverseGeocoding
-				bind:displayName={location.location}
-				displayNamePosition="before"
-				on:update={handleLocationUpdate}
-				on:clear={handleLocationClear}
-			/>
-		</InfoCard>
-
-		<!-- Action Buttons -->
-		<DetailsActionButtons
-			showBack={true}
-			disabled={!location.name || !location.category || isReverseGeocoding}
-			isProcessing={isReverseGeocoding}
-			on:back={handleBack}
-			on:save={handleSave}
+	<svelte:fragment slot="map">
+		<LocationSearchMap
+			{initialSelection}
+			bind:isReverseGeocoding
+			bind:displayName={location.location}
+			displayNamePosition="before"
+			on:update={handleLocationUpdate}
+			on:clear={handleLocationClear}
 		/>
-	</div>
-</div>
+	</svelte:fragment>
+</EntityDetailsBase>

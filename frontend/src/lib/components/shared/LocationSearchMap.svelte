@@ -1,3 +1,8 @@
+<script context="module" lang="ts">
+	// Search mode type for transportation - exported for use in other components
+	export type SearchMode = 'location' | 'airport' | 'train' | 'bus' | 'cab' | 'vtc';
+</script>
+
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { MapLibre, Marker, MapEvents } from 'svelte-maplibre';
@@ -16,9 +21,6 @@
 	import TaxiIcon from '~icons/mdi/taxi';
 	import LimoIcon from '~icons/mdi/car-estate';
 	import SwapIcon from '~icons/mdi/swap-horizontal';
-
-	// Search mode type for transportation
-	export type SearchMode = 'location' | 'airport' | 'train' | 'bus' | 'cab' | 'vtc';
 
 	// Search mode configuration
 	const SEARCH_MODE_CONFIG: Record<SearchMode, {

@@ -3,20 +3,9 @@
 	import { t } from 'svelte-i18n';
 	import type { Collection, Transportation, MoneyValue, User } from '$lib/types';
 	import LocationSearchMap from '../shared/LocationSearchMap.svelte';
-	import MoneyInput from '../shared/MoneyInput.svelte';
-	import {
-		InfoCard,
-		NameField,
-		LinkField,
-		PublicToggle,
-		DescriptionWithGenerate,
-		TagsCard,
-		DetailsActionButtons
-	} from '../shared/form';
+	import { EntityDetailsBase } from '../shared/modal';
 	import { TRANSPORTATION_TYPES_ICONS } from '$lib';
 	import { DEFAULT_CURRENCY, normalizeMoneyPayload, toMoneyValue } from '$lib/money';
-	import MapIcon from '~icons/mdi/map';
-	import InfoIcon from '~icons/mdi/information';
 	import type { SearchMode } from '../shared/LocationSearchMap.svelte';
 
 	const dispatch = createEventDispatcher();
@@ -162,6 +151,12 @@
 		transportation.end_code = null;
 	}
 
+	function handleMoneyChange(event: CustomEvent<{ amount: number | null; currency: string | null }>) {
+		transportation.price = event.detail.amount;
+		transportation.price_currency =
+			event.detail.amount === null ? null : event.detail.currency || preferredCurrency;
+	}
+
 	async function handleSave() {
 		if (!transportation.name || !transportation.type) return;
 
@@ -258,166 +253,128 @@
 	});
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-base-200/30 via-base-100 to-primary/5 p-6">
-	<div class="max-w-full mx-auto space-y-6">
-		<!-- Basic Information Section -->
-		<InfoCard title={$t('adventures.basic_information')} icon={InfoIcon}>
-			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				<!-- Left Column -->
-				<div class="space-y-4">
-					<NameField
-						bind:value={transportation.name}
-						placeholder={$t('transportation.enter_transportation_name')}
-					/>
+<EntityDetailsBase
+	bind:name={transportation.name}
+	bind:description={transportation.description}
+	bind:link={transportation.link}
+	bind:is_public={transportation.is_public}
+	bind:tags={transportation.tags}
+	{moneyValue}
+	namePlaceholder={$t('transportation.enter_transportation_name')}
+	linkPlaceholder={$t('transportation.enter_link')}
+	publicLabel={$t('transportation.public_transportation')}
+	publicDescription={$t('transportation.public_transportation_description')}
+	entityNameForGenerate={transportation.name}
+	descriptionDisabled={!transportation.type}
+	isProcessing={isReverseGeocoding}
+	disabled={!transportation.name || !transportation.type || isReverseGeocoding}
+	on:save={handleSave}
+	on:back={handleBack}
+	on:change={handleMoneyChange}
+>
+	<svelte:fragment slot="type-field">
+		<!-- Type Field -->
+		<div class="form-control">
+			<label class="label" for="type">
+				<span class="label-text font-medium">
+					{$t('transportation.type')} <span class="text-error">*</span>
+				</span>
+			</label>
+			<select
+				class="select select-bordered w-full bg-base-100/80 focus:bg-base-100"
+				name="type"
+				id="type"
+				required
+				bind:value={transportation.type}
+			>
+				<option disabled value="">{$t('transportation.select_type')}</option>
+				{#each Object.entries(TRANSPORTATION_TYPES_ICONS) as [key, icon]}
+					<option value={key}>{icon} {key.charAt(0).toUpperCase() + key.slice(1)}</option>
+				{/each}
+			</select>
+		</div>
+	</svelte:fragment>
 
-					<!-- Type Field -->
-					<div class="form-control">
-						<label class="label" for="type">
-							<span class="label-text font-medium">
-								{$t('transportation.type')} <span class="text-error">*</span>
-							</span>
-						</label>
-						<select
-							class="select select-bordered w-full bg-base-100/80 focus:bg-base-100"
-							name="type"
-							id="type"
-							required
-							bind:value={transportation.type}
-						>
-							<option disabled value="">{$t('transportation.select_type')}</option>
-							{#each Object.entries(TRANSPORTATION_TYPES_ICONS) as [key, icon]}
-								<option value={key}>{icon} {key.charAt(0).toUpperCase() + key.slice(1)}</option>
-							{/each}
-						</select>
-					</div>
+	<svelte:fragment slot="left-extra">
+		<!-- Flight Number -->
+		<div class="form-control">
+			<label class="label" for="flight_number">
+				<span class="label-text font-medium">{$t('transportation.flight_number')}</span>
+			</label>
+			<input
+				type="text"
+				id="flight_number"
+				bind:value={transportation.flight_number}
+				class="input input-bordered bg-base-100/80 focus:bg-base-100"
+				placeholder={$t('transportation.enter_flight_number')}
+			/>
+		</div>
 
-					<!-- Flight Number -->
-					<div class="form-control">
-						<label class="label" for="flight_number">
-							<span class="label-text font-medium">{$t('transportation.flight_number')}</span>
-						</label>
-						<input
-							type="text"
-							id="flight_number"
-							bind:value={transportation.flight_number}
-							class="input input-bordered bg-base-100/80 focus:bg-base-100"
-							placeholder={$t('transportation.enter_flight_number')}
-						/>
-					</div>
-
-					<!-- Start/End Codes -->
-					{#if searchMode !== 'location'}
-						<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-							<div class="form-control">
-								<label class="label" for="start_code">
-									<span class="label-text font-medium">
-										{$t('transportation.departure_code') || 'Departure code'}
-									</span>
-								</label>
-								<input
-									type="text"
-									id="start_code"
-									value={startCodeField}
-									on:input={handleStartCodeEvent}
-									class="input input-bordered bg-base-100/80 focus:bg-base-100 uppercase"
-									maxlength="5"
-									placeholder={searchMode === 'airport' ? 'JFK' : $t('transportation.departure_code')}
-								/>
-							</div>
-							<div class="form-control">
-								<label class="label" for="end_code">
-									<span class="label-text font-medium">
-										{$t('transportation.arrival_code') || 'Arrival code'}
-									</span>
-								</label>
-								<input
-									type="text"
-									id="end_code"
-									value={endCodeField}
-									on:input={handleEndCodeEvent}
-									class="input input-bordered bg-base-100/80 focus:bg-base-100 uppercase"
-									maxlength="5"
-									placeholder={searchMode === 'airport' ? 'LHR' : $t('transportation.arrival_code')}
-								/>
-							</div>
-						</div>
-					{/if}
-
-					<MoneyInput
-						label={$t('adventures.price')}
-						value={moneyValue}
-						on:change={(event) => {
-							transportation.price = event.detail.amount;
-							transportation.price_currency =
-								event.detail.amount === null ? null : event.detail.currency || preferredCurrency;
-						}}
+		<!-- Start/End Codes -->
+		{#if searchMode !== 'location'}
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+				<div class="form-control">
+					<label class="label" for="start_code">
+						<span class="label-text font-medium">
+							{$t('transportation.departure_code') || 'Departure code'}
+						</span>
+					</label>
+					<input
+						type="text"
+						id="start_code"
+						value={startCodeField}
+						on:input={handleStartCodeEvent}
+						class="input input-bordered bg-base-100/80 focus:bg-base-100 uppercase"
+						maxlength="5"
+						placeholder={searchMode === 'airport' ? 'JFK' : $t('transportation.departure_code')}
 					/>
 				</div>
-
-				<!-- Right Column -->
-				<div class="space-y-4">
-					<LinkField bind:value={transportation.link} placeholder={$t('transportation.enter_link')} />
-
-					<PublicToggle
-						bind:checked={transportation.is_public}
-						label={$t('transportation.public_transportation')}
-						description={$t('transportation.public_transportation_description')}
-					/>
-
-					<DescriptionWithGenerate
-						bind:text={transportation.description}
-						entityName={transportation.name}
-						disabled={!transportation.type}
+				<div class="form-control">
+					<label class="label" for="end_code">
+						<span class="label-text font-medium">
+							{$t('transportation.arrival_code') || 'Arrival code'}
+						</span>
+					</label>
+					<input
+						type="text"
+						id="end_code"
+						value={endCodeField}
+						on:input={handleEndCodeEvent}
+						class="input input-bordered bg-base-100/80 focus:bg-base-100 uppercase"
+						maxlength="5"
+						placeholder={searchMode === 'airport' ? 'LHR' : $t('transportation.arrival_code')}
 					/>
 				</div>
 			</div>
-		</InfoCard>
+		{/if}
+	</svelte:fragment>
 
-		<!-- Tags Section -->
-		<TagsCard bind:tags={transportation.tags} />
-
-		<!-- Location Search & Map Section -->
-		<InfoCard
-			title={$t('adventures.location_map')}
-			icon={MapIcon}
-			iconColorClass="text-secondary"
-			iconBgClass="bg-secondary/10"
-		>
-			<LocationSearchMap
-				bind:isReverseGeocoding
-				transportationMode={true}
-				bind:searchMode
-				showDisplayNameInput={false}
-				initialStartLocation={initialTransportation?.origin_latitude && initialTransportation?.origin_longitude
-					? {
-							name: initialTransportation.from_location || '',
-							lat: Number(initialTransportation.origin_latitude),
-							lng: Number(initialTransportation.origin_longitude),
-							location: initialTransportation.from_location || ''
-						}
-					: null}
-				initialEndLocation={initialTransportation?.destination_latitude && initialTransportation?.destination_longitude
-					? {
-							name: initialTransportation.to_location || '',
-							lat: Number(initialTransportation.destination_latitude),
-							lng: Number(initialTransportation.destination_longitude),
-							location: initialTransportation.to_location || ''
-						}
-					: null}
-				initialStartCode={initialTransportation?.start_code || null}
-				initialEndCode={initialTransportation?.end_code || null}
-				on:transportationUpdate={handleTransportationUpdate}
-				on:clear={handleLocationClear}
-			/>
-		</InfoCard>
-
-		<!-- Action Buttons -->
-		<DetailsActionButtons
-			showBack={true}
-			disabled={!transportation.name || !transportation.type || isReverseGeocoding}
-			isProcessing={isReverseGeocoding}
-			on:back={handleBack}
-			on:save={handleSave}
+	<svelte:fragment slot="map">
+		<LocationSearchMap
+			bind:isReverseGeocoding
+			transportationMode={true}
+			bind:searchMode
+			showDisplayNameInput={false}
+			initialStartLocation={initialTransportation?.origin_latitude && initialTransportation?.origin_longitude
+				? {
+						name: initialTransportation.from_location || '',
+						lat: Number(initialTransportation.origin_latitude),
+						lng: Number(initialTransportation.origin_longitude),
+						location: initialTransportation.from_location || ''
+					}
+				: null}
+			initialEndLocation={initialTransportation?.destination_latitude && initialTransportation?.destination_longitude
+				? {
+						name: initialTransportation.to_location || '',
+						lat: Number(initialTransportation.destination_latitude),
+						lng: Number(initialTransportation.destination_longitude),
+						location: initialTransportation.to_location || ''
+					}
+				: null}
+			initialStartCode={initialTransportation?.start_code || null}
+			initialEndCode={initialTransportation?.end_code || null}
+			on:transportationUpdate={handleTransportationUpdate}
+			on:clear={handleLocationClear}
 		/>
-	</div>
-</div>
+	</svelte:fragment>
+</EntityDetailsBase>

@@ -3,19 +3,8 @@
 	import { t } from 'svelte-i18n';
 	import type { Collection, Lodging, MoneyValue, User } from '$lib/types';
 	import LocationSearchMap from '../shared/LocationSearchMap.svelte';
-	import MoneyInput from '../shared/MoneyInput.svelte';
-	import {
-		InfoCard,
-		NameField,
-		LinkField,
-		PublicToggle,
-		DescriptionWithGenerate,
-		TagsCard,
-		DetailsActionButtons
-	} from '../shared/form';
+	import { EntityDetailsBase } from '../shared/modal';
 	import { DEFAULT_CURRENCY, normalizeMoneyPayload, toMoneyValue } from '$lib/money';
-	import MapIcon from '~icons/mdi/map';
-	import InfoIcon from '~icons/mdi/information';
 
 	const dispatch = createEventDispatcher();
 
@@ -108,6 +97,12 @@
 		lodging.latitude = null;
 		lodging.longitude = null;
 		lodging.location = '';
+	}
+
+	function handleMoneyChange(event: CustomEvent<{ amount: number | null; currency: string | null }>) {
+		lodging.price = event.detail.amount;
+		lodging.price_currency =
+			event.detail.amount === null ? null : event.detail.currency || preferredCurrency;
 	}
 
 	async function handleSave() {
@@ -205,115 +200,80 @@
 	});
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-base-200/30 via-base-100 to-primary/5 p-6">
-	<div class="max-w-full mx-auto space-y-6">
-		<!-- Basic Information Section -->
-		<InfoCard title={$t('adventures.basic_information')} icon={InfoIcon}>
-			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				<!-- Left Column -->
-				<div class="space-y-4">
-					<NameField bind:value={lodging.name} placeholder={$t('lodging.enter_lodging_name')} />
+<EntityDetailsBase
+	bind:name={lodging.name}
+	bind:description={lodging.description}
+	bind:link={lodging.link}
+	bind:is_public={lodging.is_public}
+	bind:tags={lodging.tags}
+	{moneyValue}
+	namePlaceholder={$t('lodging.enter_lodging_name')}
+	linkPlaceholder={$t('lodging.enter_link')}
+	publicLabel={$t('lodging.public_lodging')}
+	publicDescription={$t('lodging.public_lodging_description')}
+	entityNameForGenerate={lodging.name}
+	descriptionDisabled={!lodging.type}
+	isProcessing={isReverseGeocoding}
+	disabled={!lodging.name || !lodging.type || isReverseGeocoding}
+	on:save={handleSave}
+	on:back={handleBack}
+	on:change={handleMoneyChange}
+>
+	<svelte:fragment slot="type-field">
+		<!-- Type Field -->
+		<div class="form-control">
+			<label class="label" for="type">
+				<span class="label-text font-medium">
+					{$t('lodging.type')} <span class="text-error">*</span>
+				</span>
+			</label>
+			<select
+				class="select select-bordered w-full bg-base-100/80 focus:bg-base-100"
+				name="type"
+				id="type"
+				required
+				bind:value={lodging.type}
+			>
+				<option disabled value="">{$t('lodging.select_type')}</option>
+				<option value="hotel">{$t('lodging.hotel')}</option>
+				<option value="hostel">{$t('lodging.hostel')}</option>
+				<option value="resort">{$t('lodging.resort')}</option>
+				<option value="bnb">{$t('lodging.bnb')}</option>
+				<option value="campground">{$t('lodging.campground')}</option>
+				<option value="cabin">{$t('lodging.cabin')}</option>
+				<option value="apartment">{$t('lodging.apartment')}</option>
+				<option value="house">{$t('lodging.house')}</option>
+				<option value="villa">{$t('lodging.villa')}</option>
+				<option value="motel">{$t('lodging.motel')}</option>
+				<option value="other">{$t('lodging.other')}</option>
+			</select>
+		</div>
+	</svelte:fragment>
 
-					<!-- Type Field -->
-					<div class="form-control">
-						<label class="label" for="type">
-							<span class="label-text font-medium">
-								{$t('lodging.type')} <span class="text-error">*</span>
-							</span>
-						</label>
-						<select
-							class="select select-bordered w-full bg-base-100/80 focus:bg-base-100"
-							name="type"
-							id="type"
-							required
-							bind:value={lodging.type}
-						>
-							<option disabled value="">{$t('lodging.select_type')}</option>
-							<option value="hotel">{$t('lodging.hotel')}</option>
-							<option value="hostel">{$t('lodging.hostel')}</option>
-							<option value="resort">{$t('lodging.resort')}</option>
-							<option value="bnb">{$t('lodging.bnb')}</option>
-							<option value="campground">{$t('lodging.campground')}</option>
-							<option value="cabin">{$t('lodging.cabin')}</option>
-							<option value="apartment">{$t('lodging.apartment')}</option>
-							<option value="house">{$t('lodging.house')}</option>
-							<option value="villa">{$t('lodging.villa')}</option>
-							<option value="motel">{$t('lodging.motel')}</option>
-							<option value="other">{$t('lodging.other')}</option>
-						</select>
-					</div>
-
-					<!-- Reservation Number -->
-					<div class="form-control">
-						<label class="label" for="reservation">
-							<span class="label-text font-medium">{$t('lodging.reservation_number')}</span>
-						</label>
-						<input
-							type="text"
-							id="reservation"
-							bind:value={lodging.reservation_number}
-							class="input input-bordered bg-base-100/80 focus:bg-base-100"
-							placeholder={$t('lodging.enter_reservation_number')}
-						/>
-					</div>
-
-					<MoneyInput
-						label={$t('adventures.price')}
-						value={moneyValue}
-						on:change={(event) => {
-							lodging.price = event.detail.amount;
-							lodging.price_currency =
-								event.detail.amount === null ? null : event.detail.currency || preferredCurrency;
-						}}
-					/>
-				</div>
-
-				<!-- Right Column -->
-				<div class="space-y-4">
-					<LinkField bind:value={lodging.link} placeholder={$t('lodging.enter_link')} />
-
-					<PublicToggle
-						bind:checked={lodging.is_public}
-						label={$t('lodging.public_lodging')}
-						description={$t('lodging.public_lodging_description')}
-					/>
-
-					<DescriptionWithGenerate
-						bind:text={lodging.description}
-						entityName={lodging.name}
-						disabled={!lodging.type}
-					/>
-				</div>
-			</div>
-		</InfoCard>
-
-		<!-- Tags Section -->
-		<TagsCard bind:tags={lodging.tags} />
-
-		<!-- Location Search & Map Section -->
-		<InfoCard
-			title={$t('adventures.location_map')}
-			icon={MapIcon}
-			iconColorClass="text-secondary"
-			iconBgClass="bg-secondary/10"
-		>
-			<LocationSearchMap
-				{initialSelection}
-				bind:isReverseGeocoding
-				bind:displayName={lodging.location}
-				displayNamePosition="before"
-				on:update={handleLocationUpdate}
-				on:clear={handleLocationClear}
+	<svelte:fragment slot="left-extra">
+		<!-- Reservation Number -->
+		<div class="form-control">
+			<label class="label" for="reservation">
+				<span class="label-text font-medium">{$t('lodging.reservation_number')}</span>
+			</label>
+			<input
+				type="text"
+				id="reservation"
+				bind:value={lodging.reservation_number}
+				class="input input-bordered bg-base-100/80 focus:bg-base-100"
+				placeholder={$t('lodging.enter_reservation_number')}
 			/>
-		</InfoCard>
+		</div>
+	</svelte:fragment>
 
-		<!-- Action Buttons -->
-		<DetailsActionButtons
-			showBack={true}
-			disabled={!lodging.name || !lodging.type || isReverseGeocoding}
-			isProcessing={isReverseGeocoding}
-			on:back={handleBack}
-			on:save={handleSave}
+	<svelte:fragment slot="map">
+		<LocationSearchMap
+			{initialSelection}
+			bind:isReverseGeocoding
+			bind:displayName={lodging.location}
+			displayNamePosition="before"
+			on:update={handleLocationUpdate}
+			on:clear={handleLocationClear}
 		/>
-	</div>
-</div>
+	</svelte:fragment>
+</EntityDetailsBase>
