@@ -194,6 +194,7 @@
 		/>
 	{/if}
 	{#if steps[1].selected}
+		{#key `${transportation.origin_latitude}-${transportation.origin_longitude}-${transportation.destination_latitude}-${transportation.destination_longitude}`}
 		<TransportationDetails
 			currentUser={user}
 			initialTransportation={transportation}
@@ -216,6 +217,7 @@
 				steps = navigateToStep(steps, 2);
 			}}
 		/>
+		{/key}
 	{/if}
 	{#if steps[2].selected}
 		<TransportationVisits

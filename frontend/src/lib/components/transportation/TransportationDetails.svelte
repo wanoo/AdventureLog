@@ -296,17 +296,17 @@
 	</svelte:fragment>
 
 	<svelte:fragment slot="left-extra">
-		<!-- Flight Number -->
+		<!-- Transport ID (Flight number, train number, etc.) -->
 		<div class="form-control">
 			<label class="label" for="flight_number">
-				<span class="label-text font-medium">{$t('transportation.flight_number')}</span>
+				<span class="label-text font-medium">{$t('transportation.transport_id')}</span>
 			</label>
 			<input
 				type="text"
 				id="flight_number"
 				bind:value={transportation.flight_number}
 				class="input input-bordered bg-base-100/80 focus:bg-base-100"
-				placeholder={$t('transportation.enter_flight_number')}
+				placeholder={$t('transportation.enter_transport_id')}
 			/>
 		</div>
 

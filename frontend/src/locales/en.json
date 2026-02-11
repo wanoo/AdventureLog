@@ -852,7 +852,7 @@
 		"my_transportations": "My Transportations",
 		"no_transportations_found": "No transportations found",
 		"create_transportation": "Create Transportation",
-		"flight_number": "Flight Number",
+		"transport_id": "Transport ID",
 		"from_location": "From Location",
 		"to_location": "To Location",
 		"edit": "Edit",
@@ -872,7 +872,7 @@
 		"enter_transportation_name": "Enter transportation name",
 		"select_type": "Select Type",
 		"enter_link": "Enter link",
-		"enter_flight_number": "Enter flight number",
+		"enter_transport_id": "e.g. AF765, TGV 8876, #4453536",
 		"enter_from_location": "Enter from location",
 		"enter_to_location": "Enter to location",
 		"arrival_code": "Arrival Code",
@@ -926,7 +926,8 @@
 		"linked_success": "Lodging linked successfully",
 		"linked_error": "Failed to link lodging",
 		"type": "Type",
-		"select_type": "Select a type"
+		"select_type": "Select a type",
+		"enter_link": "Enter link"
 	},
 	"search": {
 		"result": "Result",

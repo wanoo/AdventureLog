@@ -153,6 +153,7 @@
 		/>
 	{/if}
 	{#if steps[1].selected}
+		{#key `${lodging.latitude}-${lodging.longitude}`}
 		<LodgingDetails
 			currentUser={user}
 			initialLodging={lodging}
@@ -199,6 +200,7 @@
 				steps = navigateToStep(steps, 2);
 			}}
 		/>
+		{/key}
 	{/if}
 	{#if steps[2].selected}
 		<LodgingVisits

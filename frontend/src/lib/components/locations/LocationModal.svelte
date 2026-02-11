@@ -150,6 +150,7 @@
 		/>
 	{/if}
 	{#if steps[1].selected}
+		{#key `${location.latitude}-${location.longitude}`}
 		<LocationDetails
 			currentUser={user}
 			initialLocation={location}
@@ -177,6 +178,7 @@
 				steps = navigateToStep(steps, 2);
 			}}
 		/>
+		{/key}
 	{/if}
 	{#if steps[2].selected}
 		<LocationVisits

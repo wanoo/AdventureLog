@@ -847,7 +847,7 @@
 	"transportation": {
 		"edit": "Modifier",
 		"edit_transportation": "Modifier le déplacement",
-		"flight_number": "Numéro du vol",
+		"transport_id": "Numéro d'identification",
 		"from_location": "Du lieu",
 		"modes": {
 			"bike": "Vélo",
@@ -868,7 +868,7 @@
 		"transportation_delete_error": "Erreur lors de la suppression du déplacement",
 		"transportation_deleted": "Déplacement supprimé avec succès !",
 		"create_new_transportation": "Nouveau transport",
-		"enter_flight_number": "Entrez le numéro de vol",
+		"enter_transport_id": "ex. AF765, TGV 8876, #4453536",
 		"enter_from_location": "Entrer de l'emplacement",
 		"enter_link": "Entrez le lien",
 		"enter_to_location": "Entrez à l'emplacement",
@@ -1079,7 +1079,8 @@
 		"linked_success": "Hébergement lié avec succès",
 		"linked_error": "Échec de la liaison de l'hébergement",
 		"type": "Type",
-		"select_type": "Sélectionner un type"
+		"select_type": "Sélectionner un type",
+		"enter_link": "Entrez le lien"
 	},
 	"google_maps": {
 		"google_maps_integration_desc": "Connectez votre compte Google Maps pour obtenir des résultats de recherche et recommandations de recherche de haute qualité.",
