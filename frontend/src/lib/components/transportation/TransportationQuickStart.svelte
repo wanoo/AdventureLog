@@ -16,6 +16,7 @@
 		latitude: number;
 		longitude: number;
 		location: string;
+		city: string | null;
 		code: string | null;
 	} | null = null;
 
@@ -24,13 +25,14 @@
 		latitude: number;
 		longitude: number;
 		location: string;
+		city: string | null;
 		code: string | null;
 	} | null = null;
 
 	function handleTransportationUpdate(
 		event: CustomEvent<{
-			start: { name: string; lat: number; lng: number; location: string; code?: string | null };
-			end: { name: string; lat: number; lng: number; location: string; code?: string | null };
+			start: { name: string; lat: number; lng: number; location: string; city?: string | null; code?: string | null };
+			end: { name: string; lat: number; lng: number; location: string; city?: string | null; code?: string | null };
 		}>
 	) {
 		const { start, end } = event.detail;
@@ -41,6 +43,7 @@
 				latitude: start.lat,
 				longitude: start.lng,
 				location: start.location,
+				city: start.city || null,
 				code: start.code || null
 			};
 		} else {
@@ -53,6 +56,7 @@
 				latitude: end.lat,
 				longitude: end.lng,
 				location: end.location,
+				city: end.city || null,
 				code: end.code || null
 			};
 		} else {

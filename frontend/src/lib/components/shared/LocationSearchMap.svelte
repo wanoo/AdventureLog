@@ -429,6 +429,7 @@
 					lat: selectedStartLocation.lat,
 					lng: selectedStartLocation.lng,
 					location: selectedStartLocation.location,
+					city: startLocationData?.city?.name || null,
 					code: startCode
 				},
 				end: {
@@ -436,6 +437,7 @@
 					lat: selectedEndLocation.lat,
 					lng: selectedEndLocation.lng,
 					location: selectedEndLocation.location,
+					city: endLocationData?.city?.name || null,
 					code: endCode
 				}
 			});
