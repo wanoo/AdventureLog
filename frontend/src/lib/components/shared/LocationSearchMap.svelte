@@ -731,7 +731,7 @@
 					on:click={() => (searchMode = 'location')}
 				>
 					<PinIcon class="w-3.5 h-3.5" />
-					<span class="text-xs">Addr</span>
+					<span class="text-xs">{$t('adventures.address')}</span>
 				</button>
 				<button
 					type="button"
@@ -741,7 +741,7 @@
 					on:click={() => (searchMode = 'airport')}
 				>
 					<AirplaneIcon class="w-3.5 h-3.5" />
-					<span class="text-xs">Air</span>
+					<span class="text-xs">{$t('adventures.airport')}</span>
 				</button>
 				<button
 					type="button"
@@ -751,7 +751,7 @@
 					on:click={() => (searchMode = 'train')}
 				>
 					<TrainIcon class="w-3.5 h-3.5" />
-					<span class="text-xs">Train</span>
+					<span class="text-xs">{$t('adventures.train')}</span>
 				</button>
 				<button
 					type="button"
@@ -761,7 +761,7 @@
 					on:click={() => (searchMode = 'bus')}
 				>
 					<BusIcon class="w-3.5 h-3.5" />
-					<span class="text-xs">Bus</span>
+					<span class="text-xs">{$t('adventures.bus')}</span>
 				</button>
 				<button
 					type="button"
@@ -771,7 +771,7 @@
 					on:click={() => (searchMode = 'cab')}
 				>
 					<TaxiIcon class="w-3.5 h-3.5" />
-					<span class="text-xs">Taxi</span>
+					<span class="text-xs">{$t('adventures.cab')}</span>
 				</button>
 				<button
 					type="button"
@@ -781,7 +781,7 @@
 					on:click={() => (searchMode = 'vtc')}
 				>
 					<LimoIcon class="w-3.5 h-3.5" />
-					<span class="text-xs">VTC</span>
+					<span class="text-xs">{$t('adventures.vtc')}</span>
 				</button>
 			</div>
 		{/if}

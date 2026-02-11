@@ -423,6 +423,7 @@
 		"pickup_location": "Lieu de prise en charge",
 		"dropoff_location": "Lieu de dépose",
 		"address_examples": "Adresse, lieu...",
+		"address": "Adresse",
 		"locations_visited": "Lieux visités",
 		"lodging_not_found": "Hébergement introuvable",
 		"lodging_types": "Types d'hébergement",

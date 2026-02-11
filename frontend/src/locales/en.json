@@ -513,6 +513,7 @@
 		"pickup_location": "Pickup Location",
 		"dropoff_location": "Drop-off Location",
 		"address_examples": "Address, place...",
+		"address": "Address",
 		"route_selected": "Route Selected",
 		"search_start_end_locations": "Search start and end locations",
 		"search_start_location": "Search start location",
