@@ -177,16 +177,15 @@
 					transportation.destination_longitude = destination.longitude;
 					if (destination.code) transportation.end_code = destination.code;
 				}
-				// Set type based on search mode
-				if (!transportation.type) {
-					if (searchMode === 'airport') transportation.type = 'plane';
-					else if (searchMode === 'train') transportation.type = 'train';
-					else if (searchMode === 'bus') transportation.type = 'bus';
-					else if (searchMode === 'cab') transportation.type = 'cab';
-					else if (searchMode === 'vtc') transportation.type = 'vtc';
-				}
-				// Auto-generate name if empty
-				if (!transportation.name && origin && destination) {
+				// Set type based on search mode (always update to match user's selection)
+				if (searchMode === 'airport') transportation.type = 'plane';
+				else if (searchMode === 'train') transportation.type = 'train';
+				else if (searchMode === 'bus') transportation.type = 'bus';
+				else if (searchMode === 'cab') transportation.type = 'cab';
+				else if (searchMode === 'vtc') transportation.type = 'vtc';
+
+				// Auto-generate name (always regenerate when new locations are selected)
+				if (origin && destination) {
 					transportation.name = `${origin.name} → ${destination.name}`;
 				}
 				steps = navigateToStep(steps, 1);

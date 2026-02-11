@@ -144,7 +144,8 @@
 			}}
 			on:locationSelected={(e) => {
 				const { name, latitude, longitude, location } = e.detail;
-				if (name && !lodging.name) lodging.name = name;
+				// Always update name when new location is selected
+				if (name) lodging.name = name;
 				lodging.latitude = latitude;
 				lodging.longitude = longitude;
 				lodging.location = location;
