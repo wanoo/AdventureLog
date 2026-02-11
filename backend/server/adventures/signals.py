@@ -126,6 +126,33 @@ def track_changes_before_save(sender, instance, **kwargs):
             instance._old_values = {}
 
 
+def _normalize_value(value):
+    """Normalize empty-equivalent values for comparison to avoid false positives."""
+    if value is None:
+        return None
+    if isinstance(value, str):
+        stripped = value.strip()
+        return None if stripped == '' else stripped
+    return value
+
+
+def _values_are_equal(old_value, new_value):
+    """Compare two values with normalization for empty equivalents."""
+    normalized_old = _normalize_value(old_value)
+    normalized_new = _normalize_value(new_value)
+    return normalized_old == normalized_new
+
+
+# Fields to exclude from audit logging
+# - System fields: auto-managed timestamps
+# - Derived fields: computed from other data (e.g., average_rating from visits)
+AUDIT_EXCLUDED_FIELDS = {
+    'updated_at',
+    'created_at',
+    'average_rating',  # Computed from visit ratings, not user-edited
+}
+
+
 @receiver(post_save)
 def log_save_to_audit(sender, instance, created, **kwargs):
     """Log create/update actions to AuditLog in collaborative mode."""
@@ -144,8 +171,12 @@ def log_save_to_audit(sender, instance, created, **kwargs):
     changes = {}
     if not created and hasattr(instance, '_old_values'):
         for field, old_value in instance._old_values.items():
+            # Skip excluded fields (system/derived fields)
+            if field in AUDIT_EXCLUDED_FIELDS:
+                continue
             new_value = getattr(instance, field)
-            if old_value != new_value:
+            # Use normalized comparison to avoid false positives
+            if not _values_are_equal(old_value, new_value):
                 changes[field] = {'old': str(old_value), 'new': str(new_value)}
 
     # Only log updates if there were actual changes

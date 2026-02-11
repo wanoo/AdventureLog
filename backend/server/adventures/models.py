@@ -223,6 +223,12 @@ class Location(models.Model):
                 
                 # Only enforce same-user constraint for non-shared collections
                 if self.user != collection.user:
+                    # In collaborative mode, allow adding public locations to any collection
+                    from django.conf import settings
+                    is_collaborative = getattr(settings, 'COLLABORATIVE_MODE', False)
+                    if is_collaborative and self.is_public:
+                        continue  # Allow public locations in collaborative mode
+
                     # Check if this is a shared collection scenario
                     # Allow if the location owner has access to the collection through sharing
                     if not collection.shared_with.filter(uuid=self.user.uuid).exists():

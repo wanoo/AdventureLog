@@ -552,20 +552,27 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
             
             # Check location owner compatibility - both directions
             if collection.user != location_owner:
-                
+                # In collaborative mode, allow public locations to be added to any collection
+                is_collaborative = getattr(settings, 'COLLABORATIVE_MODE', False)
+                # Check if location is public (from instance for updates, or initial data for creates)
+                is_public_location = self.instance.is_public if self.instance else self.initial_data.get('is_public', False)
+
+                if is_collaborative and is_public_location:
+                    continue  # Allow public locations in collaborative mode
+
                 # If user owns the collection but not the location, location owner must have shared access
                 if collection.user == user:
                     location_owner_has_shared_access = collection.shared_with.filter(id=location_owner.id).exists() if location_owner else False
-                    
+
                     if not location_owner_has_shared_access:
                         raise serializers.ValidationError(
                             f"Locations must be associated with collections owned by the same user or shared collections. Collection owner: {collection.user.username} Location owner: {location_owner.username if location_owner else 'None'}"
                         )
-                
+
                 # If using someone else's collection, location owner must have shared access
                 else:
                     location_owner_has_shared_access = collection.shared_with.filter(id=location_owner.id).exists() if location_owner else False
-                    
+
                     if not location_owner_has_shared_access:
                         raise serializers.ValidationError(
                             "Location cannot be added to collection unless the location owner has shared access to the collection."
