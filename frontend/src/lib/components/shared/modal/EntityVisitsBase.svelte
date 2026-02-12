@@ -468,7 +468,9 @@
 				formData.append('external_service_id', pendingStravaImport[visitId]!.id.toString());
 			}
 
-			const response = await fetch('/locations?/activity', {
+			// Build the endpoint dynamically based on entity type
+			const endpoint = entityType === 'lodging' ? '/lodging' : `/${entityType}s`;
+			const response = await fetch(`${endpoint}?/activity`, {
 				method: 'POST',
 				body: formData
 			});

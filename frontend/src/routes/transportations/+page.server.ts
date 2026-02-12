@@ -1,7 +1,8 @@
 import { redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad, Actions } from './$types';
 const PUBLIC_SERVER_URL = process.env['PUBLIC_SERVER_URL'];
 import type { Transportation } from '$lib/types';
+import { fetchCSRFToken } from '$lib/index.server';
 
 const serverEndpoint = PUBLIC_SERVER_URL || 'http://localhost:8000';
 
@@ -58,3 +59,22 @@ export const load = (async (event) => {
 		};
 	}
 }) satisfies PageServerLoad;
+
+export const actions: Actions = {
+	activity: async (event) => {
+		let formData = await event.request.formData();
+		let csrfToken = await fetchCSRFToken();
+		let sessionId = event.cookies.get('sessionid');
+		let res = await fetch(`${serverEndpoint}/api/activities/`, {
+			method: 'POST',
+			headers: {
+				Cookie: `csrftoken=${csrfToken}; sessionid=${sessionId}`,
+				'X-CSRFToken': csrfToken,
+				Referer: event.url.origin
+			},
+			body: formData
+		});
+		let data = await res.json();
+		return data;
+	}
+};
