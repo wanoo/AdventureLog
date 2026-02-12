@@ -180,11 +180,6 @@
 
 		<!-- Status Badge Overlay -->
 		<div class="absolute top-2 left-4 flex items-center gap-2 flex-wrap">
-			{#if collection.adventure_type}
-				<div class="badge badge-sm badge-secondary shadow-sm">
-					{collection.adventure_type.icon} {collection.adventure_type.name}
-				</div>
-			{/if}
 			{#if collection.status === 'folder'}
 				<div class="badge badge-sm badge-neutral shadow-sm">
 					📁 {$t('adventures.folder')}
@@ -236,6 +231,18 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- Adventure Type Badge (bottom-left like other cards) -->
+		{#if collection.adventure_type}
+			<div class="absolute bottom-4 left-4">
+				<a
+					href="/collections?adventure_type={collection.adventure_type.id}"
+					class="badge badge-primary shadow-lg font-medium cursor-pointer hover:brightness-110 transition-all"
+				>
+					{collection.adventure_type.icon} {collection.adventure_type.name}
+				</a>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Content -->
