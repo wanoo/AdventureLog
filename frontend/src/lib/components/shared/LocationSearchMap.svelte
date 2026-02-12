@@ -426,24 +426,25 @@
 	}
 
 	function emitTransportationUpdate() {
-		if (selectedStartLocation && selectedEndLocation) {
+		// Emit if we have at least one location selected
+		if (selectedStartLocation || selectedEndLocation) {
 			dispatch('transportationUpdate', {
-				start: {
+				start: selectedStartLocation ? {
 					name: selectedStartLocation.name,
 					lat: selectedStartLocation.lat,
 					lng: selectedStartLocation.lng,
 					location: selectedStartLocation.location,
 					city: startLocationData?.city?.name || null,
 					code: startCode
-				},
-				end: {
+				} : null,
+				end: selectedEndLocation ? {
 					name: selectedEndLocation.name,
 					lat: selectedEndLocation.lat,
 					lng: selectedEndLocation.lng,
 					location: selectedEndLocation.location,
 					city: endLocationData?.city?.name || null,
 					code: endCode
-				}
+				} : null
 			});
 		}
 	}

@@ -102,40 +102,49 @@
 	// Auto-set search mode based on transportation type
 	$: if (transportation.type && previousTransportationType !== transportation.type) {
 		previousTransportationType = transportation.type;
-		if (transportation.type === 'plane' && searchMode === 'location') {
-			searchMode = 'airport';
-		} else if (transportation.type === 'train' && searchMode === 'location') {
-			searchMode = 'train';
-		} else if (transportation.type === 'bus' && searchMode === 'location') {
-			searchMode = 'bus';
-		} else if (transportation.type === 'cab' && searchMode === 'location') {
-			searchMode = 'cab';
-		} else if (transportation.type === 'vtc' && searchMode === 'location') {
-			searchMode = 'vtc';
+		// Only change searchMode if current mode is 'location' (default)
+		// This allows the map to show appropriate search options for the type
+		if (searchMode === 'location') {
+			if (transportation.type === 'plane') {
+				searchMode = 'airport';
+			} else if (transportation.type === 'train') {
+				searchMode = 'train';
+			} else if (transportation.type === 'bus') {
+				searchMode = 'bus';
+			} else if (transportation.type === 'cab') {
+				searchMode = 'cab';
+			} else if (transportation.type === 'vtc') {
+				searchMode = 'vtc';
+			}
+			// For car, boat, bike, walking, other - keep searchMode as 'location'
 		}
 	}
 
 	function handleTransportationUpdate(
 		event: CustomEvent<{
-			start: { name: string; lat: number; lng: number; location: string; code?: string | null };
-			end: { name: string; lat: number; lng: number; location: string; code?: string | null };
+			start: { name: string; lat: number; lng: number; location: string; code?: string | null } | null;
+			end: { name: string; lat: number; lng: number; location: string; code?: string | null } | null;
 		}>
 	) {
 		const { start, end } = event.detail;
 
-		transportation.from_location = start.name;
-		transportation.origin_latitude = start.lat;
-		transportation.origin_longitude = start.lng;
-		transportation.start_code = normalizeCode(start.code || '');
-		startCodeField = startCodeField || transportation.start_code || '';
+		if (start) {
+			transportation.from_location = start.name;
+			transportation.origin_latitude = start.lat;
+			transportation.origin_longitude = start.lng;
+			transportation.start_code = normalizeCode(start.code || '');
+			startCodeField = startCodeField || transportation.start_code || '';
+		}
 
-		transportation.to_location = end.name;
-		transportation.destination_latitude = end.lat;
-		transportation.destination_longitude = end.lng;
-		transportation.end_code = normalizeCode(end.code || '');
-		endCodeField = endCodeField || transportation.end_code || '';
+		if (end) {
+			transportation.to_location = end.name;
+			transportation.destination_latitude = end.lat;
+			transportation.destination_longitude = end.lng;
+			transportation.end_code = normalizeCode(end.code || '');
+			endCodeField = endCodeField || transportation.end_code || '';
+		}
 
-		if (!transportation.name) {
+		if (!transportation.name && start && end) {
 			transportation.name = `${start.name} → ${end.name}`;
 		}
 	}

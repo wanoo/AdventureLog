@@ -31,8 +31,8 @@
 
 	function handleTransportationUpdate(
 		event: CustomEvent<{
-			start: { name: string; lat: number; lng: number; location: string; city?: string | null; code?: string | null };
-			end: { name: string; lat: number; lng: number; location: string; city?: string | null; code?: string | null };
+			start: { name: string; lat: number; lng: number; location: string; city?: string | null; code?: string | null } | null;
+			end: { name: string; lat: number; lng: number; location: string; city?: string | null; code?: string | null } | null;
 		}>
 	) {
 		const { start, end } = event.detail;
