@@ -1074,6 +1074,14 @@ class CollectionSerializer(CustomModelSerializer):
         required=False,
         allow_null=True,
     )
+    adventure_type = AdventureTypeSerializer(read_only=True)
+    adventure_type_id = serializers.PrimaryKeyRelatedField(
+        queryset=AdventureType.objects.all(),
+        source='adventure_type',
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = Collection
@@ -1100,8 +1108,10 @@ class CollectionSerializer(CustomModelSerializer):
             'days_until_start',
             'primary_image',
             'primary_image_id',
+            'adventure_type',
+            'adventure_type_id',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'shared_with', 'status', 'days_until_start', 'primary_image']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'shared_with', 'status', 'days_until_start', 'primary_image', 'adventure_type']
 
     def get_collaborators(self, obj):
         request = self.context.get('request')

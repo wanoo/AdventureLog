@@ -406,6 +406,14 @@ class Collection(models.Model):
         null=True,
         blank=True,
     )
+    adventure_type = models.ForeignKey(
+        'AdventureType',
+        on_delete=models.SET_NULL,
+        related_name='collections',
+        null=True,
+        blank=True,
+        help_text="Category/type of this collection"
+    )
 
     # if connected locations are private and collection is public, raise an error
     def clean(self):
