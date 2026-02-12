@@ -24,7 +24,6 @@
 	import UploadIcon from '~icons/mdi/upload';
 	import FileIcon from '~icons/mdi/file';
 	import CloseIcon from '~icons/mdi/close';
-	import FolderIcon from '~icons/mdi/folder-outline';
 	import StarRating from '../../StarRating.svelte';
 	import StravaActivityCard from '../../StravaActivityCard.svelte';
 	import ActivityCard from '../../cards/ActivityCard.svelte';
@@ -923,28 +922,14 @@
 								>
 									<div class="flex items-start justify-between">
 										<div class="flex-1 min-w-0">
-											{#if visit.user_username || visit.collection_info}
-												<div class="text-xs opacity-60 mb-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-													{#if visit.user_username}
-														<span>
-															{$t('adventures.added_by')}
-															<a
-																href="/profile/{visit.user_username}"
-																class="font-semibold link link-hover link-primary"
-																>{visit.user_username}</a
-															>
-														</span>
-													{/if}
-													{#if visit.collection_info}
-														<span class="flex items-center gap-1">
-															<FolderIcon class="w-3 h-3" />
-															<a
-																href="/collections/{visit.collection_info.id}"
-																class="font-semibold link link-hover link-primary"
-																>{visit.collection_info.name}</a
-															>
-														</span>
-													{/if}
+											{#if visit.user_username}
+												<div class="text-xs opacity-60 mb-2">
+													{$t('adventures.added_by')}
+													<a
+														href="/profile/{visit.user_username}"
+														class="font-semibold link link-hover link-primary"
+														>{visit.user_username}</a
+													>
 												</div>
 											{/if}
 											<div class="flex items-center gap-2 mb-2">
@@ -976,9 +961,13 @@
 												</div>
 											</div>
 
-											{#if visit.notes}
+											{#if visit.notes || visit.collection_info}
 												<p class="text-xs text-base-content/70 bg-base-200/50 p-2 rounded">
-													"{visit.notes}"
+													{#if visit.notes}"{visit.notes}"{/if}{#if visit.notes && visit.collection_info} - {/if}{#if visit.collection_info}<a
+															href="/collections/{visit.collection_info.id}"
+															class="link link-hover link-primary font-semibold"
+															>{visit.collection_info.name}</a
+														>{/if}
 												</p>
 											{/if}
 											{#if visit.rating !== null && visit.rating !== undefined}
