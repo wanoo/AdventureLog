@@ -14,6 +14,83 @@ from adventures.permissions import IsOwnerOrSharedWithFullAccess
 from django.db.models import Q
 from django.db import transaction
 from django.utils import timezone
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def get_collection_users(collection):
+    """Get all users associated with a collection (owner + shared_with)."""
+    users = [collection.user]
+    users.extend(collection.shared_with.all())
+    return users
+
+
+def create_visits_for_users(users, parent_object, parent_type, start_date, end_date, notes=None):
+    """
+    Create visits for all specified users on the given parent object.
+
+    Args:
+        users: List of User objects
+        parent_object: Location, Transportation, or Lodging instance
+        parent_type: 'location', 'transportation', or 'lodging'
+        start_date: datetime for visit start
+        end_date: datetime for visit end
+        notes: Optional notes for the visit
+
+    Returns:
+        List of created Visit objects
+    """
+    created_visits = []
+
+    for user in users:
+        # Build the parent FK based on type
+        visit_kwargs = {
+            'user': user,
+            'start_date': start_date,
+            'end_date': end_date,
+            'notes': notes or f"Created from itinerary planning",
+        }
+
+        if parent_type == 'location':
+            visit_kwargs['location'] = parent_object
+            # Check for existing visit for this user/location/date
+            existing = Visit.objects.filter(
+                location=parent_object,
+                user=user,
+                start_date__date=start_date.date() if start_date else None
+            ).first()
+        elif parent_type == 'transportation':
+            visit_kwargs['transportation'] = parent_object
+            existing = Visit.objects.filter(
+                transportation=parent_object,
+                user=user,
+                start_date__date=start_date.date() if start_date else None
+            ).first()
+        elif parent_type == 'lodging':
+            visit_kwargs['lodging'] = parent_object
+            existing = Visit.objects.filter(
+                lodging=parent_object,
+                user=user,
+                start_date__date=start_date.date() if start_date else None
+            ).first()
+        else:
+            continue
+
+        if existing:
+            # Update existing visit dates
+            existing.start_date = start_date
+            existing.end_date = end_date
+            existing.save(update_fields=['start_date', 'end_date'])
+            created_visits.append(existing)
+            logger.info(f"Updated visit {existing.id} for user {user.username}")
+        else:
+            # Create new visit
+            visit = Visit.objects.create(**visit_kwargs)
+            created_visits.append(visit)
+            logger.info(f"Created visit {visit.id} for user {user.username}")
+
+    return created_visits
 
 class ItineraryViewSet(viewsets.ModelViewSet):
     serializer_class = CollectionItineraryItemSerializer
@@ -101,8 +178,18 @@ class ItineraryViewSet(viewsets.ModelViewSet):
                 if update_item_date and target_date and content_object:
                     # Extract just the date part if target_date is datetime
                     clean_date = str(target_date).split('T')[0] if 'T' in str(target_date) else str(target_date)
-                    
-                    # For locations, create an all-day visit instead of updating a date field
+
+                    # Get collection and its users for creating visits
+                    collection_id_for_visits = data.get('collection')
+                    collection_users = []
+                    if collection_id_for_visits:
+                        try:
+                            collection_obj = Collection.objects.get(id=collection_id_for_visits)
+                            collection_users = get_collection_users(collection_obj)
+                        except Collection.DoesNotExist:
+                            pass
+
+                    # For locations, create an all-day visit for all collection users
                     if content_type_val == 'location':
                         # Determine start/end bounds. Support single date or optional start_date/end_date in payload.
                         # Prefer explicit start_date/end_date if provided, otherwise use the single target date.
@@ -152,12 +239,11 @@ class ItineraryViewSet(viewsets.ModelViewSet):
                                 new_start = None
                                 new_end = None
 
-                        # Update existing visit or create new one
-                        # When moving between days, update the existing visit to preserve visit ID and data
+                        # Create/update visits for all collection users
                         if new_start and new_end:
                             source_visit_id = data.get('source_visit_id')
-                            
-                            # If source visit provided, update it
+
+                            # If source visit provided, update it (for drag-drop scenarios)
                             if source_visit_id:
                                 try:
                                     source_visit = Visit.objects.get(id=source_visit_id, location=content_object)
@@ -165,95 +251,87 @@ class ItineraryViewSet(viewsets.ModelViewSet):
                                     source_visit.end_date = new_end
                                     source_visit.save(update_fields=['start_date', 'end_date'])
                                 except Visit.DoesNotExist:
-                                    # Fall back to create logic below
                                     pass
-                            
-                            # If no source visit or update failed, check for overlapping visits
-                            if not source_visit_id:
-                                # Check for exact match to avoid duplicates
+
+                            # Create visits for all collection users
+                            if collection_users:
+                                create_visits_for_users(
+                                    users=collection_users,
+                                    parent_object=content_object,
+                                    parent_type='location',
+                                    start_date=new_start,
+                                    end_date=new_end,
+                                    notes="Created from itinerary planning"
+                                )
+                            else:
+                                # Fallback: create single visit without user (legacy behavior)
                                 exact_match = Visit.objects.filter(
                                     location=content_object,
                                     start_date=new_start,
                                     end_date=new_end
                                 ).exists()
-                                
+
                                 if not exact_match:
-                                    # Check for any overlapping visits
                                     overlap_q = Q(start_date__lte=new_end) & Q(end_date__gte=new_start)
                                     existing = Visit.objects.filter(location=content_object).filter(overlap_q).first()
-                                    
+
                                     if existing:
-                                        # Update existing overlapping visit
                                         existing.start_date = new_start
                                         existing.end_date = new_end
                                         existing.save(update_fields=['start_date', 'end_date'])
                                     else:
-                                        # Create new visit
                                         Visit.objects.create(
                                             location=content_object,
                                             start_date=new_start,
                                             end_date=new_end,
                                             notes="Created from itinerary planning"
                                         )
+                    elif content_type_val == 'transportation':
+                        # For transportation: create visits for all collection users
+                        # Transportation dates are now managed via Visit model
+                        new_date = datetime.datetime.combine(parse_date(clean_date), datetime.time.min)
+                        new_end_date = datetime.datetime.combine(parse_date(clean_date), datetime.time.max)
+
+                        # Create visits for all collection users
+                        if collection_users:
+                            create_visits_for_users(
+                                users=collection_users,
+                                parent_object=content_object,
+                                parent_type='transportation',
+                                start_date=new_date,
+                                end_date=new_end_date,
+                                notes="Created from itinerary planning"
+                            )
+                    elif content_type_val == 'lodging':
+                        # For lodging: create visits spanning check-in to check-out for all users
+                        # Default: check-in at 14:00, check-out at 11:00 next day
+                        new_check_in = datetime.datetime.combine(parse_date(clean_date), datetime.time(14, 0))
+                        new_check_out = datetime.datetime.combine(
+                            parse_date(clean_date) + datetime.timedelta(days=1),
+                            datetime.time(11, 0)
+                        )
+
+                        # Create visits for all collection users spanning full lodging duration
+                        if collection_users:
+                            create_visits_for_users(
+                                users=collection_users,
+                                parent_object=content_object,
+                                parent_type='lodging',
+                                start_date=new_check_in,
+                                end_date=new_check_out,
+                                notes="Created from itinerary planning"
+                            )
                     else:
-                        # For other item types, update their date field and preserve duration
-                        if content_type_val == 'transportation':
-                            # For transportation: update date and end_date, preserving duration and times
-                            if hasattr(content_object, 'date') and hasattr(content_object, 'end_date'):
-                                old_date = content_object.date
-                                old_end_date = content_object.end_date
-                                
-                                if old_date and old_end_date:
-                                    # Extract time from original start date
-                                    original_time = old_date.time()
-                                    # Create new_date with the new date but preserve the original time
-                                    new_date = datetime.datetime.combine(parse_date(clean_date), original_time)
-                                    # Duration = end_date - date
-                                    duration = old_end_date - old_date
-                                    # Apply same duration to new date
-                                    new_end_date = new_date + duration
-                                else:
-                                    # No original end date, set to same as start date
-                                    new_date = datetime.datetime.combine(parse_date(clean_date), datetime.time.min)
-                                    new_end_date = new_date
-                                
-                                content_object.date = new_date
-                                content_object.end_date = new_end_date
-                                content_object.save(update_fields=['date', 'end_date'])
-                        elif content_type_val == 'lodging':
-                            # For lodging: update check_in and check_out, preserving duration and times
-                            if hasattr(content_object, 'check_in') and hasattr(content_object, 'check_out'):
-                                old_check_in = content_object.check_in
-                                old_check_out = content_object.check_out
-                                
-                                if old_check_in and old_check_out:
-                                    # Extract time from original check_in
-                                    original_time = old_check_in.time()
-                                    # Create new_check_in with the new date but preserve the original time
-                                    new_check_in = datetime.datetime.combine(parse_date(clean_date), original_time)
-                                    # Duration = check_out - check_in
-                                    duration = old_check_out - old_check_in
-                                    # Apply same duration to new check_in
-                                    new_check_out = new_check_in + duration
-                                else:
-                                    # No original dates: check_in at midnight on selected day, check_out at midnight next day
-                                    new_check_in = datetime.datetime.combine(parse_date(clean_date), datetime.time.min)
-                                    new_check_out = new_check_in + datetime.timedelta(days=1)
-                                
-                                content_object.check_in = new_check_in
-                                content_object.check_out = new_check_out
-                                content_object.save(update_fields=['check_in', 'check_out'])
-                        else:
-                            # For note, checklist, etc. - just update the date field
-                            date_field = None
-                            if hasattr(content_object, 'date'):
-                                date_field = 'date'
-                            elif hasattr(content_object, 'start_date'):
-                                date_field = 'start_date'
-                            
-                            if date_field:
-                                setattr(content_object, date_field, clean_date)
-                                content_object.save(update_fields=[date_field])
+                        # For note, checklist, etc. - just update the date field
+                        date_field = None
+                        if hasattr(content_object, 'date'):
+                            date_field = 'date'
+                        elif hasattr(content_object, 'start_date'):
+                            date_field = 'start_date'
+
+                        if date_field:
+                            setattr(content_object, date_field, clean_date)
+                            content_object.save(update_fields=[date_field])
 
         # Ensure order is unique for this collection+group combination (day or global)
         collection_id = data.get('collection')
