@@ -272,11 +272,11 @@
 							</li>
 						{/if}
 						<div class="divider my-1"></div>
-						{#if collection && transportation.user !== user?.uuid}
-							<!-- User is not the owner, show "Remove from collection" -->
+						{#if collection}
+							<!-- Show "Remove from collection" when in collection context -->
 							<li>
 								<button
-									class="text-error flex items-center gap-2"
+									class="flex items-center gap-2"
 									on:click={() => {
 										close();
 										removeFromCollection();
@@ -286,8 +286,9 @@
 									{$t('adventures.remove_from_collection')}
 								</button>
 							</li>
-						{:else}
-							<!-- User is the owner, show "Delete" -->
+						{/if}
+						{#if transportation.user === user?.uuid}
+							<!-- Owner can delete -->
 							<li>
 								<button
 									class="text-error flex items-center gap-2"
