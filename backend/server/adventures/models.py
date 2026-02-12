@@ -128,6 +128,8 @@ class Visit(models.Model):
     transportation = models.ForeignKey('Transportation', on_delete=models.CASCADE, related_name='visits', null=True, blank=True)
     lodging = models.ForeignKey('Lodging', on_delete=models.CASCADE, related_name='visits', null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='visits')
+    # Optional: collection this visit was created from (for itinerary planning)
+    collection = models.ForeignKey('Collection', on_delete=models.SET_NULL, null=True, blank=True, related_name='planned_visits')
     start_date = models.DateTimeField(null=True, blank=True)
     end_date = models.DateTimeField(null=True, blank=True)
     timezone = models.CharField(max_length=50, choices=[(tz, tz) for tz in TIMEZONES], null=True, blank=True)

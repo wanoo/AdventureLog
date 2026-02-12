@@ -26,12 +26,12 @@ def get_collection_users(collection):
     return users
 
 
-def create_visits_for_users(users, parent_object, parent_type, start_date, end_date, notes=None):
+def create_visits_for_users(users, parent_object, parent_type, start_date, end_date, collection=None, notes=None):
     """
     Create or extend visits for all specified users on the given parent object.
 
     For consecutive days, this merges visits into a single extended visit.
-    Example: Lodging on Day 1, 2, 3 → one visit (check-in Day 1, check-out Day 4)
+    Example: Lodging on Day 1, 2, 3 → one visit spanning all 3 days
 
     Args:
         users: List of User objects
@@ -39,6 +39,7 @@ def create_visits_for_users(users, parent_object, parent_type, start_date, end_d
         parent_type: 'location', 'transportation', or 'lodging'
         start_date: datetime for visit start
         end_date: datetime for visit end
+        collection: Optional Collection this visit was created from
         notes: Optional notes for the visit
 
     Returns:
@@ -64,21 +65,17 @@ def create_visits_for_users(users, parent_object, parent_type, start_date, end_d
             if end_date > exact_match.end_date:
                 exact_match.end_date = end_date
                 exact_match.save(update_fields=['end_date'])
+            # Update collection reference if provided
+            if collection and not exact_match.collection:
+                exact_match.collection = collection
+                exact_match.save(update_fields=['collection'])
             created_visits.append(exact_match)
             logger.info(f"Updated exact match visit {exact_match.id} for user {user.username}")
             continue
 
-        # Check for adjacent visit ending on this day (extend it)
-        # For lodging: existing check-out on same day as new check-in → extend
-        # For location: existing end_date on day before new start → extend
-        adjacent_before = None
-        if parent_type == 'lodging':
-            # Lodging: check if there's a visit checking out on the same day we're checking in
-            adjacent_before = existing_visits.filter(end_date__date=start_date.date()).first()
-        else:
-            # Location/Transportation: check if visit ends the day before
-            day_before = start_date.date() - datetime.timedelta(days=1)
-            adjacent_before = existing_visits.filter(end_date__date=day_before).first()
+        # Check for adjacent visit ending the day before (extend it)
+        day_before = start_date.date() - datetime.timedelta(days=1)
+        adjacent_before = existing_visits.filter(end_date__date=day_before).first()
 
         if adjacent_before:
             # Extend the existing visit's end date
@@ -89,14 +86,8 @@ def create_visits_for_users(users, parent_object, parent_type, start_date, end_d
             continue
 
         # Check for adjacent visit starting the day after (extend it backwards)
-        adjacent_after = None
-        if parent_type == 'lodging':
-            # Lodging: check if there's a visit checking in on our check-out day
-            adjacent_after = existing_visits.filter(start_date__date=end_date.date()).first()
-        else:
-            # Location/Transportation: check if visit starts the day after
-            day_after = end_date.date() + datetime.timedelta(days=1)
-            adjacent_after = existing_visits.filter(start_date__date=day_after).first()
+        day_after = end_date.date() + datetime.timedelta(days=1)
+        adjacent_after = existing_visits.filter(start_date__date=day_after).first()
 
         if adjacent_after:
             # Extend the existing visit's start date
@@ -112,6 +103,7 @@ def create_visits_for_users(users, parent_object, parent_type, start_date, end_d
             'start_date': start_date,
             'end_date': end_date,
             'notes': notes or "Created from itinerary planning",
+            'collection': collection,
         }
 
         if parent_type == 'location':
@@ -291,6 +283,7 @@ class ItineraryViewSet(viewsets.ModelViewSet):
                                     parent_type='location',
                                     start_date=new_start,
                                     end_date=new_end,
+                                    collection=collection_obj,
                                     notes="Created from itinerary planning"
                                 )
                             else:
@@ -329,25 +322,23 @@ class ItineraryViewSet(viewsets.ModelViewSet):
                                 parent_type='transportation',
                                 start_date=new_date,
                                 end_date=new_end_date,
+                                collection=collection_obj,
                                 notes="Created from itinerary planning"
                             )
 
                     elif content_type_val == 'lodging':
-                        # For lodging: create visits spanning check-in to check-out for all users
-                        # Default: check-in at 14:00, check-out at 11:00 next day
-                        new_check_in = datetime.datetime.combine(parse_date(clean_date), datetime.time(14, 0))
-                        new_check_out = datetime.datetime.combine(
-                            parse_date(clean_date) + datetime.timedelta(days=1),
-                            datetime.time(11, 0)
-                        )
+                        # For lodging: create full-day visits for all users
+                        new_start = datetime.datetime.combine(parse_date(clean_date), datetime.time.min)
+                        new_end = datetime.datetime.combine(parse_date(clean_date), datetime.time.max)
 
                         if collection_users:
                             create_visits_for_users(
                                 users=collection_users,
                                 parent_object=content_object,
                                 parent_type='lodging',
-                                start_date=new_check_in,
-                                end_date=new_check_out,
+                                start_date=new_start,
+                                end_date=new_end,
+                                collection=collection_obj,
                                 notes="Created from itinerary planning"
                             )
 

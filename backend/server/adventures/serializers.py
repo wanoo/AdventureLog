@@ -328,11 +328,21 @@ class VisitSerializer(serializers.ModelSerializer):
 
     activities = ActivitySerializer(many=True, read_only=True, required=False)
     user_username = serializers.CharField(source='user.username', read_only=True, default=None)
+    collection_info = serializers.SerializerMethodField()
 
     class Meta:
         model = Visit
-        fields = ['id', 'start_date', 'end_date', 'timezone', 'notes', 'rating', 'activities', 'location', 'transportation', 'lodging', 'created_at', 'updated_at', 'user', 'user_username']
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'user_username']
+        fields = ['id', 'start_date', 'end_date', 'timezone', 'notes', 'rating', 'activities', 'location', 'transportation', 'lodging', 'created_at', 'updated_at', 'user', 'user_username', 'collection', 'collection_info']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'user_username', 'collection_info']
+
+    def get_collection_info(self, obj):
+        """Return collection name and id if visit was created from a collection."""
+        if obj.collection:
+            return {
+                'id': str(obj.collection.id),
+                'name': obj.collection.name
+            }
+        return None
 
     def create(self, validated_data):
         if not validated_data.get('end_date') and validated_data.get('start_date'):
