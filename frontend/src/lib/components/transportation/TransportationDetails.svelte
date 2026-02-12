@@ -7,6 +7,7 @@
 	import { TRANSPORTATION_TYPES_ICONS } from '$lib';
 	import { DEFAULT_CURRENCY, normalizeMoneyPayload, toMoneyValue } from '$lib/money';
 	import type { SearchMode } from '../shared/LocationSearchMap.svelte';
+	import { transportationTypes, fetchEntityTypes } from '$lib/stores/entityTypes';
 
 	const dispatch = createEventDispatcher();
 
@@ -232,6 +233,9 @@
 	}
 
 	onMount(() => {
+		// Fetch entity types from API
+		fetchEntityTypes();
+
 		if (initialTransportation && typeof initialTransportation === 'object') {
 			transportation.name = initialTransportation.name || '';
 			transportation.type = initialTransportation.type || '';
@@ -297,9 +301,15 @@
 				bind:value={transportation.type}
 			>
 				<option disabled value="">{$t('transportation.select_type')}</option>
-				{#each Object.entries(TRANSPORTATION_TYPES_ICONS) as [key, icon]}
-					<option value={key}>{icon} {key.charAt(0).toUpperCase() + key.slice(1)}</option>
-				{/each}
+				{#if $transportationTypes.length > 0}
+					{#each $transportationTypes as type}
+						<option value={type.key}>{type.icon} {type.name}</option>
+					{/each}
+				{:else}
+					{#each Object.entries(TRANSPORTATION_TYPES_ICONS) as [key, icon]}
+						<option value={key}>{icon} {key.charAt(0).toUpperCase() + key.slice(1)}</option>
+					{/each}
+				{/if}
 			</select>
 		</div>
 	</svelte:fragment>

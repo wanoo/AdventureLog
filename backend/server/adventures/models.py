@@ -113,6 +113,8 @@ TRANSPORTATION_TYPES = [
     ('boat', 'Boat'),
     ('bike', 'Bike'),
     ('walking', 'Walking'),
+    ('cab', 'Cab'),
+    ('vtc', 'VTC'),
     ('other', 'Other')
 ]
 
@@ -120,6 +122,57 @@ TRANSPORTATION_TYPES = [
 default_user = 1  # Replace with an actual user ID
 
 User = get_user_model()
+
+
+class TransportationType(models.Model):
+    """Admin-managed transportation types with icons."""
+    key = models.CharField(max_length=50, unique=True, help_text="Unique identifier (e.g., 'plane', 'train')")
+    name = models.CharField(max_length=100, help_text="Display name (e.g., 'Plane', 'Train')")
+    icon = models.CharField(max_length=10, help_text="Emoji icon (e.g., '✈️', '🚆')")
+    display_order = models.IntegerField(default=0, help_text="Order in dropdown lists")
+    is_active = models.BooleanField(default=True, help_text="Whether this type is available for selection")
+
+    class Meta:
+        ordering = ['display_order', 'name']
+        verbose_name = "Transportation Type"
+        verbose_name_plural = "Transportation Types"
+
+    def __str__(self):
+        return f"{self.icon} {self.name}"
+
+
+class LodgingType(models.Model):
+    """Admin-managed lodging types with icons."""
+    key = models.CharField(max_length=50, unique=True, help_text="Unique identifier (e.g., 'hotel', 'hostel')")
+    name = models.CharField(max_length=100, help_text="Display name (e.g., 'Hotel', 'Hostel')")
+    icon = models.CharField(max_length=10, help_text="Emoji icon (e.g., '🏨', '🛏️')")
+    display_order = models.IntegerField(default=0, help_text="Order in dropdown lists")
+    is_active = models.BooleanField(default=True, help_text="Whether this type is available for selection")
+
+    class Meta:
+        ordering = ['display_order', 'name']
+        verbose_name = "Lodging Type"
+        verbose_name_plural = "Lodging Types"
+
+    def __str__(self):
+        return f"{self.icon} {self.name}"
+
+
+class ActivityType(models.Model):
+    """Admin-managed activity types with icons (for location categories)."""
+    key = models.CharField(max_length=50, unique=True, help_text="Unique identifier (e.g., 'hiking', 'dining')")
+    name = models.CharField(max_length=100, help_text="Display name (e.g., 'Hiking', 'Dining')")
+    icon = models.CharField(max_length=10, help_text="Emoji icon (e.g., '🥾', '🍽️')")
+    display_order = models.IntegerField(default=0, help_text="Order in dropdown lists")
+    is_active = models.BooleanField(default=True, help_text="Whether this type is available for selection")
+
+    class Meta:
+        ordering = ['display_order', 'name']
+        verbose_name = "Activity Type"
+        verbose_name_plural = "Activity Types"
+
+    def __str__(self):
+        return f"{self.icon} {self.name}"
 
 class Visit(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)

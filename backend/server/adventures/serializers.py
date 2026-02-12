@@ -1,7 +1,7 @@
 import os
 from django.conf import settings
 from django.db.models import Q
-from .models import Location, ContentImage, ChecklistItem, Collection, Note, Transportation, Checklist, Visit, Category, ContentAttachment, Lodging, CollectionInvite, Trail, Activity, CollectionItineraryItem, CollectionItineraryDay, CollectionTemplate, AuditLog
+from .models import Location, ContentImage, ChecklistItem, Collection, Note, Transportation, Checklist, Visit, Category, ContentAttachment, Lodging, CollectionInvite, Trail, Activity, CollectionItineraryItem, CollectionItineraryDay, CollectionTemplate, AuditLog, TransportationType, LodgingType, ActivityType
 from rest_framework import serializers
 from main.utils import CustomModelSerializer
 from users.serializers import CustomUserDetailsSerializer
@@ -40,6 +40,24 @@ def _serialize_collaborator(user, owner_id=None, request_user=None):
         'is_owner': owner_id == user.id,
         'is_current_user': bool(request_user and request_user.id == user.id),
     }
+
+
+class TransportationTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TransportationType
+        fields = ['id', 'key', 'name', 'icon', 'display_order']
+
+
+class LodgingTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LodgingType
+        fields = ['id', 'key', 'name', 'icon', 'display_order']
+
+
+class ActivityTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ActivityType
+        fields = ['id', 'key', 'name', 'icon', 'display_order']
 
 
 class ContentImageSerializer(CustomModelSerializer):

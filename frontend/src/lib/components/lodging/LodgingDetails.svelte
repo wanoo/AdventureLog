@@ -5,6 +5,7 @@
 	import LocationSearchMap from '../shared/LocationSearchMap.svelte';
 	import { EntityDetailsBase } from '../shared/modal';
 	import { DEFAULT_CURRENCY, normalizeMoneyPayload, toMoneyValue } from '$lib/money';
+	import { lodgingTypes, fetchEntityTypes } from '$lib/stores/entityTypes';
 
 	const dispatch = createEventDispatcher();
 
@@ -167,6 +168,9 @@
 	}
 
 	onMount(() => {
+		// Fetch entity types from API
+		fetchEntityTypes();
+
 		if (initialLodging && initialLodging.latitude && initialLodging.longitude) {
 			lodging.latitude = initialLodging.latitude;
 			lodging.longitude = initialLodging.longitude;
@@ -235,17 +239,23 @@
 				bind:value={lodging.type}
 			>
 				<option disabled value="">{$t('lodging.select_type')}</option>
-				<option value="hotel">{$t('lodging.hotel')}</option>
-				<option value="hostel">{$t('lodging.hostel')}</option>
-				<option value="resort">{$t('lodging.resort')}</option>
-				<option value="bnb">{$t('lodging.bnb')}</option>
-				<option value="campground">{$t('lodging.campground')}</option>
-				<option value="cabin">{$t('lodging.cabin')}</option>
-				<option value="apartment">{$t('lodging.apartment')}</option>
-				<option value="house">{$t('lodging.house')}</option>
-				<option value="villa">{$t('lodging.villa')}</option>
-				<option value="motel">{$t('lodging.motel')}</option>
-				<option value="other">{$t('lodging.other')}</option>
+				{#if $lodgingTypes.length > 0}
+					{#each $lodgingTypes as type}
+						<option value={type.key}>{type.icon} {type.name}</option>
+					{/each}
+				{:else}
+					<option value="hotel">🏨 {$t('lodging.hotel')}</option>
+					<option value="hostel">🛏️ {$t('lodging.hostel')}</option>
+					<option value="resort">🏝️ {$t('lodging.resort')}</option>
+					<option value="bnb">🍳 {$t('lodging.bnb')}</option>
+					<option value="campground">🏕️ {$t('lodging.campground')}</option>
+					<option value="cabin">🏚️ {$t('lodging.cabin')}</option>
+					<option value="apartment">🏢 {$t('lodging.apartment')}</option>
+					<option value="house">🏠 {$t('lodging.house')}</option>
+					<option value="villa">🏡 {$t('lodging.villa')}</option>
+					<option value="motel">🚗🏨 {$t('lodging.motel')}</option>
+					<option value="other">❓ {$t('lodging.other')}</option>
+				{/if}
 			</select>
 		</div>
 	</svelte:fragment>
