@@ -195,25 +195,98 @@
 				{ value: 80467, label: '50 mi' }
 			];
 
-	// Get locations with coordinates for dropdown
+	// Types for dropdown items
+	type DropdownItem = {
+		id: string;
+		name: string;
+		type: 'location' | 'transportation-departure' | 'transportation-arrival' | 'lodging';
+		latitude: number;
+		longitude: number;
+		icon: string;
+	};
+
+	// Get all items with coordinates for dropdown
+	$: dropdownItems = (() => {
+		const items: DropdownItem[] = [];
+
+		// Locations
+		collection.locations
+			.filter((l) => l.latitude && l.longitude)
+			.forEach((l) => {
+				items.push({
+					id: `location-${l.id}`,
+					name: l.name,
+					type: 'location',
+					latitude: l.latitude!,
+					longitude: l.longitude!,
+					icon: '📍'
+				});
+			});
+
+		// Transportations - departures
+		(collection.transportations || [])
+			.filter((t) => t.origin_latitude && t.origin_longitude)
+			.forEach((t) => {
+				items.push({
+					id: `transport-dep-${t.id}`,
+					name: `${t.name} (${$t('transportation.departure') || 'Departure'})`,
+					type: 'transportation-departure',
+					latitude: t.origin_latitude!,
+					longitude: t.origin_longitude!,
+					icon: '🛫'
+				});
+			});
+
+		// Transportations - arrivals
+		(collection.transportations || [])
+			.filter((t) => t.destination_latitude && t.destination_longitude)
+			.forEach((t) => {
+				items.push({
+					id: `transport-arr-${t.id}`,
+					name: `${t.name} (${$t('transportation.arrival') || 'Arrival'})`,
+					type: 'transportation-arrival',
+					latitude: t.destination_latitude!,
+					longitude: t.destination_longitude!,
+					icon: '🛬'
+				});
+			});
+
+		// Lodging
+		(collection.lodging || [])
+			.filter((l) => l.latitude && l.longitude)
+			.forEach((l) => {
+				items.push({
+					id: `lodging-${l.id}`,
+					name: l.name,
+					type: 'lodging',
+					latitude: l.latitude!,
+					longitude: l.longitude!,
+					icon: '🏨'
+				});
+			});
+
+		return items;
+	})();
+
+	// For backward compatibility
 	$: locationsWithCoords = collection.locations.filter((l) => l.latitude && l.longitude);
 
-	// Set default selected location and map center
+	// Set default selected item and map center
 	onMount(() => {
-		if (locationsWithCoords.length > 0) {
-			selectedLocationId = locationsWithCoords[0].id;
+		if (dropdownItems.length > 0) {
+			selectedLocationId = dropdownItems[0].id;
 			mapCenter = {
-				lng: locationsWithCoords[0].longitude!,
-				lat: locationsWithCoords[0].latitude!
+				lng: dropdownItems[0].longitude,
+				lat: dropdownItems[0].latitude
 			};
 		}
 	});
 
-	// Update map center when selected location changes
+	// Update map center when selected item changes
 	$: if (selectedLocationId) {
-		const location = locationsWithCoords.find((l) => l.id === selectedLocationId);
-		if (location && location.latitude && location.longitude) {
-			mapCenter = { lng: location.longitude, lat: location.latitude };
+		const item = dropdownItems.find((i) => i.id === selectedLocationId);
+		if (item) {
+			mapCenter = { lng: item.longitude, lat: item.latitude };
 		}
 	}
 
@@ -240,10 +313,10 @@
 			const params = new URLSearchParams();
 
 			if (selectedLocationId) {
-				const location = locationsWithCoords.find((l) => l.id === selectedLocationId);
-				if (location && location.latitude && location.longitude) {
-					params.append('lat', location.latitude.toString());
-					params.append('lon', location.longitude.toString());
+				const item = dropdownItems.find((i) => i.id === selectedLocationId);
+				if (item) {
+					params.append('lat', item.latitude.toString());
+					params.append('lon', item.longitude.toString());
 				}
 			} else if (searchQuery.trim()) {
 				params.append('location', searchQuery);
@@ -399,7 +472,7 @@
 			<!-- Search Options -->
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<!-- Location Selector -->
-				{#if locationsWithCoords.length > 0}
+				{#if dropdownItems.length > 0}
 					<div class="form-control">
 						<label class="label">
 							<span class="label-text font-semibold"
@@ -408,8 +481,8 @@
 						</label>
 						<select class="select select-bordered w-full" bind:value={selectedLocationId}>
 							<option value={null}>{$t('recomendations.use_search_instead')}...</option>
-							{#each locationsWithCoords as location}
-								<option value={location.id}>{location.name}</option>
+							{#each dropdownItems as item}
+								<option value={item.id}>{item.icon} {item.name}</option>
 							{/each}
 						</select>
 					</div>
