@@ -23,6 +23,7 @@
 	import CloseIcon from '~icons/mdi/close';
 	import FileDocumentPlus from '~icons/mdi/file-document-plus';
 	import TagIcon from '~icons/mdi/tag';
+	import GlobeIcon from '~icons/mdi/earth';
 	import { addToast } from '$lib/toasts';
 	import DeleteWarning from '$lib/components/DeleteWarning.svelte';
 
@@ -32,11 +33,12 @@
 	let collections: SlimCollection[] = data.props.adventures || [];
 	let sharedCollections: SlimCollection[] = data.props.sharedCollections || [];
 	let archivedCollections: SlimCollection[] = data.props.archivedCollections || [];
+	let publicCollections: SlimCollection[] = data.props.publicCollections || [];
 
 	let newType: string = '';
 	let resultsPerPage: number = 25;
 	let isShowingCollectionModal: boolean = false;
-	let activeView: 'owned' | 'shared' | 'archived' | 'invites' = 'owned';
+	let activeView: 'owned' | 'shared' | 'archived' | 'invites' | 'public' = 'owned';
 
 	let next: string | null = data.props.next || null;
 	let previous: string | null = data.props.previous || null;
@@ -86,7 +88,9 @@
 				? sharedCollections
 				: activeView === 'archived'
 					? archivedCollections
-					: [];
+					: activeView === 'public'
+						? publicCollections
+						: [];
 
 	$: currentCount =
 		activeView === 'owned'
@@ -97,7 +101,9 @@
 					? archivedCollections.length
 					: activeView === 'invites'
 						? invites.length
-						: 0;
+						: activeView === 'public'
+							? publicCollections.length
+							: 0;
 
 	// Optionally, keep count in sync with collections only for owned view
 	$: {
@@ -325,7 +331,7 @@
 		sidebarOpen = !sidebarOpen;
 	}
 
-	function switchView(view: 'owned' | 'shared' | 'archived' | 'invites') {
+	function switchView(view: 'owned' | 'shared' | 'archived' | 'invites' | 'public') {
 		activeView = view;
 	}
 
@@ -478,7 +484,9 @@
 												? $t('collection.shared_collections')
 												: activeView === 'archived'
 													? $t('adventures.archived_collections')
-													: $t('invites.pending_invites')}
+													: activeView === 'public'
+														? $t('collection.public_collections')
+														: $t('invites.pending_invites')}
 									</p>
 								</div>
 							</div>
@@ -522,6 +530,20 @@
 										: 'badge-ghost'}"
 								>
 									{archivedCollections.length}
+								</div>
+							</button>
+							<button
+								class="tab gap-2 {activeView === 'public' ? 'tab-active' : ''}"
+								on:click={() => switchView('public')}
+							>
+								<GlobeIcon class="w-4 h-4" />
+								<span class="hidden sm:inline">{$t('adventures.public')}</span>
+								<div
+									class="badge badge-sm {activeView === 'public'
+										? 'badge-primary'
+										: 'badge-ghost'}"
+								>
+									{publicCollections.length}
 								</div>
 							</button>
 							<button
@@ -624,6 +646,8 @@
 								<CollectionIcon class="w-16 h-16 text-base-content/30" />
 							{:else if activeView === 'shared'}
 								<Share class="w-16 h-16 text-base-content/30" />
+							{:else if activeView === 'public'}
+								<GlobeIcon class="w-16 h-16 text-base-content/30" />
 							{:else}
 								<Archive class="w-16 h-16 text-base-content/30" />
 							{/if}
@@ -633,14 +657,18 @@
 								? $t('collection.no_collections_yet')
 								: activeView === 'shared'
 									? $t('collection.no_shared_collections')
-									: $t('collection.no_archived_collections')}
+									: activeView === 'public'
+										? $t('collection.no_public_collections')
+										: $t('collection.no_archived_collections')}
 						</h3>
 						<p class="text-base-content/50 text-center max-w-md">
 							{activeView === 'owned'
 								? $t('collection.create_first')
 								: activeView === 'shared'
 									? $t('collection.make_sure_public')
-									: $t('collection.archived_appear_here')}
+									: activeView === 'public'
+										? $t('collection.no_public_collections_desc')
+										: $t('collection.archived_appear_here')}
 						</p>
 						{#if activeView === 'owned'}
 							<button

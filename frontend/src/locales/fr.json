@@ -827,7 +827,10 @@
 		"save_as_template": "Enregistrer comme modèle",
 		"template_saved_success": "Modèle enregistré avec succès",
 		"adventure_type": "Type",
-		"no_type": "-- Aucun type --"
+		"no_type": "-- Aucun type --",
+		"public_collections": "Collections publiques",
+		"no_public_collections": "Aucune collection publique trouvée.",
+		"no_public_collections_desc": "Les collections publiques d'autres utilisateurs apparaîtront ici."
 	},
 	"notes": {
 		"content": "Contenu",

@@ -28,7 +28,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         """Return different serializers based on the action"""
-        if self.action in ['list', 'all', 'archived', 'shared']:
+        if self.action in ['list', 'all', 'archived', 'shared', 'public']:
             return UltraSlimCollectionSerializer
         return CollectionSerializer
 
@@ -209,7 +209,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Get queryset with optimizations for list actions"""
-        if self.action in ['list', 'all', 'archived', 'shared']:
+        if self.action in ['list', 'all', 'archived', 'shared', 'public']:
             return self.get_optimized_queryset_for_listing()
         return self.get_base_queryset()
     
@@ -300,7 +300,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
     def shared(self, request):
         if not request.user.is_authenticated:
             return Response({"error": "User is not authenticated"}, status=400)
-        
+
         queryset = Collection.objects.filter(
             shared_with=request.user
         ).select_related('user').prefetch_related(
@@ -310,7 +310,31 @@ class CollectionViewSet(viewsets.ModelViewSet):
                 to_attr='primary_images'
             )
         )
-        
+
+        queryset = self.apply_sorting(queryset)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def public(self, request):
+        """Return public collections from other users (not owned by the current user)."""
+        if not request.user.is_authenticated:
+            return Response({"error": "User is not authenticated"}, status=400)
+
+        queryset = Collection.objects.filter(
+            is_public=True
+        ).exclude(
+            user=request.user
+        ).select_related('user', 'primary_image').prefetch_related(
+            Prefetch(
+                'locations__images',
+                queryset=ContentImage.objects.filter(is_primary=True).select_related('user'),
+                to_attr='primary_images'
+            )
+        )
+
+        queryset = self.apply_status_filter(queryset)
+        queryset = self._apply_adventure_type_filter(queryset, request)
         queryset = self.apply_sorting(queryset)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

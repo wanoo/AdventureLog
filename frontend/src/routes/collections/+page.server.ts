@@ -43,11 +43,12 @@ export const load = (async (event) => {
 
 	try {
 		// Execute all API calls in parallel
-		const [collectionsRes, sharedRes, archivedRes, invitesRes] = await Promise.all([
+		const [collectionsRes, sharedRes, archivedRes, invitesRes, publicRes] = await Promise.all([
 			fetch(apiUrl, { headers, credentials: 'include' }),
 			fetch(`${serverEndpoint}/api/collections/shared/?nested=true`, { headers }),
 			fetch(`${serverEndpoint}/api/collections/archived/?nested=true`, { headers }),
-			fetch(`${serverEndpoint}/api/collections/invites/`, { headers })
+			fetch(`${serverEndpoint}/api/collections/invites/`, { headers }),
+			fetch(`${serverEndpoint}/api/collections/public/?nested=true`, { headers })
 		]);
 
 		// Check if main collections request failed (most critical)
@@ -57,11 +58,12 @@ export const load = (async (event) => {
 		}
 
 		// Parse responses in parallel
-		const [collectionsData, sharedData, archivedData, invitesData] = await Promise.all([
+		const [collectionsData, sharedData, archivedData, invitesData, publicData] = await Promise.all([
 			collectionsRes.json(),
 			sharedRes.ok ? sharedRes.json() : [],
 			archivedRes.ok ? archivedRes.json() : [],
-			invitesRes.ok ? invitesRes.json() : []
+			invitesRes.ok ? invitesRes.json() : [],
+			publicRes.ok ? publicRes.json() : []
 		]);
 
 		return {
@@ -79,7 +81,8 @@ export const load = (async (event) => {
 				sharing,
 				adventure_type,
 				archivedCollections: archivedData as SlimCollection[],
-				invites: invitesData
+				invites: invitesData,
+				publicCollections: publicData as SlimCollection[]
 			}
 		};
 	} catch (error) {
