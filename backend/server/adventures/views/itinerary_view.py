@@ -28,7 +28,10 @@ def get_collection_users(collection):
 
 def create_visits_for_users(users, parent_object, parent_type, start_date, end_date, notes=None):
     """
-    Create visits for all specified users on the given parent object.
+    Create or extend visits for all specified users on the given parent object.
+
+    For consecutive days, this merges visits into a single extended visit.
+    Example: Lodging on Day 1, 2, 3 → one visit (check-in Day 1, check-out Day 4)
 
     Args:
         users: List of User objects
@@ -39,56 +42,88 @@ def create_visits_for_users(users, parent_object, parent_type, start_date, end_d
         notes: Optional notes for the visit
 
     Returns:
-        List of created Visit objects
+        List of created/updated Visit objects
     """
     created_visits = []
 
     for user in users:
-        # Build the parent FK based on type
+        # Get existing visits for this user and parent
+        if parent_type == 'location':
+            existing_visits = Visit.objects.filter(location=parent_object, user=user)
+        elif parent_type == 'transportation':
+            existing_visits = Visit.objects.filter(transportation=parent_object, user=user)
+        elif parent_type == 'lodging':
+            existing_visits = Visit.objects.filter(lodging=parent_object, user=user)
+        else:
+            continue
+
+        # Check for exact overlap (same start date) - update existing
+        exact_match = existing_visits.filter(start_date__date=start_date.date()).first()
+        if exact_match:
+            # Only extend end_date if new one is later
+            if end_date > exact_match.end_date:
+                exact_match.end_date = end_date
+                exact_match.save(update_fields=['end_date'])
+            created_visits.append(exact_match)
+            logger.info(f"Updated exact match visit {exact_match.id} for user {user.username}")
+            continue
+
+        # Check for adjacent visit ending on this day (extend it)
+        # For lodging: existing check-out on same day as new check-in → extend
+        # For location: existing end_date on day before new start → extend
+        adjacent_before = None
+        if parent_type == 'lodging':
+            # Lodging: check if there's a visit checking out on the same day we're checking in
+            adjacent_before = existing_visits.filter(end_date__date=start_date.date()).first()
+        else:
+            # Location/Transportation: check if visit ends the day before
+            day_before = start_date.date() - datetime.timedelta(days=1)
+            adjacent_before = existing_visits.filter(end_date__date=day_before).first()
+
+        if adjacent_before:
+            # Extend the existing visit's end date
+            adjacent_before.end_date = end_date
+            adjacent_before.save(update_fields=['end_date'])
+            created_visits.append(adjacent_before)
+            logger.info(f"Extended visit {adjacent_before.id} end_date for user {user.username}")
+            continue
+
+        # Check for adjacent visit starting the day after (extend it backwards)
+        adjacent_after = None
+        if parent_type == 'lodging':
+            # Lodging: check if there's a visit checking in on our check-out day
+            adjacent_after = existing_visits.filter(start_date__date=end_date.date()).first()
+        else:
+            # Location/Transportation: check if visit starts the day after
+            day_after = end_date.date() + datetime.timedelta(days=1)
+            adjacent_after = existing_visits.filter(start_date__date=day_after).first()
+
+        if adjacent_after:
+            # Extend the existing visit's start date
+            adjacent_after.start_date = start_date
+            adjacent_after.save(update_fields=['start_date'])
+            created_visits.append(adjacent_after)
+            logger.info(f"Extended visit {adjacent_after.id} start_date for user {user.username}")
+            continue
+
+        # No adjacent visit found, create a new one
         visit_kwargs = {
             'user': user,
             'start_date': start_date,
             'end_date': end_date,
-            'notes': notes or f"Created from itinerary planning",
+            'notes': notes or "Created from itinerary planning",
         }
 
         if parent_type == 'location':
             visit_kwargs['location'] = parent_object
-            # Check for existing visit for this user/location/date
-            existing = Visit.objects.filter(
-                location=parent_object,
-                user=user,
-                start_date__date=start_date.date() if start_date else None
-            ).first()
         elif parent_type == 'transportation':
             visit_kwargs['transportation'] = parent_object
-            existing = Visit.objects.filter(
-                transportation=parent_object,
-                user=user,
-                start_date__date=start_date.date() if start_date else None
-            ).first()
         elif parent_type == 'lodging':
             visit_kwargs['lodging'] = parent_object
-            existing = Visit.objects.filter(
-                lodging=parent_object,
-                user=user,
-                start_date__date=start_date.date() if start_date else None
-            ).first()
-        else:
-            continue
 
-        if existing:
-            # Update existing visit dates
-            existing.start_date = start_date
-            existing.end_date = end_date
-            existing.save(update_fields=['start_date', 'end_date'])
-            created_visits.append(existing)
-            logger.info(f"Updated visit {existing.id} for user {user.username}")
-        else:
-            # Create new visit
-            visit = Visit.objects.create(**visit_kwargs)
-            created_visits.append(visit)
-            logger.info(f"Created visit {visit.id} for user {user.username}")
+        visit = Visit.objects.create(**visit_kwargs)
+        created_visits.append(visit)
+        logger.info(f"Created new visit {visit.id} for user {user.username}")
 
     return created_visits
 
