@@ -88,10 +88,33 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Rename ActivityType to AdventureType
-        migrations.RenameModel(
-            old_name='ActivityType',
-            new_name='AdventureType',
+        # First rename the table directly to avoid index conflicts
+        migrations.RunSQL(
+            sql='ALTER TABLE adventures_activitytype RENAME TO adventures_adventuretype;',
+            reverse_sql='ALTER TABLE adventures_adventuretype RENAME TO adventures_activitytype;',
+        ),
+        # Drop the old unique constraint/index
+        migrations.RunSQL(
+            sql='DROP INDEX IF EXISTS adventures_activitytype_key_a53223c5_like;',
+            reverse_sql='',
+        ),
+        migrations.RunSQL(
+            sql='ALTER INDEX IF EXISTS adventures_activitytype_pkey RENAME TO adventures_adventuretype_pkey;',
+            reverse_sql='ALTER INDEX IF EXISTS adventures_adventuretype_pkey RENAME TO adventures_activitytype_pkey;',
+        ),
+        migrations.RunSQL(
+            sql='ALTER INDEX IF EXISTS adventures_activitytype_key_key RENAME TO adventures_adventuretype_key_key;',
+            reverse_sql='ALTER INDEX IF EXISTS adventures_adventuretype_key_key RENAME TO adventures_activitytype_key_key;',
+        ),
+        # Update the model state
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.RenameModel(
+                    old_name='ActivityType',
+                    new_name='AdventureType',
+                ),
+            ],
+            database_operations=[],
         ),
         migrations.AlterModelOptions(
             name='adventuretype',
