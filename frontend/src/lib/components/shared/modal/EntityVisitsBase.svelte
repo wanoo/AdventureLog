@@ -24,6 +24,7 @@
 	import UploadIcon from '~icons/mdi/upload';
 	import FileIcon from '~icons/mdi/file';
 	import CloseIcon from '~icons/mdi/close';
+	import FolderIcon from '~icons/mdi/folder-outline';
 	import StarRating from '../../StarRating.svelte';
 	import StravaActivityCard from '../../StravaActivityCard.svelte';
 	import ActivityCard from '../../cards/ActivityCard.svelte';
@@ -965,8 +966,8 @@
 												<p class="text-xs text-base-content/70 bg-base-200/50 p-2 rounded">
 													{#if visit.notes}"{visit.notes}"{/if}{#if visit.notes && visit.collection_info} - {/if}{#if visit.collection_info}<a
 															href="/collections/{visit.collection_info.id}"
-															class="link link-hover link-primary font-semibold"
-															>{visit.collection_info.name}</a
+															class="link link-hover link-primary font-semibold inline-flex items-center gap-1"
+															><FolderIcon class="w-3 h-3" />{visit.collection_info.name}</a
 														>{/if}
 												</p>
 											{/if}

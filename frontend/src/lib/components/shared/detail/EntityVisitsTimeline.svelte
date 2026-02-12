@@ -5,6 +5,7 @@
 	import { isAllDay } from '$lib';
 	import StarRating from '$lib/components/StarRating.svelte';
 	import ActivityCard from '$lib/components/cards/ActivityCard.svelte';
+	import FolderIcon from '~icons/mdi/folder-outline';
 
 	export let visits: any[] = [];
 	export let title: string = $t('adventures.visits') || 'Visits';
@@ -91,8 +92,8 @@
 											<p class="text-sm italic">
 												{#if visit.notes}"{visit.notes}"{/if}{#if visit.notes && visit.collection_info} - {/if}{#if visit.collection_info}<a
 														href="/collections/{visit.collection_info.id}"
-														class="link link-hover link-primary font-semibold not-italic"
-														>{visit.collection_info.name}</a
+														class="link link-hover link-primary font-semibold not-italic inline-flex items-center gap-1"
+														><FolderIcon class="w-3 h-3" />{visit.collection_info.name}</a
 													>{/if}
 											</p>
 										</div>
