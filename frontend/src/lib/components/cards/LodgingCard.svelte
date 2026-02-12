@@ -2,6 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import TrashCanOutline from '~icons/mdi/trash-can-outline';
 	import FileDocumentEdit from '~icons/mdi/file-document-edit';
+	import LinkVariantRemove from '~icons/mdi/link-variant-remove';
 	import type { Collection, Lodging, User } from '$lib/types';
 	import { addToast } from '$lib/toasts';
 	import { t } from 'svelte-i18n';
@@ -97,6 +98,31 @@
 			dispatch('removeFromItinerary', itineraryItem);
 		} else {
 			addToast('error', $t('itinerary.item_remove_error'));
+		}
+	}
+
+	async function removeFromCollection() {
+		if (!collection) return;
+
+		// Remove the collection from the lodging's collections array
+		const updatedCollections = (lodging.collections || []).filter(
+			(c) => String(c) !== String(collection.id)
+		);
+
+		let res = await fetch(`/api/lodging/${lodging.id}/`, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ collections: updatedCollections })
+		});
+
+		if (res.ok) {
+			lodging.collections = updatedCollections;
+			addToast('info', $t('adventures.collection_remove_success') || 'Removed from collection');
+			dispatch('delete', lodging.id); // This triggers UI update to remove from list
+		} else {
+			addToast('error', $t('adventures.collection_remove_error') || 'Error removing from collection');
 		}
 	}
 </script>
@@ -212,18 +238,35 @@
 							</li>
 						{/if}
 						<div class="divider my-1"></div>
-						<li>
-							<button
-								class="text-error flex items-center gap-2"
-								on:click={() => {
-									close();
-									isWarningModalOpen = true;
-								}}
-							>
-								<TrashCanOutline class="w-4 h-4" />
-								{$t('adventures.delete')}
-							</button>
-						</li>
+						{#if collection && lodging.user !== user?.uuid}
+							<!-- User is not the owner, show "Remove from collection" -->
+							<li>
+								<button
+									class="text-error flex items-center gap-2"
+									on:click={() => {
+										close();
+										removeFromCollection();
+									}}
+								>
+									<LinkVariantRemove class="w-4 h-4" />
+									{$t('adventures.remove_from_collection')}
+								</button>
+							</li>
+						{:else}
+							<!-- User is the owner, show "Delete" -->
+							<li>
+								<button
+									class="text-error flex items-center gap-2"
+									on:click={() => {
+										close();
+										isWarningModalOpen = true;
+									}}
+								>
+									<TrashCanOutline class="w-4 h-4" />
+									{$t('adventures.delete')}
+								</button>
+							</li>
+						{/if}
 					</CardActionsMenu>
 				{/if}
 			</div>
