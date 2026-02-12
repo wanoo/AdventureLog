@@ -56,6 +56,19 @@
 		fetchEntityTypes();
 	});
 
+	// Read adventure_type from URL reactively (for badge link clicks)
+	$: {
+		if (typeof window !== 'undefined') {
+			let url = new URL(window.location.href);
+			let types = url.searchParams.get('adventure_type');
+			if (types && types !== 'all') {
+				adventureTypeString = types;
+			} else {
+				adventureTypeString = '';
+			}
+		}
+	}
+
 	// Get type options from store for the TypeFilterDropdown
 	$: adventureTypeOptions = $adventureTypes.map((type) => ({
 		value: String(type.id),

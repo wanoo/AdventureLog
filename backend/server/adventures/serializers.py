@@ -1280,13 +1280,15 @@ class UltraSlimCollectionSerializer(serializers.ModelSerializer):
     primary_image = ContentImageSerializer(read_only=True)
     collaborators = serializers.SerializerMethodField()
     is_owned = serializers.SerializerMethodField()
+    adventure_type = AdventureTypeSerializer(read_only=True)
 
     class Meta:
         model = Collection
         fields = [
             'id', 'user', 'name', 'description', 'is_public', 'start_date', 'end_date',
             'is_archived', 'link', 'created_at', 'updated_at', 'location_images',
-            'location_count', 'shared_with', 'collaborators', 'status', 'days_until_start', 'primary_image', 'is_owned'
+            'location_count', 'shared_with', 'collaborators', 'status', 'days_until_start', 'primary_image', 'is_owned',
+            'adventure_type'
         ]
         read_only_fields = fields  # All fields are read-only for listing
 
