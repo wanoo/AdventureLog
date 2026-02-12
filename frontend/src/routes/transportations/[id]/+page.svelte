@@ -241,6 +241,41 @@
 		return { type: 'FeatureCollection', features };
 	}
 
+	// Activity summary helper functions
+	function getTotalActivities(item: Transportation) {
+		return item.visits?.reduce(
+			(total, visit) => total + (visit.activities ? visit.activities.length : 0),
+			0
+		) ?? 0;
+	}
+
+	function getTotalDistance(item: Transportation) {
+		const ms = data.user?.measurement_system ?? 'metric';
+		const totalMeters = item.visits?.reduce(
+			(total, visit) =>
+				total +
+				(visit.activities
+					? visit.activities.reduce((sum, activity) => sum + (activity.distance || 0), 0)
+					: 0),
+			0
+		) ?? 0;
+		const totalKm = totalMeters / 1000;
+		return ms === 'imperial' ? totalKm * 0.621371 : totalKm;
+	}
+
+	function getTotalElevationGain(item: Transportation) {
+		const ms = data.user?.measurement_system ?? 'metric';
+		const totalMeters = item.visits?.reduce(
+			(total, visit) =>
+				total +
+				(visit.activities
+					? visit.activities.reduce((sum, activity) => sum + (activity.elevation_gain || 0), 0)
+					: 0),
+			0
+		) ?? 0;
+		return ms === 'imperial' ? totalMeters * 3.28084 : totalMeters;
+	}
+
 	function formatLocalTravelWindow(
 		start: string | null,
 		end: string | null,
@@ -753,6 +788,39 @@
 						</div>
 					</div>
 				</div>
+
+				<!-- Activity Summary -->
+				{#if getTotalActivities(transportation) > 0}
+					<div class="card bg-base-200 shadow-xl">
+						<div class="card-body">
+							<h3 class="card-title text-lg mb-4">🏃‍♂️ Activity Summary</h3>
+							<div class="space-y-2">
+								<div class="stat">
+									<div class="stat-title">Total Activities</div>
+									<div class="stat-value text-2xl">{getTotalActivities(transportation)}</div>
+								</div>
+								{#if getTotalDistance(transportation) > 0}
+									<div class="stat">
+										<div class="stat-title">Total Distance</div>
+										<div class="stat-value text-xl">
+											{getTotalDistance(transportation).toFixed(1)}
+											{data.user?.measurement_system === 'imperial' ? 'mi' : 'km'}
+										</div>
+									</div>
+								{/if}
+								{#if getTotalElevationGain(transportation) > 0}
+									<div class="stat">
+										<div class="stat-title">Total Elevation</div>
+										<div class="stat-value text-xl">
+											{getTotalElevationGain(transportation).toFixed(0)}
+											{data.user?.measurement_system === 'imperial' ? 'ft' : 'm'}
+										</div>
+									</div>
+								{/if}
+							</div>
+						</div>
+					</div>
+				{/if}
 
 				<EntityImagesCard
 					images={transportation.images || []}

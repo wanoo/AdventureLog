@@ -159,6 +159,41 @@
 		return inLocal ?? outLocal ?? null;
 	}
 
+	// Activity summary helper functions
+	function getTotalActivities(item: Lodging) {
+		return item.visits?.reduce(
+			(total, visit) => total + (visit.activities ? visit.activities.length : 0),
+			0
+		) ?? 0;
+	}
+
+	function getTotalDistance(item: Lodging) {
+		const ms = data.user?.measurement_system ?? 'metric';
+		const totalMeters = item.visits?.reduce(
+			(total, visit) =>
+				total +
+				(visit.activities
+					? visit.activities.reduce((sum, activity) => sum + (activity.distance || 0), 0)
+					: 0),
+			0
+		) ?? 0;
+		const totalKm = totalMeters / 1000;
+		return ms === 'imperial' ? totalKm * 0.621371 : totalKm;
+	}
+
+	function getTotalElevationGain(item: Lodging) {
+		const ms = data.user?.measurement_system ?? 'metric';
+		const totalMeters = item.visits?.reduce(
+			(total, visit) =>
+				total +
+				(visit.activities
+					? visit.activities.reduce((sum, activity) => sum + (activity.elevation_gain || 0), 0)
+					: 0),
+			0
+		) ?? 0;
+		return ms === 'imperial' ? totalMeters * 3.28084 : totalMeters;
+	}
+
 	function calculateNights(checkIn: string | null, checkOut: string | null): number | null {
 		if (!checkIn || !checkOut) return null;
 		const start = DateTime.fromISO(checkIn);
@@ -516,6 +551,39 @@
 						</div>
 					</div>
 				</div>
+
+				<!-- Activity Summary -->
+				{#if getTotalActivities(lodging) > 0}
+					<div class="card bg-base-200 shadow-xl">
+						<div class="card-body">
+							<h3 class="card-title text-lg mb-4">🏃‍♂️ Activity Summary</h3>
+							<div class="space-y-2">
+								<div class="stat">
+									<div class="stat-title">Total Activities</div>
+									<div class="stat-value text-2xl">{getTotalActivities(lodging)}</div>
+								</div>
+								{#if getTotalDistance(lodging) > 0}
+									<div class="stat">
+										<div class="stat-title">Total Distance</div>
+										<div class="stat-value text-xl">
+											{getTotalDistance(lodging).toFixed(1)}
+											{data.user?.measurement_system === 'imperial' ? 'mi' : 'km'}
+										</div>
+									</div>
+								{/if}
+								{#if getTotalElevationGain(lodging) > 0}
+									<div class="stat">
+										<div class="stat-title">Total Elevation</div>
+										<div class="stat-value text-xl">
+											{getTotalElevationGain(lodging).toFixed(0)}
+											{data.user?.measurement_system === 'imperial' ? 'ft' : 'm'}
+										</div>
+									</div>
+								{/if}
+							</div>
+						</div>
+					</div>
+				{/if}
 
 				<EntityImagesCard
 					images={lodging.images || []}
