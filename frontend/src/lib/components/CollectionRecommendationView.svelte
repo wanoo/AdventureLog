@@ -231,7 +231,7 @@
 				});
 			});
 
-		// Transportations - departures (icon → for departure)
+		// Transportations - departures (↗ for origin/departure)
 		(collection.transportations || [])
 			.filter((t) => t.origin_latitude && t.origin_longitude)
 			.forEach((t) => {
@@ -242,11 +242,11 @@
 					type: 'transportation-departure',
 					latitude: t.origin_latitude!,
 					longitude: t.origin_longitude!,
-					icon: `${typeIcon}→`
+					icon: `${typeIcon}↗`
 				});
 			});
 
-		// Transportations - arrivals (icon ← for arrival)
+		// Transportations - arrivals (↙ for arrival)
 		(collection.transportations || [])
 			.filter((t) => t.destination_latitude && t.destination_longitude)
 			.forEach((t) => {
@@ -257,7 +257,7 @@
 					type: 'transportation-arrival',
 					latitude: t.destination_latitude!,
 					longitude: t.destination_longitude!,
-					icon: `→${typeIcon}`
+					icon: `${typeIcon}↙`
 				});
 			});
 
