@@ -2,12 +2,14 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 	import CollectionCard from '$lib/components/cards/CollectionCard.svelte';
 	import CollectionLink from '$lib/components/CollectionLink.svelte';
 	import CollectionModal from '$lib/components/CollectionModal.svelte';
 	import NotFound from '$lib/components/NotFound.svelte';
 	import type { Collection, CollectionInvite, SlimCollection } from '$lib/types';
 	import { t } from 'svelte-i18n';
+	import { adventureTypes, fetchEntityTypes } from '$lib/stores/entityTypes';
 
 	import Plus from '~icons/mdi/plus';
 	import Filter from '~icons/mdi/filter-variant';
@@ -19,6 +21,7 @@
 	import CheckIcon from '~icons/mdi/check';
 	import CloseIcon from '~icons/mdi/close';
 	import FileDocumentPlus from '~icons/mdi/file-document-plus';
+	import TagIcon from '~icons/mdi/tag';
 	import { addToast } from '$lib/toasts';
 	import DeleteWarning from '$lib/components/DeleteWarning.svelte';
 
@@ -44,8 +47,13 @@
 	let statusFilter = data.props.status || '';
 	let isPublicFilter = data.props.is_public || 'all';
 	let sharingFilter = data.props.sharing || 'all';
+	let adventureTypeFilter = data.props.adventure_type || 'all';
 
 	let invites: CollectionInvite[] = data.props.invites || [];
+
+	onMount(() => {
+		fetchEntityTypes();
+	});
 
 	let sidebarOpen = false;
 	let collectionToEdit: Collection | null = null;
@@ -149,6 +157,22 @@
 		url.searchParams.set('page', '1');
 		currentPage = 1;
 		sharingFilter = sharing;
+		await goto(url.toString(), { invalidateAll: true, replaceState: true });
+		if (data.props.adventures) {
+			collections = data.props.adventures;
+		}
+	}
+
+	async function updateAdventureTypeFilter(typeId: string) {
+		const url = new URL($page.url);
+		if (typeId && typeId !== 'all') {
+			url.searchParams.set('adventure_type', typeId);
+		} else {
+			url.searchParams.delete('adventure_type');
+		}
+		url.searchParams.set('page', '1');
+		currentPage = 1;
+		adventureTypeFilter = typeId;
 		await goto(url.toString(), { invalidateAll: true, replaceState: true });
 		if (data.props.adventures) {
 			collections = data.props.adventures;
@@ -812,6 +836,41 @@
 								</label>
 							</div>
 						</div>
+
+						<!-- Adventure Type Filter -->
+						{#if $adventureTypes.length > 0}
+							<div class="card bg-base-200/50 p-4">
+								<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+									<TagIcon class="w-5 h-5" />
+									{$t('collection.adventure_type') ?? 'Type'}
+								</h3>
+
+								<div class="space-y-2">
+									<label class="label cursor-pointer justify-start gap-3">
+										<input
+											type="radio"
+											name="adventure_type_filter"
+											class="radio radio-primary radio-sm"
+											checked={adventureTypeFilter === 'all'}
+											on:change={() => updateAdventureTypeFilter('all')}
+										/>
+										<span class="label-text">{$t('adventures.all')}</span>
+									</label>
+									{#each $adventureTypes as type (type.id)}
+										<label class="label cursor-pointer justify-start gap-3">
+											<input
+												type="radio"
+												name="adventure_type_filter"
+												class="radio radio-primary radio-sm"
+												checked={adventureTypeFilter === String(type.id)}
+												on:change={() => updateAdventureTypeFilter(String(type.id))}
+											/>
+											<span class="label-text">{type.icon} {type.name}</span>
+										</label>
+									{/each}
+								</div>
+							</div>
+						{/if}
 
 						<!-- Sort Form - Updated to use URL navigation -->
 						<div class="card bg-base-200/50 p-4">

@@ -25,6 +25,7 @@ export const load = (async (event) => {
 	const status = event.url.searchParams.get('status') || '';
 	const is_public = event.url.searchParams.get('is_public') || 'all';
 	const sharing = event.url.searchParams.get('sharing') || 'all';
+	const adventure_type = event.url.searchParams.get('adventure_type') || 'all';
 	const page = event.url.searchParams.get('page') || '1';
 	const currentPage = parseInt(page);
 
@@ -37,7 +38,8 @@ export const load = (async (event) => {
 	const statusParam = status ? `&status=${status}` : '';
 	const isPublicParam = is_public !== 'all' ? `&is_public=${is_public}` : '';
 	const sharingParam = sharing !== 'all' ? `&sharing=${sharing}` : '';
-	const apiUrl = `${serverEndpoint}/api/collections/?order_by=${order_by}&order_direction=${order_direction}&page=${page}&nested=true${statusParam}${isPublicParam}${sharingParam}`;
+	const adventureTypeParam = adventure_type !== 'all' ? `&adventure_type=${adventure_type}` : '';
+	const apiUrl = `${serverEndpoint}/api/collections/?order_by=${order_by}&order_direction=${order_direction}&page=${page}&nested=true${statusParam}${isPublicParam}${sharingParam}${adventureTypeParam}`;
 
 	try {
 		// Execute all API calls in parallel
@@ -75,6 +77,7 @@ export const load = (async (event) => {
 				status,
 				is_public,
 				sharing,
+				adventure_type,
 				archivedCollections: archivedData as SlimCollection[],
 				invites: invitesData
 			}

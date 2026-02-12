@@ -1081,6 +1081,11 @@
 
 					<!-- Quick Info Badges -->
 					<div class="flex flex-wrap justify-center gap-4 mb-6">
+						{#if collection.adventure_type}
+							<div class="badge badge-lg badge-secondary font-semibold px-4 py-3">
+								{collection.adventure_type.icon} {collection.adventure_type.name}
+							</div>
+						{/if}
 						{#if collection.is_public}
 							<div class="badge badge-lg badge-success font-semibold px-4 py-3">
 								🌍 {$t('adventures.public')}

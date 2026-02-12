@@ -115,7 +115,21 @@ class CollectionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(shared_with__isnull=True)
 
         return queryset
-    
+
+    def _apply_adventure_type_filter(self, queryset, request):
+        """Apply adventure type filtering to queryset."""
+        adventure_type_id = request.query_params.get('adventure_type')
+        if adventure_type_id is None or adventure_type_id == '' or adventure_type_id == 'all':
+            return queryset
+
+        try:
+            adventure_type_id = int(adventure_type_id)
+            queryset = queryset.filter(adventure_type_id=adventure_type_id)
+        except (ValueError, TypeError):
+            pass
+
+        return queryset
+
     def get_serializer_context(self):
         """Override to add nested and exclusion contexts based on query parameters"""
         context = super().get_serializer_context()
@@ -212,6 +226,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
         queryset = self.apply_status_filter(queryset)
         queryset = self._apply_public_filtering(queryset, request)
         queryset = self._apply_sharing_filter(queryset, request)
+        queryset = self._apply_adventure_type_filter(queryset, request)
         queryset = self.apply_sorting(queryset)
         return self.paginate_and_respond(queryset, request)
     
