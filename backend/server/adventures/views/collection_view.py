@@ -117,16 +117,23 @@ class CollectionViewSet(viewsets.ModelViewSet):
         return queryset
 
     def _apply_adventure_type_filter(self, queryset, request):
-        """Apply adventure type filtering to queryset."""
-        adventure_type_id = request.query_params.get('adventure_type')
-        if adventure_type_id is None or adventure_type_id == '' or adventure_type_id == 'all':
+        """Apply adventure type filtering to queryset. Supports comma-separated type IDs."""
+        adventure_type_param = request.query_params.get('adventure_type')
+        if adventure_type_param is None or adventure_type_param == '' or adventure_type_param == 'all':
             return queryset
 
-        try:
-            adventure_type_id = int(adventure_type_id)
-            queryset = queryset.filter(adventure_type_id=adventure_type_id)
-        except (ValueError, TypeError):
-            pass
+        # Support comma-separated type IDs (like transportation/lodging filters)
+        type_ids = []
+        for type_id in adventure_type_param.split(','):
+            type_id = type_id.strip()
+            if type_id:
+                try:
+                    type_ids.append(int(type_id))
+                except (ValueError, TypeError):
+                    pass
+
+        if type_ids:
+            queryset = queryset.filter(adventure_type_id__in=type_ids)
 
         return queryset
 
