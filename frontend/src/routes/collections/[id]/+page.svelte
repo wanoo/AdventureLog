@@ -1121,15 +1121,6 @@
 								{$t('share.shared')}
 							</div>
 						{/if}
-						{#if isOwner}
-							<button
-								class="btn btn-sm btn-ghost"
-								on:click={() => (isShareModalOpen = true)}
-								title={$t('adventures.share')}
-							>
-								<ShareVariant class="w-5 h-5" />
-							</button>
-						{/if}
 					</div>
 
 					<!-- Image Navigation (only shown when multiple images exist) -->
@@ -1446,7 +1437,18 @@
 							{/if}
 							{#if collection.collaborators && collection.collaborators.length > 0}
 								<div>
-									<div class="text-sm opacity-70 mb-1">{$t('collection.collaborators')}</div>
+									<div class="flex items-center justify-between mb-1">
+										<div class="text-sm opacity-70">{$t('collection.collaborators')}</div>
+										{#if isOwner}
+											<button
+												class="btn btn-xs btn-ghost"
+												on:click={() => (isShareModalOpen = true)}
+												title={$t('adventures.share')}
+											>
+												<ShareVariant class="w-4 h-4" />
+											</button>
+										{/if}
+									</div>
 									<div class="avatar-group -space-x-3">
 										{#each collection.collaborators as person (person.uuid)}
 											{#if person.public_profile}
@@ -1493,12 +1495,37 @@
 								</div>
 							{:else if collection.shared_with && collection.shared_with.length > 0}
 								<div>
-									<div class="text-sm opacity-70 mb-1">{$t('share.shared_with')}</div>
+									<div class="flex items-center justify-between mb-1">
+										<div class="text-sm opacity-70">{$t('share.shared_with')}</div>
+										{#if isOwner}
+											<button
+												class="btn btn-xs btn-ghost"
+												on:click={() => (isShareModalOpen = true)}
+												title={$t('adventures.share')}
+											>
+												<ShareVariant class="w-4 h-4" />
+											</button>
+										{/if}
+									</div>
 									<div class="flex flex-wrap gap-1">
 										{#each collection.shared_with as username}
 											<span class="badge badge-sm badge-outline">{username}</span>
 										{/each}
 									</div>
+								</div>
+							{:else if isOwner}
+								<div>
+									<div class="flex items-center justify-between mb-1">
+										<div class="text-sm opacity-70">{$t('collection.collaborators')}</div>
+										<button
+											class="btn btn-xs btn-ghost"
+											on:click={() => (isShareModalOpen = true)}
+											title={$t('adventures.share')}
+										>
+											<ShareVariant class="w-4 h-4" />
+										</button>
+									</div>
+									<div class="text-sm opacity-50">{$t('share.no_users_shared')}</div>
 								</div>
 							{/if}
 						</div>
