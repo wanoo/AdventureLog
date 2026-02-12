@@ -86,9 +86,15 @@
 										</div>
 									{/if}
 
-									{#if visit.notes}
+									{#if visit.notes || visit.collection_info}
 										<div class="mt-3 p-3 bg-base-200 rounded-lg">
-											<p class="text-sm italic">"{visit.notes}"</p>
+											<p class="text-sm italic">
+												{#if visit.notes}"{visit.notes}"{/if}{#if visit.notes && visit.collection_info} - {/if}{#if visit.collection_info}<a
+														href="/collections/{visit.collection_info.id}"
+														class="link link-hover link-primary font-semibold not-italic"
+														>{visit.collection_info.name}</a
+													>{/if}
+											</p>
 										</div>
 									{/if}
 
