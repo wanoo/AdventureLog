@@ -10,9 +10,9 @@
 	import { TRANSPORTATION_TYPES_ICONS } from '$lib';
 	import { formatAllDayDate, formatDateInTimezone } from '$lib/dateUtils';
 	import { isAllDay } from '$lib';
-		import CardCarousel from '../CardCarousel.svelte';
+	import CardCarousel from '../CardCarousel.svelte';
 	import TransportationRoutePreview from './TransportationRoutePreview.svelte';
-		import Calendar from '~icons/mdi/calendar';
+	import Calendar from '~icons/mdi/calendar';
 	import CalendarRemove from '~icons/mdi/calendar-remove';
 	import Launch from '~icons/mdi/launch';
 	import Globe from '~icons/mdi/globe';
@@ -24,15 +24,21 @@
 		getTimezoneTip,
 		shouldShowTimezoneBadge
 	} from '../shared/detail/detailUtils';
+	import { getTransportationIcon as getTransportationIconFromStore } from '$lib/stores/entityTypes';
 
 	let actionsMenu: { close: () => void };
 
 	function getTransportationIcon(type: string) {
+		// First try to get from the store (admin-managed types)
+		const storeIcon = getTransportationIconFromStore(type);
+		if (storeIcon !== '🚗') {
+			return storeIcon;
+		}
+		// Fallback to hardcoded icons
 		if (type in TRANSPORTATION_TYPES_ICONS) {
 			return TRANSPORTATION_TYPES_ICONS[type as keyof typeof TRANSPORTATION_TYPES_ICONS];
-		} else {
-			return '🚗';
 		}
+		return '🚗';
 	}
 
 	const dispatch = createEventDispatcher();

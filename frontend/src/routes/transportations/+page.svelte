@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 	import TransportationCard from '$lib/components/cards/TransportationCard.svelte';
 	import TypeFilterDropdown from '$lib/components/TypeFilterDropdown.svelte';
 	import type { Transportation } from '$lib/types';
@@ -16,12 +17,17 @@
 		EmptyState,
 		FloatingActionButton
 	} from '$lib/components/shared/list';
+	import { transportationTypes, fetchEntityTypes } from '$lib/stores/entityTypes';
 
 	import Filter from '~icons/mdi/filter-variant';
 	import Airplane from '~icons/mdi/airplane';
 	import Eye from '~icons/mdi/eye';
 
 	export let data: any;
+
+	onMount(() => {
+		fetchEntityTypes();
+	});
 
 	let transportations: Transportation[] = data.props.transportations || [];
 	let transportationBeingUpdated: Transportation | undefined = undefined;
@@ -60,12 +66,18 @@
 		min_rating: 'all'
 	};
 
-	// Get type options from the icons with localized labels
-	$: typeOptions = Object.entries(TRANSPORTATION_TYPES_ICONS).map(([value, icon]) => ({
-		value,
-		label: $t(`transportation.modes.${value}`),
-		icon
-	}));
+	// Get type options from store first, fallback to hardcoded icons
+	$: typeOptions = $transportationTypes.length > 0
+		? $transportationTypes.map((type) => ({
+				value: type.key,
+				label: type.name,
+				icon: type.icon
+			}))
+		: Object.entries(TRANSPORTATION_TYPES_ICONS).map(([value, icon]) => ({
+				value,
+				label: $t(`transportation.modes.${value}`),
+				icon
+			}));
 
 	// Reactive statements - Only read from URL, don't write
 	$: {

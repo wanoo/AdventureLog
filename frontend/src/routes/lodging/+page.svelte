@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 	import LodgingCard from '$lib/components/cards/LodgingCard.svelte';
 	import TypeFilterDropdown from '$lib/components/TypeFilterDropdown.svelte';
 	import type { Lodging } from '$lib/types';
@@ -16,12 +17,17 @@
 		EmptyState,
 		FloatingActionButton
 	} from '$lib/components/shared/list';
+	import { lodgingTypes, fetchEntityTypes } from '$lib/stores/entityTypes';
 
 	import Filter from '~icons/mdi/filter-variant';
 	import Bed from '~icons/mdi/bed';
 	import Eye from '~icons/mdi/eye';
 
 	export let data: any;
+
+	onMount(() => {
+		fetchEntityTypes();
+	});
 
 	let lodgingItems: Lodging[] = data.props.lodgingItems || [];
 	let lodgingBeingUpdated: Lodging | undefined = undefined;
@@ -60,12 +66,18 @@
 		min_rating: 'all'
 	};
 
-	// Get type options from the icons with localized labels
-	$: typeOptions = Object.entries(LODGING_TYPES_ICONS).map(([value, icon]) => ({
-		value,
-		label: $t(`lodging.${value}`),
-		icon
-	}));
+	// Get type options from store first, fallback to hardcoded icons
+	$: typeOptions = $lodgingTypes.length > 0
+		? $lodgingTypes.map((type) => ({
+				value: type.key,
+				label: type.name,
+				icon: type.icon
+			}))
+		: Object.entries(LODGING_TYPES_ICONS).map(([value, icon]) => ({
+				value,
+				label: $t(`lodging.${value}`),
+				icon
+			}));
 
 	// Reactive statements - Only read from URL, don't write
 	$: {

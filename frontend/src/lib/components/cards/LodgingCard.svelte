@@ -25,17 +25,23 @@
 		getTimezoneTip,
 		shouldShowTimezoneBadge
 	} from '../shared/detail/detailUtils';
+	import { getLodgingIcon as getLodgingIconFromStore } from '$lib/stores/entityTypes';
 
 	let actionsMenu: { close: () => void };
 
 	const dispatch = createEventDispatcher();
 
 	function getLodgingIcon(type: string) {
+		// First try to get from the store (admin-managed types)
+		const storeIcon = getLodgingIconFromStore(type);
+		if (storeIcon !== '🏨') {
+			return storeIcon;
+		}
+		// Fallback to hardcoded icons
 		if (type in LODGING_TYPES_ICONS) {
 			return LODGING_TYPES_ICONS[type as keyof typeof LODGING_TYPES_ICONS];
-		} else {
-			return '🏨';
 		}
+		return '🏨';
 	}
 
 	// Use shared timezone utilities
