@@ -39,6 +39,8 @@
 	import LodgingModal from '$lib/components/lodging/LodgingModal.svelte';
 	import TransportationModal from '$lib/components/transportation/TransportationModal.svelte';
 	import LocationModal from '$lib/components/locations/LocationModal.svelte';
+	import ShareModal from '$lib/components/ShareModal.svelte';
+	import ShareVariant from '~icons/mdi/share-variant';
 
 	const renderMarkdown = (markdown: string) => {
 		return marked(markdown) as string;
@@ -71,6 +73,7 @@
 	let selectedCalendarEvent: any = null;
 	let calendarLocation = '';
 	let calendarDescription = '';
+	let isShareModalOpen = false;
 
 	// Shared helpers for keeping collection sub-items in sync after modal actions
 	type CollectionArrayKey = 'locations' | 'transportations' | 'lodging' | 'notes' | 'checklists';
@@ -258,6 +261,20 @@
 
 	// Enforce recommendations visibility only for owner/shared users
 	$: availableViews.recommendations = !!canModifyCollection;
+
+	// Check if user is the owner (for sharing functionality)
+	$: isOwner = (() => {
+		const u = data.user as any;
+		if (!u || !collection) return false;
+		const userUuid = u.uuid || null;
+		const username = u.username || null;
+		const pk = u.pk !== undefined && u.pk !== null ? String(u.pk) : null;
+		const owner = collection.user;
+		return (userUuid && owner === userUuid) || (username && owner === username) || (pk && owner === pk);
+	})();
+
+	// Check if collection is shared with others
+	$: isShared = collection?.shared_with && collection.shared_with.length > 0;
 
 	// Build calendar events from collection visits
 	type TimezoneMode = 'event' | 'local';
@@ -987,6 +1004,22 @@
 	/>
 {/if}
 
+{#if isShareModalOpen && collection}
+	<ShareModal
+		{collection}
+		on:close={() => {
+			isShareModalOpen = false;
+		}}
+		on:share={(e) => {
+			collection.shared_with = e.detail.shared_with || [];
+			if (e.detail.collaborators) {
+				collection.collaborators = e.detail.collaborators;
+			}
+			isShareModalOpen = false;
+		}}
+	/>
+{/if}
+
 <EventDetailsModal
 	show={showCalendarModal}
 	event={selectedCalendarEvent}
@@ -1081,6 +1114,21 @@
 							<div class="badge badge-lg badge-neutral font-semibold px-4 py-3">
 								📦 {$t('adventures.archived')}
 							</div>
+						{/if}
+						{#if isShared}
+							<div class="badge badge-lg badge-info font-semibold px-4 py-3">
+								<ShareVariant class="w-4 h-4 mr-1" />
+								{$t('share.shared')}
+							</div>
+						{/if}
+						{#if isOwner}
+							<button
+								class="btn btn-sm btn-ghost"
+								on:click={() => (isShareModalOpen = true)}
+								title={$t('adventures.share')}
+							>
+								<ShareVariant class="w-5 h-5" />
+							</button>
 						{/if}
 					</div>
 
