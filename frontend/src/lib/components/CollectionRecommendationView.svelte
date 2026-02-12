@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
 	import { DefaultMarker, MapLibre, Popup } from 'svelte-maplibre';
-	import { getBasemapUrl } from '$lib';
+	import { getBasemapUrl, TRANSPORTATION_TYPES_ICONS } from '$lib';
 	import MagnifyIcon from '~icons/mdi/magnify';
 	import MapMarker from '~icons/mdi/map-marker';
 	import Star from '~icons/mdi/star';
@@ -205,6 +205,14 @@
 		icon: string;
 	};
 
+	// Helper to get transportation icon by type
+	function getTransportIcon(type: string): string {
+		if (type in TRANSPORTATION_TYPES_ICONS) {
+			return TRANSPORTATION_TYPES_ICONS[type as keyof typeof TRANSPORTATION_TYPES_ICONS];
+		}
+		return '🚗';
+	}
+
 	// Get all items with coordinates for dropdown
 	$: dropdownItems = (() => {
 		const items: DropdownItem[] = [];
@@ -223,31 +231,33 @@
 				});
 			});
 
-		// Transportations - departures
+		// Transportations - departures (icon → for departure)
 		(collection.transportations || [])
 			.filter((t) => t.origin_latitude && t.origin_longitude)
 			.forEach((t) => {
+				const typeIcon = getTransportIcon(t.type);
 				items.push({
 					id: `transport-dep-${t.id}`,
 					name: `${t.name} (${$t('transportation.departure') || 'Departure'})`,
 					type: 'transportation-departure',
 					latitude: t.origin_latitude!,
 					longitude: t.origin_longitude!,
-					icon: '🛫'
+					icon: `${typeIcon}→`
 				});
 			});
 
-		// Transportations - arrivals
+		// Transportations - arrivals (icon ← for arrival)
 		(collection.transportations || [])
 			.filter((t) => t.destination_latitude && t.destination_longitude)
 			.forEach((t) => {
+				const typeIcon = getTransportIcon(t.type);
 				items.push({
 					id: `transport-arr-${t.id}`,
 					name: `${t.name} (${$t('transportation.arrival') || 'Arrival'})`,
 					type: 'transportation-arrival',
 					latitude: t.destination_latitude!,
 					longitude: t.destination_longitude!,
-					icon: '🛬'
+					icon: `→${typeIcon}`
 				});
 			});
 

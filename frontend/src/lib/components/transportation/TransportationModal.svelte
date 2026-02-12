@@ -183,7 +183,7 @@
 				else if (searchMode === 'bus') transportation.type = 'bus';
 				else if (searchMode === 'cab') transportation.type = 'cab';
 				else if (searchMode === 'vtc') transportation.type = 'vtc';
-				else if (searchMode === 'location') transportation.type = 'car'; // Default for address mode
+				// For 'location' mode, leave type blank - user must select in Details step
 
 				// Auto-generate name (always regenerate when new locations are selected)
 				if (origin && destination) {
