@@ -141,11 +141,11 @@
 			{#if transportations.length > 0}
 				<div class="mb-12">
 					<div class="flex items-center gap-3 mb-6">
-						<div class="p-2 bg-info/10 rounded-lg">
-							<PlaneIcon class="w-6 h-6 text-info" />
+						<div class="p-2 bg-amber-500/10 rounded-lg">
+							<PlaneIcon class="w-6 h-6 text-amber-500" />
 						</div>
 						<h2 class="text-2xl font-bold">{$t('navbar.transportation')}</h2>
-						<div class="badge badge-info">{transportations.length}</div>
+						<div class="badge badge-warning">{transportations.length}</div>
 					</div>
 					<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 						{#each transportations as transportation}
@@ -158,11 +158,11 @@
 			{#if lodging.length > 0}
 				<div class="mb-12">
 					<div class="flex items-center gap-3 mb-6">
-						<div class="p-2 bg-warning/10 rounded-lg">
-							<HotelIcon class="w-6 h-6 text-warning" />
+						<div class="p-2 bg-pink-500/10 rounded-lg">
+							<HotelIcon class="w-6 h-6 text-pink-500" />
 						</div>
 						<h2 class="text-2xl font-bold">{$t('navbar.lodging')}</h2>
-						<div class="badge badge-warning">{lodging.length}</div>
+						<div class="badge badge-secondary">{lodging.length}</div>
 					</div>
 					<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 						{#each lodging as lodgingItem}
@@ -193,12 +193,12 @@
 			{#if regions.length > 0}
 				<div class="mb-12">
 					<div class="flex items-center gap-3 mb-6">
-						<div class="p-2 bg-neutral/10 rounded-lg">
+						<div class="p-2 bg-info/10 rounded-lg">
 							<!-- MapIcon -->
-							<SearchIcon class="w-6 h-6 text-neutral" />
+							<SearchIcon class="w-6 h-6 text-info" />
 						</div>
 						<h2 class="text-2xl font-bold">{$t('map.regions')}</h2>
-						<div class="badge badge-neutral">{regions.length}</div>
+						<div class="badge badge-info">{regions.length}</div>
 					</div>
 					<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 						{#each regions as region}
