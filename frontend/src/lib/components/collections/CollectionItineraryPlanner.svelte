@@ -1496,6 +1496,24 @@
 	// Handler for imported location (from LocationLink modal)
 	async function handleLocationImported(event: CustomEvent<Location>) {
 		const location = event.detail;
+
+		// Link the location to this collection on the backend
+		try {
+			const existingCollections = location.collections?.map((c: any) => c.id || c) || [];
+			if (!existingCollections.includes(collection.id)) {
+				const res = await fetch(`/api/locations/${location.id}/`, {
+					method: 'PATCH',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ collections: [...existingCollections, collection.id] })
+				});
+				if (!res.ok) {
+					console.error('Failed to link location to collection');
+				}
+			}
+		} catch (e) {
+			console.error('Error linking location to collection:', e);
+		}
+
 		// Add to collection.locations if not already present
 		if (!collection.locations) collection.locations = [];
 		const exists = collection.locations.some((l) => String(l.id) === String(location.id));
@@ -1512,6 +1530,24 @@
 	// Handler for imported transportation (from TransportationLink modal)
 	async function handleTransportationImported(event: CustomEvent<Transportation>) {
 		const transportation = event.detail;
+
+		// Link the transportation to this collection on the backend
+		try {
+			const existingCollections = transportation.collections?.map((c: any) => c.id || c) || [];
+			if (!existingCollections.includes(collection.id)) {
+				const res = await fetch(`/api/transportations/${transportation.id}/`, {
+					method: 'PATCH',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ collections: [...existingCollections, collection.id] })
+				});
+				if (!res.ok) {
+					console.error('Failed to link transportation to collection');
+				}
+			}
+		} catch (e) {
+			console.error('Error linking transportation to collection:', e);
+		}
+
 		// Add to collection.transportations if not already present
 		if (!collection.transportations) collection.transportations = [];
 		const exists = collection.transportations.some((t) => String(t.id) === String(transportation.id));
@@ -1528,6 +1564,24 @@
 	// Handler for imported lodging (from LodgingLink modal)
 	async function handleLodgingImported(event: CustomEvent<Lodging>) {
 		const lodging = event.detail;
+
+		// Link the lodging to this collection on the backend
+		try {
+			const existingCollections = lodging.collections?.map((c: any) => c.id || c) || [];
+			if (!existingCollections.includes(collection.id)) {
+				const res = await fetch(`/api/lodging/${lodging.id}/`, {
+					method: 'PATCH',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ collections: [...existingCollections, collection.id] })
+				});
+				if (!res.ok) {
+					console.error('Failed to link lodging to collection');
+				}
+			}
+		} catch (e) {
+			console.error('Error linking lodging to collection:', e);
+		}
+
 		// Add to collection.lodging if not already present
 		if (!collection.lodging) collection.lodging = [];
 		const exists = collection.lodging.some((l) => String(l.id) === String(lodging.id));

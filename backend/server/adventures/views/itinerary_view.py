@@ -173,11 +173,12 @@ class ItineraryViewSet(viewsets.ModelViewSet):
 
                 ct = ContentType.objects.get_for_model(model_class)
                 data['content_type'] = ct.pk
-                
-                # If update_item_date is True and target_date is provided, update the item's date
-                if update_item_date and target_date and content_object:
-                    # Extract just the date part if target_date is datetime
+
+                # Create visits when adding location/transportation/lodging to a dated itinerary
+                # This happens regardless of update_item_date flag
+                if target_date and content_object and content_type_val in ('location', 'transportation', 'lodging'):
                     clean_date = str(target_date).split('T')[0] if 'T' in str(target_date) else str(target_date)
+                    logger.info(f"Creating visits for {content_type_val} {object_id} on date {clean_date}")
 
                     # Get collection and its users for creating visits
                     collection_id_for_visits = data.get('collection')
@@ -186,13 +187,14 @@ class ItineraryViewSet(viewsets.ModelViewSet):
                         try:
                             collection_obj = Collection.objects.get(id=collection_id_for_visits)
                             collection_users = get_collection_users(collection_obj)
+                            logger.info(f"Collection {collection_obj.id} has {len(collection_users)} users: {[u.username for u in collection_users]}")
                         except Collection.DoesNotExist:
-                            pass
+                            logger.warning(f"Collection {collection_id_for_visits} not found")
+                    else:
+                        logger.warning(f"No collection_id provided in request data")
 
-                    # For locations, create an all-day visit for all collection users
                     if content_type_val == 'location':
-                        # Determine start/end bounds. Support single date or optional start_date/end_date in payload.
-                        # Prefer explicit start_date/end_date if provided, otherwise use the single target date.
+                        # For locations, create an all-day visit for all collection users
                         start_input = data.get('start_date') or clean_date
                         end_input = data.get('end_date') or clean_date
 
@@ -200,21 +202,17 @@ class ItineraryViewSet(viewsets.ModelViewSet):
                             if not val:
                                 return None
                             s = str(val)
-                            # If datetime string provided, parse directly
                             if 'T' in s:
                                 dt = parse_datetime(s)
                                 return dt
-                            # Otherwise parse as date and convert to datetime at start/end of day
                             d = parse_date(s)
                             if d:
                                 return d
                             return None
 
-                        # Normalize to date or datetime values
                         parsed_start = parse_bounds(start_input)
                         parsed_end = parse_bounds(end_input)
 
-                        # If both are plain dates, convert to datetimes spanning the day
                         if isinstance(parsed_start, datetime.date) and not isinstance(parsed_start, datetime.datetime):
                             new_start = datetime.datetime.combine(parsed_start, datetime.time.min)
                         elif isinstance(parsed_start, datetime.datetime):
@@ -229,7 +227,6 @@ class ItineraryViewSet(viewsets.ModelViewSet):
                         else:
                             new_end = None
 
-                        # If we couldn't parse bounds, fallback to the all-day target date
                         if not new_start or not new_end:
                             try:
                                 d = parse_date(clean_date)
@@ -239,11 +236,9 @@ class ItineraryViewSet(viewsets.ModelViewSet):
                                 new_start = None
                                 new_end = None
 
-                        # Create/update visits for all collection users
                         if new_start and new_end:
-                            source_visit_id = data.get('source_visit_id')
-
                             # If source visit provided, update it (for drag-drop scenarios)
+                            source_visit_id = data.get('source_visit_id')
                             if source_visit_id:
                                 try:
                                     source_visit = Visit.objects.get(id=source_visit_id, location=content_object)
@@ -286,13 +281,12 @@ class ItineraryViewSet(viewsets.ModelViewSet):
                                             end_date=new_end,
                                             notes="Created from itinerary planning"
                                         )
+
                     elif content_type_val == 'transportation':
                         # For transportation: create visits for all collection users
-                        # Transportation dates are now managed via Visit model
                         new_date = datetime.datetime.combine(parse_date(clean_date), datetime.time.min)
                         new_end_date = datetime.datetime.combine(parse_date(clean_date), datetime.time.max)
 
-                        # Create visits for all collection users
                         if collection_users:
                             create_visits_for_users(
                                 users=collection_users,
@@ -302,6 +296,7 @@ class ItineraryViewSet(viewsets.ModelViewSet):
                                 end_date=new_end_date,
                                 notes="Created from itinerary planning"
                             )
+
                     elif content_type_val == 'lodging':
                         # For lodging: create visits spanning check-in to check-out for all users
                         # Default: check-in at 14:00, check-out at 11:00 next day
@@ -311,7 +306,6 @@ class ItineraryViewSet(viewsets.ModelViewSet):
                             datetime.time(11, 0)
                         )
 
-                        # Create visits for all collection users spanning full lodging duration
                         if collection_users:
                             create_visits_for_users(
                                 users=collection_users,
@@ -321,17 +315,19 @@ class ItineraryViewSet(viewsets.ModelViewSet):
                                 end_date=new_check_out,
                                 notes="Created from itinerary planning"
                             )
-                    else:
-                        # For note, checklist, etc. - just update the date field
-                        date_field = None
-                        if hasattr(content_object, 'date'):
-                            date_field = 'date'
-                        elif hasattr(content_object, 'start_date'):
-                            date_field = 'start_date'
 
-                        if date_field:
-                            setattr(content_object, date_field, clean_date)
-                            content_object.save(update_fields=[date_field])
+                # For notes/checklists with update_item_date, update their date field
+                if update_item_date and target_date and content_object and content_type_val not in ('location', 'transportation', 'lodging'):
+                    clean_date = str(target_date).split('T')[0] if 'T' in str(target_date) else str(target_date)
+                    date_field = None
+                    if hasattr(content_object, 'date'):
+                        date_field = 'date'
+                    elif hasattr(content_object, 'start_date'):
+                        date_field = 'start_date'
+
+                    if date_field:
+                        setattr(content_object, date_field, clean_date)
+                        content_object.save(update_fields=[date_field])
 
         # Ensure order is unique for this collection+group combination (day or global)
         collection_id = data.get('collection')
