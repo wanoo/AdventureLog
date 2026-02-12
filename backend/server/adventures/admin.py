@@ -2,7 +2,7 @@ import os
 from django.contrib import admin
 from django.utils.html import mark_safe, format_html
 from django.urls import reverse
-from .models import Location, Checklist, ChecklistItem, Collection, Transportation, Note, ContentImage, Visit, Category, ContentAttachment, Lodging, CollectionInvite, Trail, Activity, CollectionItineraryItem, CollectionItineraryDay, TransportationType, LodgingType, ActivityType
+from .models import Location, Checklist, ChecklistItem, Collection, Transportation, Note, ContentImage, Visit, Category, ContentAttachment, Lodging, CollectionInvite, Trail, Activity, CollectionItineraryItem, CollectionItineraryDay, TransportationType, LodgingType, AdventureType, ActivityType
 from worldtravel.models import Country, Region, VisitedRegion, City, VisitedCity
 from allauth.account.decorators import secure_admin_login
 
@@ -207,9 +207,16 @@ class LodgingTypeAdmin(admin.ModelAdmin):
     ordering = ('display_order', 'name')
 
 
-class ActivityTypeAdmin(admin.ModelAdmin):
+class AdventureTypeAdmin(admin.ModelAdmin):
     list_display = ('key', 'name', 'icon', 'display_order', 'is_active')
     list_editable = ('name', 'icon', 'display_order', 'is_active')
+    search_fields = ('key', 'name')
+    ordering = ('display_order', 'name')
+
+
+class ActivityTypeAdmin(admin.ModelAdmin):
+    list_display = ('key', 'name', 'icon', 'color', 'display_order', 'is_active')
+    list_editable = ('name', 'icon', 'color', 'display_order', 'is_active')
     search_fields = ('key', 'name')
     ordering = ('display_order', 'name')
 
@@ -238,6 +245,7 @@ admin.site.register(CollectionItineraryItem, CollectionItineraryItemAdmin)
 admin.site.register(CollectionItineraryDay)
 admin.site.register(TransportationType, TransportationTypeAdmin)
 admin.site.register(LodgingType, LodgingTypeAdmin)
+admin.site.register(AdventureType, AdventureTypeAdmin)
 admin.site.register(ActivityType, ActivityTypeAdmin)
 
 admin.site.site_header = 'AdventureLog Admin'

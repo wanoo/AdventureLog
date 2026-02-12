@@ -8,10 +8,15 @@ export interface EntityType {
 	display_order: number;
 }
 
+export interface ActivityEntityType extends EntityType {
+	color: string;
+}
+
 // Stores for the types
 export const transportationTypes = writable<EntityType[]>([]);
 export const lodgingTypes = writable<EntityType[]>([]);
-export const activityTypes = writable<EntityType[]>([]);
+export const adventureTypes = writable<EntityType[]>([]); // For collection categories
+export const activityTypes = writable<ActivityEntityType[]>([]); // For sports/activities
 
 // Loading state
 export const typesLoading = writable(false);
@@ -27,6 +32,14 @@ export const transportationTypesIcons = derived(transportationTypes, ($types) =>
 });
 
 export const lodgingTypesIcons = derived(lodgingTypes, ($types) => {
+	const icons: Record<string, string> = {};
+	for (const type of $types) {
+		icons[type.key] = type.icon;
+	}
+	return icons;
+});
+
+export const adventureTypesIcons = derived(adventureTypes, ($types) => {
 	const icons: Record<string, string> = {};
 	for (const type of $types) {
 		icons[type.key] = type.icon;
@@ -52,9 +65,10 @@ export async function fetchEntityTypes(): Promise<void> {
 	typesLoading.set(true);
 
 	try {
-		const [transportRes, lodgingRes, activityRes] = await Promise.all([
+		const [transportRes, lodgingRes, adventureRes, activityRes] = await Promise.all([
 			fetch('/api/transportation-types/'),
 			fetch('/api/lodging-types/'),
+			fetch('/api/adventure-types/'),
 			fetch('/api/activity-types/')
 		]);
 
@@ -66,6 +80,11 @@ export async function fetchEntityTypes(): Promise<void> {
 		if (lodgingRes.ok) {
 			const data = await lodgingRes.json();
 			lodgingTypes.set(data);
+		}
+
+		if (adventureRes.ok) {
+			const data = await adventureRes.json();
+			adventureTypes.set(data);
 		}
 
 		if (activityRes.ok) {
@@ -95,9 +114,23 @@ export function getLodgingIcon(typeKey: string | null | undefined): string {
 	return type?.icon || '🏨';
 }
 
-// Helper to get icon for an activity type
+// Helper to get icon for an adventure type (collection category)
+export function getAdventureIcon(typeKey: string | null | undefined): string {
+	const types = get(adventureTypes);
+	const type = types.find((t) => t.key === typeKey);
+	return type?.icon || '🌍';
+}
+
+// Helper to get icon for an activity/sport type
 export function getActivityIcon(typeKey: string | null | undefined): string {
 	const types = get(activityTypes);
 	const type = types.find((t) => t.key === typeKey);
-	return type?.icon || '🌍';
+	return type?.icon || '🏃';
+}
+
+// Helper to get color for an activity/sport type
+export function getActivityColor(typeKey: string | null | undefined): string {
+	const types = get(activityTypes);
+	const type = types.find((t) => t.key === typeKey);
+	return type?.color || '#6B7280';
 }

@@ -1,7 +1,7 @@
 import os
 from django.conf import settings
 from django.db.models import Q
-from .models import Location, ContentImage, ChecklistItem, Collection, Note, Transportation, Checklist, Visit, Category, ContentAttachment, Lodging, CollectionInvite, Trail, Activity, CollectionItineraryItem, CollectionItineraryDay, CollectionTemplate, AuditLog, TransportationType, LodgingType, ActivityType
+from .models import Location, ContentImage, ChecklistItem, Collection, Note, Transportation, Checklist, Visit, Category, ContentAttachment, Lodging, CollectionInvite, Trail, Activity, CollectionItineraryItem, CollectionItineraryDay, CollectionTemplate, AuditLog, TransportationType, LodgingType, AdventureType, ActivityType
 from rest_framework import serializers
 from main.utils import CustomModelSerializer
 from users.serializers import CustomUserDetailsSerializer
@@ -54,10 +54,16 @@ class LodgingTypeSerializer(serializers.ModelSerializer):
         fields = ['id', 'key', 'name', 'icon', 'display_order']
 
 
+class AdventureTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdventureType
+        fields = ['id', 'key', 'name', 'icon', 'display_order']
+
+
 class ActivityTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ActivityType
-        fields = ['id', 'key', 'name', 'icon', 'display_order']
+        fields = ['id', 'key', 'name', 'icon', 'color', 'display_order']
 
 
 class ContentImageSerializer(CustomModelSerializer):

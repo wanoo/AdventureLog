@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from adventures.models import TransportationType, LodgingType, ActivityType
-from adventures.serializers import TransportationTypeSerializer, LodgingTypeSerializer, ActivityTypeSerializer
+from adventures.models import TransportationType, LodgingType, AdventureType, ActivityType
+from adventures.serializers import TransportationTypeSerializer, LodgingTypeSerializer, AdventureTypeSerializer, ActivityTypeSerializer
 
 
 class TransportationTypeViewSet(viewsets.ReadOnlyModelViewSet):
@@ -26,9 +26,20 @@ class LodgingTypeViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None  # Return all types without pagination
 
 
+class AdventureTypeViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API endpoint for adventure types (location categories).
+    Read-only - types are managed via Django admin.
+    """
+    queryset = AdventureType.objects.filter(is_active=True)
+    serializer_class = AdventureTypeSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = None  # Return all types without pagination
+
+
 class ActivityTypeViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    API endpoint for activity types.
+    API endpoint for activity/sport types.
     Read-only - types are managed via Django admin.
     """
     queryset = ActivityType.objects.filter(is_active=True)

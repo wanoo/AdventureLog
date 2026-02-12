@@ -28,6 +28,7 @@ router.register(r'itinerary-days', ItineraryDayViewSet, basename='itinerary-days
 router.register(r'collection-templates', CollectionTemplateViewSet, basename='collection-templates')
 router.register(r'transportation-types', TransportationTypeViewSet, basename='transportation-types')
 router.register(r'lodging-types', LodgingTypeViewSet, basename='lodging-types')
+router.register(r'adventure-types', AdventureTypeViewSet, basename='adventure-types')
 router.register(r'activity-types', ActivityTypeViewSet, basename='activity-types')
 
 urlpatterns = [

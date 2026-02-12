@@ -158,11 +158,29 @@ class LodgingType(models.Model):
         return f"{self.icon} {self.name}"
 
 
-class ActivityType(models.Model):
-    """Admin-managed activity types with icons (for location categories)."""
+class AdventureType(models.Model):
+    """Admin-managed adventure/location category types with icons."""
     key = models.CharField(max_length=50, unique=True, help_text="Unique identifier (e.g., 'hiking', 'dining')")
     name = models.CharField(max_length=100, help_text="Display name (e.g., 'Hiking', 'Dining')")
     icon = models.CharField(max_length=10, help_text="Emoji icon (e.g., '🥾', '🍽️')")
+    display_order = models.IntegerField(default=0, help_text="Order in dropdown lists")
+    is_active = models.BooleanField(default=True, help_text="Whether this type is available for selection")
+
+    class Meta:
+        ordering = ['display_order', 'name']
+        verbose_name = "Adventure Type"
+        verbose_name_plural = "Adventure Types"
+
+    def __str__(self):
+        return f"{self.icon} {self.name}"
+
+
+class ActivityType(models.Model):
+    """Admin-managed activity/sport types with icons and colors."""
+    key = models.CharField(max_length=50, unique=True, help_text="Unique identifier (e.g., 'Run', 'Hike')")
+    name = models.CharField(max_length=100, help_text="Display name (e.g., 'Run', 'Hike')")
+    icon = models.CharField(max_length=10, help_text="Emoji icon (e.g., '🏃', '🥾')")
+    color = models.CharField(max_length=20, default='#6B7280', help_text="Color code (e.g., '#F59E0B')")
     display_order = models.IntegerField(default=0, help_text="Order in dropdown lists")
     is_active = models.BooleanField(default=True, help_text="Whether this type is available for selection")
 
