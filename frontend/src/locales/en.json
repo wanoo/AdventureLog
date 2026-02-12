@@ -803,7 +803,9 @@
 		"duplicated_success": "Collection duplicated successfully",
 		"duplicate_error": "Error duplicating collection",
 		"save_as_template": "Save as Template",
-		"template_saved_success": "Template saved successfully"
+		"template_saved_success": "Template saved successfully",
+		"adventure_type": "Type",
+		"no_type": "-- No type --"
 	},
 	"notes": {
 		"note_deleted": "Note deleted successfully!",

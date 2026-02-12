@@ -155,6 +155,14 @@ export type Point = {
 	activity_type: string;
 };
 
+export type AdventureType = {
+	id: number;
+	key: string;
+	name: string;
+	icon: string;
+	display_order: number;
+};
+
 export type Collection = {
 	id: string;
 	user: string;
@@ -181,6 +189,7 @@ export type Collection = {
 	status: 'folder' | 'upcoming' | 'in_progress' | 'completed';
 	days_until_start: number | null;
 	is_owned?: boolean; // For collaborative mode
+	adventure_type?: AdventureType | null;
 };
 
 export type SlimCollection = {
@@ -203,6 +212,7 @@ export type SlimCollection = {
 	status: 'folder' | 'upcoming' | 'in_progress' | 'completed';
 	days_until_start: number | null;
 	is_owned?: boolean; // For collaborative mode
+	adventure_type?: AdventureType | null;
 };
 
 export type GeocodeSearchResult = {

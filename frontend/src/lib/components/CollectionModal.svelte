@@ -5,6 +5,7 @@
 	import MarkdownEditor from './MarkdownEditor.svelte';
 	import { addToast } from '$lib/toasts';
 	import type { Collection, ContentImage, SlimCollection } from '$lib/types';
+	import { adventureTypes, fetchEntityTypes } from '$lib/stores/entityTypes';
 
 	// Icons
 	import CollectionIcon from '~icons/mdi/folder-multiple';
@@ -14,6 +15,7 @@
 	import SaveIcon from '~icons/mdi/content-save';
 	import CloseIcon from '~icons/mdi/close';
 	import ImageIcon from '~icons/mdi/image-multiple';
+	import TagIcon from '~icons/mdi/tag';
 
 	const dispatch = createEventDispatcher();
 	let modal: HTMLDialogElement;
@@ -38,6 +40,8 @@
 		primary_image_id: collectionToEdit?.primary_image_id ?? null,
 		itinerary_days: []
 	};
+
+	let adventure_type_id: number | null = collectionToEdit?.adventure_type?.id ?? null;
 
 	let availableImages: ContentImage[] = [];
 	let coverImageId: string | null = collection.primary_image?.id || null;
@@ -88,7 +92,8 @@
 			shared_with: col.shared_with || [],
 			status: col.status ?? 'folder',
 			days_until_start: col.days_until_start ?? null,
-			primary_image: col.primary_image ?? null
+			primary_image: col.primary_image ?? null,
+			adventure_type: col.adventure_type ?? null
 		};
 	}
 
@@ -105,6 +110,7 @@
 				collection = { ...collection, ...data };
 				coverImageId = data.primary_image?.id ?? coverImageId;
 				collection.primary_image_id = coverImageId;
+				adventure_type_id = data.adventure_type?.id ?? null;
 				setImagesFromCollection(collection);
 				return;
 			}
@@ -120,7 +126,7 @@
 		if (modal) {
 			modal.showModal();
 		}
-		await loadCollectionDetails();
+		await Promise.all([loadCollectionDetails(), fetchEntityTypes()]);
 	});
 
 	function close() {
@@ -165,7 +171,8 @@
 			end_date: collection.end_date,
 			is_public: collection.is_public,
 			link: collection.link,
-			primary_image_id: coverImageId
+			primary_image_id: coverImageId,
+			adventure_type_id: adventure_type_id
 		};
 
 		if (collection.id === '') {
@@ -345,6 +352,27 @@
 										bind:value={collection.end_date}
 										class="input input-bordered w-full"
 									/>
+								</div>
+
+								<!-- Adventure Type -->
+								<div class="form-control">
+									<label class="label" for="adventure_type">
+										<span class="label-text font-medium flex items-center gap-2">
+											<TagIcon class="w-4 h-4" />
+											{$t('collection.adventure_type') ?? 'Type'}
+										</span>
+									</label>
+									<select
+										id="adventure_type"
+										name="adventure_type"
+										bind:value={adventure_type_id}
+										class="select select-bordered w-full"
+									>
+										<option value={null}>{$t('collection.no_type') ?? '-- No type --'}</option>
+										{#each $adventureTypes as type (type.id)}
+											<option value={type.id}>{type.icon} {type.name}</option>
+										{/each}
+									</select>
 								</div>
 
 								<!-- Public Toggle -->

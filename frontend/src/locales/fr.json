@@ -825,7 +825,9 @@
 		"duplicated_success": "Collection dupliquée avec succès",
 		"duplicate_error": "Erreur lors de la duplication de la collection",
 		"save_as_template": "Enregistrer comme modèle",
-		"template_saved_success": "Modèle enregistré avec succès"
+		"template_saved_success": "Modèle enregistré avec succès",
+		"adventure_type": "Type",
+		"no_type": "-- Aucun type --"
 	},
 	"notes": {
 		"content": "Contenu",
