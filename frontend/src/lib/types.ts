@@ -508,6 +508,11 @@ export type Visit = {
 	created_at: string;
 	updated_at: string;
 	user_username?: string | null;
+	collection?: string | null;
+	collection_info?: {
+		id: string;
+		name: string;
+	} | null;
 };
 
 export type TransportationVisit = {
