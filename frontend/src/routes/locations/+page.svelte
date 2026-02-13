@@ -370,21 +370,15 @@
 					<!-- Filters (Dynamic like collections) -->
 					<div class="space-y-6">
 						<!-- Category Filter -->
-						<div class="card bg-base-200/50 p-4">
-							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
-								<Tag class="w-5 h-5" />
-								{$t('adventures.categories')}
-							</h3>
-							<CategoryFilterDropdown bind:types={typeString} on:change={updateCategoryFilter} />
-							<button
-								type="button"
-								on:click={() => (is_category_modal_open = true)}
-								class="btn btn-outline btn-sm w-full mt-3 gap-2"
-							>
-								<Tag class="w-4 h-4" />
-								{$t('categories.manage_categories')}
-							</button>
-						</div>
+						<CategoryFilterDropdown bind:types={typeString} on:change={updateCategoryFilter} />
+						<button
+							type="button"
+							on:click={() => (is_category_modal_open = true)}
+							class="btn btn-outline btn-sm w-full gap-2"
+						>
+							<Tag class="w-4 h-4" />
+							{$t('categories.manage_categories')}
+						</button>
 
 						<SortOptions
 							orderBy={currentSort.order_by}

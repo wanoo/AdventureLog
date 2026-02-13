@@ -337,13 +337,7 @@
 					<!-- Filters -->
 					<div class="space-y-6">
 						<!-- Type Filter -->
-						<div class="card bg-base-200/50 p-4">
-							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
-								<Airplane class="w-5 h-5" />
-								{$t('transportation.type') || 'Type'}
-							</h3>
-							<TypeFilterDropdown bind:types={typeString} {typeOptions} on:change={updateTypeFilter} />
-						</div>
+						<TypeFilterDropdown bind:types={typeString} {typeOptions} on:change={updateTypeFilter} />
 
 						<SortOptions
 							orderBy={currentSort.order_by}
