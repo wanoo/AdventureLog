@@ -18,7 +18,7 @@
 	import Globe from '~icons/mdi/globe';
 	import { goto } from '$app/navigation';
 	import type { CollectionItineraryItem } from '$lib/types';
-	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge } from '../shared/cards';
+	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge, VisitCountBadge, TagsDisplay, getVisitSummary } from '../shared/cards';
 	import {
 		getTimezoneLabel,
 		getTimezoneTip,
@@ -82,11 +82,13 @@
 	$: routeToLabel = hasCodePair
 		? transportation.end_code
 		: (transportation.to_location ?? transportation.end_code ?? null);
-	// Use first visit's dates for display
-	$: firstVisit = transportation?.visits?.[0] ?? null;
-	$: visitStartDate = firstVisit?.start_date ?? null;
-	$: visitEndDate = firstVisit?.end_date ?? null;
-	$: visitTimezone = firstVisit?.timezone ?? null;
+	// Use LAST visit's dates for display (sorted by start_date desc)
+	$: visitSummary = getVisitSummary(transportation?.visits);
+	$: lastVisit = visitSummary.lastVisit;
+	$: visitCount = visitSummary.visitCount;
+	$: visitStartDate = lastVisit?.start_date ?? null;
+	$: visitEndDate = lastVisit?.end_date ?? null;
+	$: visitTimezone = lastVisit?.timezone ?? null;
 	$: hasExpandableDetails = Boolean(visitEndDate || travelDurationLabel);
 	$: if (!hasExpandableDetails) showMoreDetails = false;
 
@@ -338,9 +340,12 @@
 			</div>
 		{/if}
 
-		<!-- Date & Time Section (from first visit) -->
+		<!-- Date & Time Section (from last visit) -->
 		{#if visitStartDate}
 			<div class="flex flex-col gap-1.5">
+				{#if visitCount > 1}
+					<span class="text-xs text-base-content/60 font-medium">{$t('adventures.last_trip')}</span>
+				{/if}
 				{#if isAllDay(visitStartDate) && (!visitEndDate || isAllDay(visitEndDate))}
 					<!-- All-day event -->
 					<div class="flex items-center gap-2 text-sm">
@@ -359,7 +364,7 @@
 					<div class="bg-base-200 rounded-lg px-3 py-2 flex flex-col gap-2">
 						<div class="flex items-start justify-between gap-2">
 							<div class="flex flex-col gap-0.5 min-w-0">
-								<span class="text-xs text-base-content/60">Departure</span>
+								<span class="text-xs text-base-content/60">{$t('transportation.departure')}</span>
 								<span class="text-sm font-semibold text-base-content">
 									{formatDateInTimezone(visitStartDate, visitTimezone)}
 								</span>
@@ -404,7 +409,7 @@
 								<div class="bg-base-200 rounded-lg px-3 py-2 flex flex-col gap-2">
 									<div class="flex items-center justify-between gap-2">
 										<div class="flex flex-col gap-0.5 min-w-0">
-											<span class="text-xs text-base-content/60">Arrival</span>
+											<span class="text-xs text-base-content/60">{$t('transportation.arrival')}</span>
 											<span class="text-sm font-semibold text-base-content">
 												{formatDateInTimezone(
 													visitEndDate,
@@ -452,7 +457,12 @@
 				averageRating={transportation.average_rating}
 				fallbackRating={transportation.rating}
 			/>
+
+			<VisitCountBadge {visitCount} />
 		</div>
+
+		<!-- Tags -->
+		<TagsDisplay tags={transportation.tags} />
 	</div>
 </div>
 

@@ -19,7 +19,7 @@
 	import { goto } from '$app/navigation';
 	import Calendar from '~icons/mdi/calendar';
 	import type { CollectionItineraryItem } from '$lib/types';
-	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge } from '../shared/cards';
+	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge, VisitCountBadge, TagsDisplay, getVisitSummary } from '../shared/cards';
 	import {
 		getTimezoneLabel,
 		getTimezoneTip,
@@ -52,11 +52,13 @@
 	const isTimedStay = (date: string | null) => hasTimePortion(date);
 
 	let showMoreDetails = false;
-	// Use first visit's dates for display
-	$: firstVisit = lodging?.visits?.[0] ?? null;
-	$: visitStartDate = firstVisit?.start_date ?? null;
-	$: visitEndDate = firstVisit?.end_date ?? null;
-	$: visitTimezone = firstVisit?.timezone ?? null;
+	// Use LAST visit's dates for display (sorted by start_date desc)
+	$: visitSummary = getVisitSummary(lodging?.visits);
+	$: lastVisit = visitSummary.lastVisit;
+	$: visitCount = visitSummary.visitCount;
+	$: visitStartDate = lastVisit?.start_date ?? null;
+	$: visitEndDate = lastVisit?.end_date ?? null;
+	$: visitTimezone = lastVisit?.timezone ?? null;
 	$: hasExpandableDetails = Boolean(
 		visitEndDate && (isTimedStay(visitEndDate) || isTimedStay(visitStartDate))
 	);
@@ -287,9 +289,12 @@
 			</div>
 		{/if}
 
-		<!-- Check-in & Check-out Section (from first visit) -->
+		<!-- Check-in & Check-out Section (from last visit) -->
 		{#if visitStartDate || visitEndDate}
 			<div class="flex flex-col gap-1.5">
+				{#if visitCount > 1}
+					<span class="text-xs text-base-content/60 font-medium">{$t('adventures.last_stay')}</span>
+				{/if}
 				{#if visitStartDate && visitEndDate}
 					<!-- Both dates present -->
 					{#if isAllDay(visitStartDate) && isAllDay(visitEndDate)}
@@ -309,7 +314,7 @@
 							<div class="bg-base-200 rounded-lg px-3 py-2 flex flex-col gap-2">
 								<div class="flex items-start justify-between gap-2">
 									<div class="flex flex-col gap-0.5 min-w-0">
-										<span class="text-xs text-base-content/60">Check-in</span>
+										<span class="text-xs text-base-content/60">{$t('adventures.check_in')}</span>
 										<span class="text-sm font-semibold text-base-content">
 											{#if isAllDay(visitStartDate)}
 												{formatAllDayDate(visitStartDate)}
@@ -351,7 +356,7 @@
 								<div class="bg-base-200 rounded-lg px-3 py-2 flex flex-col gap-2">
 									<div class="flex items-start justify-between gap-2">
 										<div class="flex flex-col gap-0.5 min-w-0">
-											<span class="text-xs text-base-content/60">Check-out</span>
+											<span class="text-xs text-base-content/60">{$t('adventures.check_out')}</span>
 											<span class="text-sm font-semibold text-base-content">
 												{#if isAllDay(visitEndDate)}
 													{formatAllDayDate(visitEndDate)}
@@ -380,7 +385,7 @@
 					<div class="bg-base-200 rounded-lg px-3 py-2 flex flex-col gap-2">
 						<div class="flex items-start justify-between gap-2">
 							<div class="flex flex-col gap-0.5">
-								<span class="text-xs text-base-content/60">Check-in</span>
+								<span class="text-xs text-base-content/60">{$t('adventures.check_in')}</span>
 								<span class="text-sm font-semibold text-base-content">
 									{#if isAllDay(visitStartDate)}
 										{formatAllDayDate(visitStartDate)}
@@ -406,7 +411,7 @@
 					<div class="bg-base-200 rounded-lg px-3 py-2 flex flex-col gap-2">
 						<div class="flex items-start justify-between gap-2">
 							<div class="flex flex-col gap-0.5">
-								<span class="text-xs text-base-content/60">Check-out</span>
+								<span class="text-xs text-base-content/60">{$t('adventures.check_out')}</span>
 								<span class="text-sm font-semibold text-base-content">
 									{#if isAllDay(visitEndDate)}
 										{formatAllDayDate(visitEndDate)}
@@ -438,6 +443,8 @@
 				fallbackRating={lodging.rating}
 			/>
 
+			<VisitCountBadge {visitCount} />
+
 			{#if lodging.user == user?.uuid || (collection && user && collection.shared_with?.includes(user.uuid))}
 				{#if lodging.reservation_number}
 					<span class="badge badge-primary badge-sm font-medium">
@@ -447,6 +454,9 @@
 				<PriceBadge price={lodging.price} currency={lodging.price_currency} />
 			{/if}
 		</div>
+
+		<!-- Tags -->
+		<TagsDisplay tags={lodging.tags} />
 	</div>
 </div>
 

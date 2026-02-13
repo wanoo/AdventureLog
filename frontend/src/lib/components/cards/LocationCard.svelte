@@ -20,7 +20,7 @@
 	import CollectionItineraryPlanner from '../collections/CollectionItineraryPlanner.svelte';
 	import CalendarRemove from '~icons/mdi/calendar-remove';
 	import Globe from '~icons/mdi/globe';
-	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge, CopyLinkButton } from '../shared/cards';
+	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge, CopyLinkButton, TagsDisplay, VisitCountBadge, getVisitSummary } from '../shared/cards';
 
 	export let type: string | null = null;
 	export let user: User | null;
@@ -34,21 +34,9 @@
 	let actionsMenu: { close: () => void };
 
 	export let adventure: Location;
-	let displayActivityTypes: string[] = [];
-	let remainingCount = 0;
 
-	// Process activity types for display
-	$: {
-		if (adventure.tags) {
-			if (adventure.tags.length <= 3) {
-				displayActivityTypes = adventure.tags;
-				remainingCount = 0;
-			} else {
-				displayActivityTypes = adventure.tags.slice(0, 3);
-				remainingCount = adventure.tags.length - 3;
-			}
-		}
-	}
+	// Get visit summary for visit count
+	$: visitSummary = getVisitSummary(adventure?.visits);
 
 	// Creator avatar helpers
 	$: creatorInitials =
@@ -404,19 +392,12 @@
 			/>
 
 			<PriceBadge price={adventure.price} currency={adventure.price_currency} />
+
+			<VisitCountBadge visitCount={visitSummary.visitCount} />
 		</div>
 
-		<!-- Tags (compact) -->
-		{#if displayActivityTypes.length > 0}
-			<div class="flex flex-wrap gap-2">
-				{#each displayActivityTypes as tag}
-					<span class="badge badge-ghost badge-sm">{tag}</span>
-				{/each}
-				{#if remainingCount > 0}
-					<span class="badge badge-ghost badge-sm">+{remainingCount}</span>
-				{/if}
-			</div>
-		{/if}
+		<!-- Tags -->
+		<TagsDisplay tags={adventure.tags} />
 	</div>
 
 	{#if !readOnly}

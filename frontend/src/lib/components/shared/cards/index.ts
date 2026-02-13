@@ -5,3 +5,10 @@ export { default as CardPrivacyBadge } from './CardPrivacyBadge.svelte';
 export { default as RatingDisplay } from './RatingDisplay.svelte';
 export { default as PriceBadge } from './PriceBadge.svelte';
 export { default as CopyLinkButton } from './CopyLinkButton.svelte';
+
+// Visit and tag utilities
+export { default as VisitCountBadge } from './VisitCountBadge.svelte';
+export { default as TagsDisplay } from './TagsDisplay.svelte';
+export { default as LastVisitDate } from './LastVisitDate.svelte';
+export { getVisitSummary, processTags } from './visitUtils';
+export type { VisitSummary } from './visitUtils';
