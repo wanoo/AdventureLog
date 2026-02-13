@@ -1,6 +1,6 @@
 from django.contrib import admin
 from allauth.account.decorators import secure_admin_login
-from .models import Country, Region, City, ExchangeRate
+from .models import Country, Region, City, ExchangeRate, VisitedRegion, VisitedCity
 
 admin.autodiscover()
 admin.site.login = secure_admin_login(admin.site.login)
@@ -33,3 +33,17 @@ class ExchangeRateAdmin(admin.ModelAdmin):
     list_display = ['currency_code', 'rate', 'updated_at']
     search_fields = ['currency_code']
     ordering = ['currency_code']
+
+
+@admin.register(VisitedRegion)
+class VisitedRegionAdmin(admin.ModelAdmin):
+    list_display = ['user', 'region']
+    list_filter = ['region__country']
+    search_fields = ['user__username', 'region__name']
+
+
+@admin.register(VisitedCity)
+class VisitedCityAdmin(admin.ModelAdmin):
+    list_display = ['user', 'city']
+    list_filter = ['city__region__country']
+    search_fields = ['user__username', 'city__name']
