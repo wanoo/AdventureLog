@@ -111,9 +111,9 @@
 									<!-- Price for this visit -->
 									{#if visit.total_price !== null && visit.total_price !== undefined}
 										<div class="mt-3 flex items-center gap-3 text-sm text-base-content/70">
-											<CashMultiple class="w-4 h-4 text-info" />
+											<CashMultiple class="w-4 h-4 text-success" />
 											<span>
-												<strong class="text-info">{formatMoney({ amount: visit.total_price, currency: visit.total_price_currency || 'USD' })}</strong>
+												<strong class="text-success">{formatMoney({ amount: visit.total_price, currency: visit.total_price_currency || 'USD' })}</strong>
 												{#if visit.number_of_people && visit.number_of_people > 0}
 													<span class="opacity-70"> ({visit.number_of_people} {visit.number_of_people === 1 ? $t('adventures.people').replace(/s$/, '') : $t('adventures.people')})</span>
 													{#if visit.number_of_people > 1}
