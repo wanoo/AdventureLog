@@ -18,7 +18,7 @@
 	import Globe from '~icons/mdi/globe';
 	import { goto } from '$app/navigation';
 	import type { CollectionItineraryItem } from '$lib/types';
-	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge, VisitCountBadge, TagsDisplay, getVisitSummary } from '../shared/cards';
+	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge, AvgPriceBadge, VisitCountBadge, TagsDisplay, getVisitSummary } from '../shared/cards';
 	import { getTransportationIcon as getTransportationIconFromStore } from '$lib/stores/entityTypes';
 
 	let actionsMenu: { close: () => void };
@@ -371,7 +371,7 @@
 			class:text-xs={compact}
 			class:text-sm={!compact}
 		>
-			<PriceBadge price={transportation.price} currency={transportation.price_currency} />
+			<AvgPriceBadge avgPricePerUser={transportation.average_price_per_user} />
 
 			{#if transportation.distance && !isNaN(+transportation.distance)}
 				<span class="badge badge-ghost badge-sm">

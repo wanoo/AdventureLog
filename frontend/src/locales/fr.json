@@ -69,6 +69,7 @@
 		"people": "personnes",
 		"avg_per_user": "Moy. par personne",
 		"avg_per_user_per_night": "Moy. par personne/nuit",
+		"avg_price": "Prix moyen",
 		"based_on_visits": "basé sur {count} visite(s)",
 		"share": "Partager",
 		"sort": "Trier",

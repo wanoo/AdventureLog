@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
-	import type { Collection, Lodging, MoneyValue, User } from '$lib/types';
+	import type { Collection, Lodging, User } from '$lib/types';
 	import LocationSearchMap from '../shared/LocationSearchMap.svelte';
 	import { EntityDetailsBase } from '../shared/modal';
-	import { DEFAULT_CURRENCY, normalizeMoneyPayload, toMoneyValue } from '$lib/money';
 	import { lodgingTypes, fetchEntityTypes } from '$lib/stores/entityTypes';
 
 	const dispatch = createEventDispatcher();
@@ -31,8 +30,6 @@
 		description: string;
 		link: string;
 		reservation_number: string | null;
-		price: number | null;
-		price_currency: string | null;
 		latitude: number | null;
 		longitude: number | null;
 		location: string;
@@ -45,8 +42,6 @@
 		description: '',
 		link: '',
 		reservation_number: null,
-		price: null,
-		price_currency: DEFAULT_CURRENCY,
 		latitude: null,
 		longitude: null,
 		location: '',
@@ -57,23 +52,9 @@
 
 	let user: User | null = null;
 	let lodgingToEdit: Lodging | null = null;
-	let moneyValue: MoneyValue = { amount: null, currency: DEFAULT_CURRENCY };
-	let preferredCurrency: string = DEFAULT_CURRENCY;
 
 	$: user = currentUser;
 	$: lodgingToEdit = editingLodging;
-	$: preferredCurrency = user?.default_currency || DEFAULT_CURRENCY;
-	$: {
-		const isNewLodging = !(initialLodging && initialLodging.id);
-		const isEditing = Boolean(editingLodging && editingLodging.id);
-		if (isNewLodging && !isEditing && lodging.price_currency === DEFAULT_CURRENCY) {
-			lodging.price_currency = preferredCurrency;
-		}
-	}
-	$: moneyValue =
-		lodging.price === null
-			? { amount: null, currency: lodging.price_currency || null }
-			: toMoneyValue(lodging.price, lodging.price_currency, preferredCurrency);
 	$: initialSelection =
 		initialLodging && initialLodging.latitude && initialLodging.longitude
 			? {
@@ -100,12 +81,6 @@
 		lodging.location = '';
 	}
 
-	function handleMoneyChange(event: CustomEvent<{ amount: number | null; currency: string | null }>) {
-		lodging.price = event.detail.amount;
-		lodging.price_currency =
-			event.detail.amount === null ? null : event.detail.currency || preferredCurrency;
-	}
-
 	async function handleSave() {
 		if (!lodging.name || !lodging.type) return;
 
@@ -124,13 +99,6 @@
 		}
 
 		let payload: any = { ...lodging };
-
-		if (lodging.price === null) {
-			payload.price = null;
-			payload.price_currency = null;
-		} else {
-			payload = normalizeMoneyPayload(payload, 'price', 'price_currency', preferredCurrency);
-		}
 
 		if (!payload.link || payload.link.trim() === '') {
 			delete payload.link;
@@ -185,13 +153,6 @@
 			lodging.description = initialLodging.description || '';
 			lodging.is_public = initialLodging.is_public ?? true;
 			lodging.reservation_number = initialLodging.reservation_number || null;
-			const money = toMoneyValue(
-				initialLodging.price,
-				initialLodging.price_currency,
-				preferredCurrency
-			);
-			lodging.price = money.amount;
-			lodging.price_currency = money.currency || preferredCurrency;
 
 			if (initialLodging.location) {
 				lodging.location = initialLodging.location;
@@ -210,7 +171,6 @@
 	bind:link={lodging.link}
 	bind:is_public={lodging.is_public}
 	bind:tags={lodging.tags}
-	{moneyValue}
 	namePlaceholder={$t('lodging.enter_lodging_name')}
 	linkPlaceholder={$t('lodging.enter_link')}
 	publicLabel={$t('lodging.public_lodging')}
@@ -221,7 +181,6 @@
 	disabled={!lodging.name || !lodging.type || isReverseGeocoding}
 	on:save={handleSave}
 	on:back={handleBack}
-	on:change={handleMoneyChange}
 >
 	<svelte:fragment slot="type-field">
 		<!-- Type Field -->

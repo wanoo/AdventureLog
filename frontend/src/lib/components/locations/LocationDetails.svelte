@@ -4,14 +4,11 @@
 	import CategoryDropdown from '../CategoryDropdown.svelte';
 	import LocationSearchMap from '../shared/LocationSearchMap.svelte';
 	import { EntityDetailsBase } from '../shared/modal';
-	import { DEFAULT_CURRENCY, normalizeMoneyPayload, toMoneyValue } from '$lib/money';
-	import type { Category, Collection, Location, MoneyValue, User } from '$lib/types';
+	import type { Category, Collection, Location, User } from '$lib/types';
 
 	const dispatch = createEventDispatcher();
 
 	let isReverseGeocoding = false;
-	let defaultCurrency = DEFAULT_CURRENCY;
-	let moneyValue: MoneyValue = { amount: null, currency: DEFAULT_CURRENCY };
 
 	let initialSelection: {
 		name: string;
@@ -24,8 +21,6 @@
 	let location: {
 		name: string;
 		category: Category | null;
-		price: number | null;
-		price_currency: string | null;
 		is_public: boolean;
 		link: string;
 		description: string;
@@ -37,8 +32,6 @@
 	} = {
 		name: '',
 		category: null,
-		price: null,
-		price_currency: DEFAULT_CURRENCY,
 		is_public: false,
 		link: '',
 		description: '',
@@ -60,16 +53,6 @@
 
 	$: user = currentUser;
 	$: locationToEdit = editingLocation;
-	$: defaultCurrency = (user && user.default_currency) || DEFAULT_CURRENCY;
-	$: moneyValue =
-		location.price === null
-			? { amount: null, currency: location.price_currency || null }
-			: toMoneyValue(location.price, location.price_currency, defaultCurrency);
-	$: {
-		if (location.price !== null && !location.price_currency) {
-			location.price_currency = defaultCurrency;
-		}
-	}
 	$: initialSelection =
 		initialLocation && initialLocation.latitude && initialLocation.longitude
 			? {
@@ -96,14 +79,6 @@
 		location.location = '';
 	}
 
-	function handleMoneyChange(event: CustomEvent<{ amount: number | null; currency: string | null }>) {
-		location.price = event.detail.amount;
-		location.price_currency = event.detail.currency;
-		if (location.price !== null && !location.price_currency) {
-			location.price_currency = defaultCurrency;
-		}
-	}
-
 	async function handleSave() {
 		if (!location.name || !location.category) return;
 
@@ -118,12 +93,6 @@
 		}
 
 		let payload: any = { ...location };
-		if (location.price === null) {
-			payload.price = null;
-			payload.price_currency = null;
-		} else {
-			payload = normalizeMoneyPayload(payload, 'price', 'price_currency', defaultCurrency);
-		}
 
 		if (locationToEdit && locationToEdit.id) {
 			if (
@@ -168,15 +137,6 @@
 			if (!location.name) location.name = initialLocation.name || '';
 			if (!location.link) location.link = initialLocation.link || '';
 			if (!location.description) location.description = initialLocation.description || '';
-			if (location.price === null || location.price === undefined) {
-				const money = toMoneyValue(
-					initialLocation.price,
-					initialLocation.price_currency,
-					defaultCurrency
-				);
-				location.price = money.amount;
-				location.price_currency = money.currency;
-			}
 			if (location.is_public === false) location.is_public = initialLocation.is_public || false;
 
 			if (!location.category || !location.category.id) {
@@ -220,7 +180,6 @@
 	bind:link={location.link}
 	bind:is_public={location.is_public}
 	bind:tags={location.tags}
-	{moneyValue}
 	namePlaceholder="Enter location name"
 	publicLabel={$t('adventures.public_location')}
 	publicDescription={$t('adventures.public_location_description')}
@@ -229,7 +188,6 @@
 	disabled={!location.name || !location.category || isReverseGeocoding}
 	on:save={handleSave}
 	on:back={handleBack}
-	on:change={handleMoneyChange}
 >
 	<svelte:fragment slot="type-field">
 		<!-- Category Field -->

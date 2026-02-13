@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
-	import type { Collection, Transportation, MoneyValue, User } from '$lib/types';
+	import type { Collection, Transportation, User } from '$lib/types';
 	import LocationSearchMap from '../shared/LocationSearchMap.svelte';
 	import { EntityDetailsBase } from '../shared/modal';
 	import { TRANSPORTATION_TYPES_ICONS } from '$lib';
-	import { DEFAULT_CURRENCY, normalizeMoneyPayload, toMoneyValue } from '$lib/money';
 	import type { SearchMode } from '../shared/LocationSearchMap.svelte';
 	import { transportationTypes, fetchEntityTypes } from '$lib/stores/entityTypes';
 
@@ -39,8 +38,6 @@
 		distance: null,
 		collections: collection?.id ? [collection.id] : [],
 		is_public: true,
-		price: null,
-		price_currency: DEFAULT_CURRENCY,
 		tags: []
 	};
 
@@ -49,23 +46,9 @@
 
 	let user: User | null = null;
 	let transportationToEdit: Transportation | null = null;
-	let moneyValue: MoneyValue = { amount: null, currency: DEFAULT_CURRENCY };
-	let preferredCurrency: string = DEFAULT_CURRENCY;
 
 	$: user = currentUser;
 	$: transportationToEdit = editingTransportation;
-	$: preferredCurrency = user?.default_currency || DEFAULT_CURRENCY;
-	$: {
-		const isNewTransportation = !(initialTransportation && initialTransportation.id);
-		const isEditing = Boolean(editingTransportation && editingTransportation.id);
-		if (isNewTransportation && !isEditing && transportation.price_currency === DEFAULT_CURRENCY) {
-			transportation.price_currency = preferredCurrency;
-		}
-		moneyValue =
-			transportation.price === null
-				? { amount: null, currency: transportation.price_currency || null }
-				: toMoneyValue(transportation.price, transportation.price_currency, preferredCurrency);
-	}
 
 	function normalizeCode(code: string | null): string | null {
 		if (!code) return null;
@@ -161,12 +144,6 @@
 		transportation.end_code = null;
 	}
 
-	function handleMoneyChange(event: CustomEvent<{ amount: number | null; currency: string | null }>) {
-		transportation.price = event.detail.amount;
-		transportation.price_currency =
-			event.detail.amount === null ? null : event.detail.currency || preferredCurrency;
-	}
-
 	async function handleSave() {
 		if (!transportation.name || !transportation.type) return;
 
@@ -189,13 +166,6 @@
 		}
 
 		let payload: any = { ...transportation };
-
-		if (transportation.price === null) {
-			payload.price = null;
-			payload.price_currency = null;
-		} else {
-			payload = normalizeMoneyPayload(payload, 'price', 'price_currency', preferredCurrency);
-		}
 
 		if (!payload.link || payload.link.trim() === '') {
 			delete payload.link;
@@ -246,9 +216,6 @@
 			transportation.start_code = initialTransportation.start_code || null;
 			transportation.end_code = initialTransportation.end_code || null;
 			transportation.distance = initialTransportation.distance || null;
-			transportation.price = initialTransportation.price ? Number(initialTransportation.price) : null;
-			transportation.price_currency = initialTransportation.price_currency || preferredCurrency;
-			moneyValue = toMoneyValue(transportation.price, transportation.price_currency, preferredCurrency);
 
 			transportation.from_location = initialTransportation.from_location || null;
 			transportation.to_location = initialTransportation.to_location || null;
@@ -272,7 +239,6 @@
 	bind:link={transportation.link}
 	bind:is_public={transportation.is_public}
 	bind:tags={transportation.tags}
-	{moneyValue}
 	namePlaceholder={$t('transportation.enter_transportation_name')}
 	linkPlaceholder={$t('transportation.enter_link')}
 	publicLabel={$t('transportation.public_transportation')}
@@ -283,7 +249,6 @@
 	disabled={!transportation.name || !transportation.type || isReverseGeocoding}
 	on:save={handleSave}
 	on:back={handleBack}
-	on:change={handleMoneyChange}
 >
 	<svelte:fragment slot="type-field">
 		<!-- Type Field -->

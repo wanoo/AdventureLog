@@ -7,6 +7,8 @@
 	import ActivityCard from '$lib/components/cards/ActivityCard.svelte';
 	import FolderIcon from '~icons/mdi/folder-outline';
 	import WeatherSunset from '~icons/mdi/weather-sunset';
+	import CashMultiple from '~icons/mdi/cash-multiple';
+	import { formatMoney } from '$lib/money';
 
 	export let visits: any[] = [];
 	export let title: string = $t('adventures.visits') || 'Visits';
@@ -103,6 +105,23 @@
 														><FolderIcon class="w-3 h-3" />{visit.collection_info.name}</a
 													>{/if}
 											</p>
+										</div>
+									{/if}
+
+									<!-- Price for this visit -->
+									{#if visit.total_price !== null && visit.total_price !== undefined}
+										<div class="mt-3 flex items-center gap-3 text-sm text-base-content/70">
+											<CashMultiple class="w-4 h-4 text-info" />
+											<span>
+												<strong class="text-info">{formatMoney({ amount: visit.total_price, currency: visit.total_price_currency || 'USD' })}</strong>
+												{#if visit.number_of_people && visit.number_of_people > 0}
+													<span class="opacity-70"> ({visit.number_of_people} {visit.number_of_people === 1 ? $t('adventures.people').replace(/s$/, '') : $t('adventures.people')})</span>
+													{#if visit.number_of_people > 1}
+														{@const perPerson = visit.total_price / visit.number_of_people}
+														<span class="opacity-70"> • {formatMoney({ amount: perPerson, currency: visit.total_price_currency || 'USD' })} {$t('adventures.avg_per_user')}</span>
+													{/if}
+												{/if}
+											</span>
 										</div>
 									{/if}
 

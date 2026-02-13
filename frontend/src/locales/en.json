@@ -165,6 +165,7 @@
 		"people": "people",
 		"avg_per_user": "Avg. per person",
 		"avg_per_user_per_night": "Avg. per person/night",
+		"avg_price": "Average Price",
 		"based_on_visits": "based on {count} visit(s)",
 		"distance": "Distance",
 		"share_collection": "Share this Collection!",

@@ -10,8 +10,6 @@
 		TagsCard,
 		DetailsActionButtons
 	} from '../form';
-	import MoneyInput from '../MoneyInput.svelte';
-	import type { MoneyValue } from '$lib/types';
 	import MapIcon from '~icons/mdi/map';
 	import InfoIcon from '~icons/mdi/information';
 
@@ -26,7 +24,6 @@
 	export let link: string = '';
 	export let is_public: boolean = true;
 	export let tags: string[] = [];
-	export let moneyValue: MoneyValue = { amount: null, currency: null };
 
 	// UI state
 	export let isProcessing: boolean = false;
@@ -66,12 +63,6 @@
 
 					<!-- Extra left fields slot (entity-specific: reservation_number, flight_number, codes) -->
 					<slot name="left-extra" />
-
-					<MoneyInput
-						label={$t('adventures.price')}
-						value={moneyValue}
-						on:change
-					/>
 				</div>
 
 				<!-- Right Column -->

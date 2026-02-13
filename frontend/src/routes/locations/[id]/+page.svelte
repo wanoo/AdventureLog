@@ -215,7 +215,6 @@
 		ratingCount={adventure.rating_count}
 		{ratingRefreshKey}
 		badges={heroBadges}
-		averagePricePerUser={adventure.average_price_per_user}
 		on:openImage={(e) => openImageModal(e.detail)}
 	/>
 
@@ -565,6 +564,24 @@
 						</div>
 					</div>
 				</div>
+
+				<!-- Average Price from Visits -->
+				{#if adventure.average_price_per_user}
+					{@const avgPrice = adventure.average_price_per_user}
+					<div class="card bg-base-200 shadow-xl">
+						<div class="card-body">
+							<h3 class="card-title text-lg mb-3">💰 {$t('adventures.avg_price')}</h3>
+							<div class="flex flex-col items-center gap-2">
+								<div class="badge badge-lg badge-info font-semibold px-4 py-3">
+									{formatMoney({ amount: avgPrice.amount, currency: avgPrice.currency })} {$t('adventures.avg_per_user')}
+								</div>
+								{#if avgPrice.visit_count > 0}
+									<span class="text-xs opacity-60">{$t('adventures.based_on_visits', { values: { count: avgPrice.visit_count } })}</span>
+								{/if}
+							</div>
+						</div>
+					</div>
+				{/if}
 
 				<!-- Activity Summary -->
 				{#if getTotalActivities(adventure) > 0}

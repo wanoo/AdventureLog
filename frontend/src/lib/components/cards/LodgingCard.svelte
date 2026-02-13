@@ -19,7 +19,7 @@
 	import { goto } from '$app/navigation';
 	import Calendar from '~icons/mdi/calendar';
 	import type { CollectionItineraryItem } from '$lib/types';
-	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge, VisitCountBadge, TagsDisplay, getVisitSummary } from '../shared/cards';
+	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge, AvgPriceBadge, VisitCountBadge, TagsDisplay, getVisitSummary } from '../shared/cards';
 	import { getLodgingIcon as getLodgingIconFromStore } from '$lib/stores/entityTypes';
 
 	let actionsMenu: { close: () => void };
@@ -334,8 +334,9 @@
 						{$t('adventures.reservation')}: {lodging.reservation_number}
 					</span>
 				{/if}
-				<PriceBadge price={lodging.price} currency={lodging.price_currency} />
 			{/if}
+
+			<AvgPriceBadge avgPricePerUserPerNight={lodging.average_price_per_user_per_night} />
 		</div>
 
 		<!-- Tags -->

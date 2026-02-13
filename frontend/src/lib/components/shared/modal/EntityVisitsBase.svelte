@@ -907,7 +907,7 @@
 					</div>
 
 					<!-- Price Tracking -->
-					<div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div class="mt-4 space-y-4">
 						<div>
 							<label class="label-text text-sm font-medium flex items-center gap-2" for="visit-price">
 								<CurrencyIcon class="w-4 h-4" />
@@ -920,7 +920,7 @@
 								/>
 							</div>
 						</div>
-						<div>
+						<div class="max-w-xs">
 							<label class="label-text text-sm font-medium flex items-center gap-2" for="visit-people">
 								<UsersIcon class="w-4 h-4" />
 								{$t('adventures.number_of_people')}
