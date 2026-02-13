@@ -68,6 +68,7 @@
 	export let user: User | null = null;
 	export let collection: Collection | null = null;
 	export let readOnly: boolean = false;
+	export let compact: boolean = false; // For compact grid display in itinerary
 	export let itineraryItem: CollectionItineraryItem | null = null;
 
 	let isWarningModalOpen: boolean = false;
@@ -167,12 +168,22 @@
 			</div>
 		{/if}
 	</div>
-	<div class="card-body p-4 space-y-3 min-w-0">
+	<div
+		class="card-body space-y-2 min-w-0"
+		class:p-3={compact}
+		class:p-4={!compact}
+		class:space-y-2={compact}
+		class:space-y-3={!compact}
+	>
 		<!-- Header -->
-		<div class="flex items-start justify-between gap-3">
+		<div class="flex items-start justify-between gap-2">
 			<a
 				href="/lodging/{lodging.id}"
-				class="hover:text-primary transition-colors duration-200 line-clamp-2 text-lg font-semibold"
+				class="hover:text-primary transition-colors duration-200 line-clamp-2"
+				class:text-base={compact}
+				class:text-lg={!compact}
+				class:font-semibold={!compact}
+				class:font-medium={compact}
 			>
 				{lodging.name}
 			</a>
@@ -437,7 +448,13 @@
 		{/if}
 
 		<!-- Rating & Info Badges -->
-		<div class="flex flex-wrap items-center gap-2 text-sm">
+		<div
+			class="flex flex-wrap items-center text-base-content/70 min-w-0"
+			class:gap-2={compact}
+			class:gap-3={!compact}
+			class:text-xs={compact}
+			class:text-sm={!compact}
+		>
 			<RatingDisplay
 				averageRating={lodging.average_rating}
 				fallbackRating={lodging.rating}

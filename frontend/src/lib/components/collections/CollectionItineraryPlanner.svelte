@@ -1953,6 +1953,7 @@
 												transportation={resolvedObj}
 												{user}
 												{collection}
+												compact={true}
 												on:delete={handleItemDelete}
 												itineraryItem={item}
 												on:removeFromItinerary={handleRemoveItineraryItem}
@@ -1964,6 +1965,7 @@
 												lodging={resolvedObj}
 												{user}
 												{collection}
+												compact={true}
 												itineraryItem={item}
 												on:delete={handleItemDelete}
 												on:removeFromItinerary={handleRemoveItineraryItem}
@@ -2435,6 +2437,7 @@
 														transportation={resolvedObj}
 														{user}
 														{collection}
+														compact={true}
 														on:delete={handleItemDelete}
 														itineraryItem={item}
 														on:removeFromItinerary={handleRemoveItineraryItem}
@@ -2453,6 +2456,7 @@
 														lodging={resolvedObj}
 														{user}
 														{collection}
+														compact={true}
 														itineraryItem={item}
 														on:delete={handleItemDelete}
 														on:removeFromItinerary={handleRemoveItineraryItem}
@@ -2758,6 +2762,7 @@
 										transportation={item}
 										{user}
 										{collection}
+										compact={true}
 										on:delete={handleItemDelete}
 										on:edit={handleEditTransportation}
 									/>
@@ -2766,6 +2771,7 @@
 										lodging={item}
 										{user}
 										{collection}
+										compact={true}
 										on:delete={handleItemDelete}
 										on:edit={handleEditLodging}
 									/>
