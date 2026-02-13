@@ -6,6 +6,7 @@
 	import StarRating from '$lib/components/StarRating.svelte';
 	import ActivityCard from '$lib/components/cards/ActivityCard.svelte';
 	import FolderIcon from '~icons/mdi/folder-outline';
+	import WeatherSunset from '~icons/mdi/weather-sunset';
 
 	export let visits: any[] = [];
 	export let title: string = $t('adventures.visits') || 'Visits';
@@ -13,6 +14,12 @@
 	export let measurementSystem: 'metric' | 'imperial' = 'metric';
 	export let trails: any[] = [];
 	export let showActivities: boolean = true;
+	export let sunTimes: { date: string; visit_id: string; sunrise: string; sunset: string }[] = [];
+
+	// Helper to get sun times for a specific visit
+	function getSunTimesForVisit(visitId: string) {
+		return sunTimes.find((st) => st.visit_id === visitId);
+	}
 </script>
 
 {#if visits && visits.length > 0}
@@ -96,6 +103,21 @@
 														><FolderIcon class="w-3 h-3" />{visit.collection_info.name}</a
 													>{/if}
 											</p>
+										</div>
+									{/if}
+
+									<!-- Sunrise/Sunset for this visit -->
+									{#if getSunTimesForVisit(visit.id)}
+										{@const visitSunTimes = getSunTimesForVisit(visit.id)}
+										<div class="mt-3 flex items-center gap-3 text-sm text-base-content/70">
+											<WeatherSunset class="w-4 h-4 text-warning" />
+											<span>
+												{$t('adventures.sunrise')}: <strong class="text-warning">{visitSunTimes?.sunrise}</strong>
+											</span>
+											<span class="opacity-50">•</span>
+											<span>
+												{$t('adventures.sunset')}: <strong class="text-orange-500">{visitSunTimes?.sunset}</strong>
+											</span>
 										</div>
 									{/if}
 

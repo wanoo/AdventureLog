@@ -9,7 +9,6 @@
 	import { DateTime } from 'luxon';
 
 	import LightbulbOn from '~icons/mdi/lightbulb-on';
-	import WeatherSunset from '~icons/mdi/weather-sunset';
 	import ImageDisplayModal from '$lib/components/ImageDisplayModal.svelte';
 	import AttachmentCard from '$lib/components/cards/AttachmentCard.svelte';
 	import { getActivityColor, getBasemapUrl, isAllDay } from '$lib';
@@ -342,6 +341,7 @@
 					visits={adventure.visits || []}
 					measurementSystem={data.user?.measurement_system || 'metric'}
 					trails={adventure.trails || []}
+					sunTimes={adventure.sun_times || []}
 				/>
 
 				<!-- Map Section -->
@@ -592,28 +592,6 @@
 										</div>
 									</div>
 								{/if}
-							</div>
-						</div>
-					</div>
-				{/if}
-
-				<!-- Sunrise/Sunset -->
-				{#if adventure.sun_times && adventure.sun_times.length > 0}
-					<div class="card bg-base-200 shadow-xl">
-						<div class="card-body">
-							<h3 class="card-title text-lg mb-4">
-								🌅 {$t('adventures.sun_times')}
-								<WeatherSunset class="w-5 h-5" />
-							</h3>
-							<div class="space-y-3">
-								{#each adventure.sun_times as sun_time}
-									<div class="border-l-4 border-warning pl-3">
-										<div class="font-semibold text-sm">{new Date(sun_time.date).toLocaleDateString()}</div>
-										<div class="text-xs opacity-70">
-											{$t('adventures.sunrise')}: {sun_time.sunrise} • {$t('adventures.sunset')}: {sun_time.sunset}
-										</div>
-									</div>
-								{/each}
 							</div>
 						</div>
 					</div>
