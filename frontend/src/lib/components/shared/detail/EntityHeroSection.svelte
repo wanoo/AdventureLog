@@ -13,6 +13,7 @@
 	export let icon: string = '';
 	export let averageRating: number | null = null;
 	export let rating: number | null = null;
+	export let ratingCount: number | null = null;
 	export let ratingRefreshKey: number = 0;
 
 	// Badges slot content via props
@@ -75,11 +76,12 @@
 					{#if averageRating !== undefined && averageRating !== null}
 						<div class="flex flex-col items-center mb-6">
 							<StarRating rating={averageRating} size="2xl" readonly showValue={false} />
-							<span class="text-sm opacity-70 mt-1">{$t('adventures.average_rating')} ({averageRating})</span>
+							<span class="text-sm opacity-70 mt-1">{$t('adventures.average_rating')} ({ratingCount ?? 0} {ratingCount === 1 ? $t('adventures.rating') : $t('adventures.ratings')})</span>
 						</div>
 					{:else if rating !== undefined && rating !== null}
 						<div class="flex flex-col items-center mb-6">
 							<StarRating rating={rating} size="2xl" readonly showValue={false} />
+							<span class="text-sm opacity-70 mt-1">(1 {$t('adventures.rating')})</span>
 						</div>
 					{/if}
 				{/key}

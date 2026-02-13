@@ -389,6 +389,7 @@
 			<RatingDisplay
 				averageRating={adventure.average_rating}
 				fallbackRating={adventure.rating}
+				ratingCount={adventure.rating_count}
 			/>
 
 			<PriceBadge price={adventure.price} currency={adventure.price_currency} />

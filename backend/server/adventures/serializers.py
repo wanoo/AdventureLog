@@ -417,6 +417,7 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
     contributors = serializers.SerializerMethodField()
     last_modified_by = serializers.SerializerMethodField()
     # average_rating is now a stored field, not calculated
+    rating_count = serializers.SerializerMethodField()
     country = CountrySerializer(read_only=True)
     region = RegionSerializer(read_only=True)
     city = CitySerializer(read_only=True)
@@ -430,12 +431,16 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
     class Meta:
         model = Location
         fields = [
-            'id', 'name', 'description', 'rating', 'average_rating', 'tags', 'location',
+            'id', 'name', 'description', 'rating', 'average_rating', 'rating_count', 'tags', 'location',
             'is_public', 'collections', 'created_at', 'updated_at', 'images', 'link', 'longitude',
             'latitude', 'visits', 'is_visited', 'is_owned', 'contributors', 'last_modified_by', 'category', 'attachments', 'user', 'city', 'country', 'region', 'trails',
             'price', 'price_currency'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'is_owned', 'contributors', 'last_modified_by', 'average_rating']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'is_owned', 'contributors', 'last_modified_by', 'average_rating', 'rating_count']
+
+    def get_rating_count(self, obj):
+        """Return the count of visits with a rating."""
+        return obj.visits.filter(rating__isnull=False).count()
 
     def get_is_owned(self, obj):
         request = self.context.get('request')
@@ -807,6 +812,7 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
     visits = VisitSerializer(many=True, read_only=True)
     is_visited = serializers.SerializerMethodField()
     # average_rating is now a stored field, not calculated
+    rating_count = serializers.SerializerMethodField()
     collections = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Collection.objects.all(),
@@ -816,14 +822,18 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
     class Meta:
         model = Transportation
         fields = [
-            'id', 'user', 'type', 'name', 'description', 'rating', 'average_rating', 'price', 'price_currency',
+            'id', 'user', 'type', 'name', 'description', 'rating', 'average_rating', 'rating_count', 'price', 'price_currency',
             'link', 'flight_number', 'from_location', 'to_location', 'tags',
             'is_public', 'collections', 'created_at', 'updated_at',
             'origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude',
             'distance', 'images', 'attachments', 'start_code', 'end_code',
             'travel_duration_minutes', 'visits', 'is_visited'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'distance', 'travel_duration_minutes', 'is_visited', 'average_rating']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'distance', 'travel_duration_minutes', 'is_visited', 'average_rating', 'rating_count']
+
+    def get_rating_count(self, obj):
+        """Return the count of visits with a rating."""
+        return obj.visits.filter(rating__isnull=False).count()
 
     def get_images(self, obj):
         serializer = ContentImageSerializer(obj.images.filter(is_deleted=False), many=True, context=self.context)
@@ -929,6 +939,7 @@ class LodgingSerializer(VisitStatusMixin, CustomModelSerializer):
     visits = VisitSerializer(many=True, read_only=True)
     is_visited = serializers.SerializerMethodField()
     # average_rating is now a stored field, not calculated
+    rating_count = serializers.SerializerMethodField()
     collections = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Collection.objects.all(),
@@ -938,11 +949,15 @@ class LodgingSerializer(VisitStatusMixin, CustomModelSerializer):
     class Meta:
         model = Lodging
         fields = [
-            'id', 'user', 'name', 'description', 'rating', 'average_rating', 'link',
+            'id', 'user', 'name', 'description', 'rating', 'average_rating', 'rating_count', 'link',
             'reservation_number', 'price', 'price_currency', 'latitude', 'longitude', 'location', 'tags', 'is_public',
             'collections', 'created_at', 'updated_at', 'type', 'images', 'attachments', 'visits', 'is_visited'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'average_rating']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'average_rating', 'rating_count']
+
+    def get_rating_count(self, obj):
+        """Return the count of visits with a rating."""
+        return obj.visits.filter(rating__isnull=False).count()
 
     def get_images(self, obj):
         serializer = ContentImageSerializer(obj.images.filter(is_deleted=False), many=True, context=self.context)

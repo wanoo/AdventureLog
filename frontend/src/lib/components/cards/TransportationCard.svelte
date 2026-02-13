@@ -388,6 +388,7 @@
 			<RatingDisplay
 				averageRating={transportation.average_rating}
 				fallbackRating={transportation.rating}
+				ratingCount={transportation.rating_count}
 			/>
 
 			<VisitCountBadge {visitCount} />

@@ -212,6 +212,7 @@
 		images={adventure.images || []}
 		averageRating={adventure.average_rating}
 		rating={adventure.rating}
+		ratingCount={adventure.rating_count}
 		{ratingRefreshKey}
 		badges={heroBadges}
 		on:openImage={(e) => openImageModal(e.detail)}

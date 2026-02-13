@@ -323,6 +323,7 @@
 			<RatingDisplay
 				averageRating={lodging.average_rating}
 				fallbackRating={lodging.rating}
+				ratingCount={lodging.rating_count}
 			/>
 
 			<VisitCountBadge {visitCount} />

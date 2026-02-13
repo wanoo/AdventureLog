@@ -272,6 +272,7 @@
 		images={lodging.images || []}
 		averageRating={lodging.average_rating}
 		rating={lodging.rating}
+		ratingCount={lodging.rating_count}
 		{ratingRefreshKey}
 		badges={heroBadges}
 		on:openImage={(e) => openImageModal(e.detail)}

@@ -381,6 +381,7 @@
 		images={transportation.images || []}
 		averageRating={transportation.average_rating}
 		rating={transportation.rating}
+		ratingCount={transportation.rating_count}
 		{ratingRefreshKey}
 		badges={heroBadges}
 		on:openImage={(e) => openImageModal(e.detail)}
