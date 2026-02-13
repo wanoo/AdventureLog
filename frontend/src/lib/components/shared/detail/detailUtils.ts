@@ -101,3 +101,66 @@ export function formatToLocalTimezone(dateStr: string, sourceTimezone?: string |
 	if (!dt.isValid) return '';
 	return dt.setZone(getLocalTimezone()).toLocaleString(DateTime.DATETIME_MED);
 }
+
+// Activity Summary functions
+// These work with any entity that has visits[] containing activities[]
+
+type EntityWithVisits = {
+	visits?: Array<{
+		activities?: Array<{
+			distance?: number | null;
+			elevation_gain?: number | null;
+		}>;
+	}>;
+};
+
+/**
+ * Get total number of activities across all visits
+ */
+export function getTotalActivities(entity: EntityWithVisits): number {
+	return (
+		entity.visits?.reduce(
+			(total, visit) => total + (visit.activities ? visit.activities.length : 0),
+			0
+		) ?? 0
+	);
+}
+
+/**
+ * Get total distance across all activities (in km or miles based on measurement system)
+ */
+export function getTotalDistance(
+	entity: EntityWithVisits,
+	measurementSystem: 'metric' | 'imperial' = 'metric'
+): number {
+	const totalMeters =
+		entity.visits?.reduce(
+			(total, visit) =>
+				total +
+				(visit.activities
+					? visit.activities.reduce((sum, activity) => sum + (activity.distance || 0), 0)
+					: 0),
+			0
+		) ?? 0;
+	const totalKm = totalMeters / 1000;
+	return measurementSystem === 'imperial' ? totalKm * 0.621371 : totalKm;
+}
+
+/**
+ * Get total elevation gain across all activities (in meters or feet based on measurement system)
+ */
+export function getTotalElevationGain(
+	entity: EntityWithVisits,
+	measurementSystem: 'metric' | 'imperial' = 'metric'
+): number {
+	const totalMeters =
+		entity.visits?.reduce(
+			(total, visit) =>
+				total +
+				(visit.activities
+					? visit.activities.reduce((sum, activity) => sum + (activity.elevation_gain || 0), 0)
+					: 0),
+			0
+		) ?? 0;
+	return measurementSystem === 'imperial' ? totalMeters * 3.28084 : totalMeters;
+}

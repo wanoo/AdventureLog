@@ -34,7 +34,10 @@
 		EntityAttachmentsCard,
 		EntityImagesCard,
 		sortImagesByPrimary,
-		sortVisitsChronologically
+		sortVisitsChronologically,
+		getTotalActivities,
+		getTotalDistance,
+		getTotalElevationGain
 	} from '$lib/components/shared/detail';
 
 	export let data: PageData;
@@ -157,41 +160,6 @@
 		if (!inLocal && !outLocal) return null;
 		if (inLocal && outLocal) return `${inLocal} → ${outLocal}`;
 		return inLocal ?? outLocal ?? null;
-	}
-
-	// Activity summary helper functions
-	function getTotalActivities(item: Lodging) {
-		return item.visits?.reduce(
-			(total, visit) => total + (visit.activities ? visit.activities.length : 0),
-			0
-		) ?? 0;
-	}
-
-	function getTotalDistance(item: Lodging) {
-		const ms = data.user?.measurement_system ?? 'metric';
-		const totalMeters = item.visits?.reduce(
-			(total, visit) =>
-				total +
-				(visit.activities
-					? visit.activities.reduce((sum, activity) => sum + (activity.distance || 0), 0)
-					: 0),
-			0
-		) ?? 0;
-		const totalKm = totalMeters / 1000;
-		return ms === 'imperial' ? totalKm * 0.621371 : totalKm;
-	}
-
-	function getTotalElevationGain(item: Lodging) {
-		const ms = data.user?.measurement_system ?? 'metric';
-		const totalMeters = item.visits?.reduce(
-			(total, visit) =>
-				total +
-				(visit.activities
-					? visit.activities.reduce((sum, activity) => sum + (activity.elevation_gain || 0), 0)
-					: 0),
-			0
-		) ?? 0;
-		return ms === 'imperial' ? totalMeters * 3.28084 : totalMeters;
 	}
 
 	function calculateNights(checkIn: string | null, checkOut: string | null): number | null {
@@ -554,6 +522,7 @@
 
 				<!-- Activity Summary -->
 				{#if getTotalActivities(lodging) > 0}
+					{@const ms = data.user?.measurement_system ?? 'metric'}
 					<div class="card bg-base-200 shadow-xl">
 						<div class="card-body">
 							<h3 class="card-title text-lg mb-4">🏃‍♂️ Activity Summary</h3>
@@ -562,21 +531,21 @@
 									<div class="stat-title">Total Activities</div>
 									<div class="stat-value text-2xl">{getTotalActivities(lodging)}</div>
 								</div>
-								{#if getTotalDistance(lodging) > 0}
+								{#if getTotalDistance(lodging, ms) > 0}
 									<div class="stat">
 										<div class="stat-title">Total Distance</div>
 										<div class="stat-value text-xl">
-											{getTotalDistance(lodging).toFixed(1)}
-											{data.user?.measurement_system === 'imperial' ? 'mi' : 'km'}
+											{getTotalDistance(lodging, ms).toFixed(1)}
+											{ms === 'imperial' ? 'mi' : 'km'}
 										</div>
 									</div>
 								{/if}
-								{#if getTotalElevationGain(lodging) > 0}
+								{#if getTotalElevationGain(lodging, ms) > 0}
 									<div class="stat">
 										<div class="stat-title">Total Elevation</div>
 										<div class="stat-value text-xl">
-											{getTotalElevationGain(lodging).toFixed(0)}
-											{data.user?.measurement_system === 'imperial' ? 'ft' : 'm'}
+											{getTotalElevationGain(lodging, ms).toFixed(0)}
+											{ms === 'imperial' ? 'ft' : 'm'}
 										</div>
 									</div>
 								{/if}

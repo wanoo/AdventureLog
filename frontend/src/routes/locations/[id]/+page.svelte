@@ -31,7 +31,10 @@
 		EntityAttachmentsCard,
 		EntityImagesCard,
 		sortImagesByPrimary,
-		sortVisitsChronologically
+		sortVisitsChronologically,
+		getTotalActivities,
+		getTotalDistance,
+		getTotalElevationGain
 	} from '$lib/components/shared/detail';
 
 	let geojson: any;
@@ -116,38 +119,6 @@
 
 	function hasAttachmentGeojson(adv: AdditionalLocation) {
 		return adv.attachments.some((attachment) => attachment.geojson);
-	}
-
-	function getTotalActivities(adv: AdditionalLocation) {
-		return adv.visits.reduce(
-			(total, visit) => total + (visit.activities ? visit.activities.length : 0),
-			0
-		);
-	}
-
-	function getTotalDistance(adv: AdditionalLocation) {
-		const totalMeters = adv.visits.reduce(
-			(total, visit) =>
-				total +
-				(visit.activities
-					? visit.activities.reduce((sum, activity) => sum + (activity.distance || 0), 0)
-					: 0),
-			0
-		);
-		const totalKm = totalMeters / 1000;
-		return measurementSystem === 'imperial' ? totalKm * 0.621371 : totalKm;
-	}
-
-	function getTotalElevationGain(adv: AdditionalLocation) {
-		const totalMeters = adv.visits.reduce(
-			(total, visit) =>
-				total +
-				(visit.activities
-					? visit.activities.reduce((sum, activity) => sum + (activity.elevation_gain || 0), 0)
-					: 0),
-			0
-		);
-		return measurementSystem === 'imperial' ? totalMeters * 3.28084 : totalMeters;
 	}
 
 	onMount(async () => {
@@ -603,20 +574,20 @@
 									<div class="stat-title">Total Activities</div>
 									<div class="stat-value text-2xl">{getTotalActivities(adventure)}</div>
 								</div>
-								{#if getTotalDistance(adventure) > 0}
+								{#if getTotalDistance(adventure, measurementSystem) > 0}
 									<div class="stat">
 										<div class="stat-title">Total Distance</div>
 										<div class="stat-value text-xl">
-											{getTotalDistance(adventure).toFixed(1)}
+											{getTotalDistance(adventure, measurementSystem).toFixed(1)}
 											{measurementSystem === 'imperial' ? 'mi' : 'km'}
 										</div>
 									</div>
 								{/if}
-								{#if getTotalElevationGain(adventure) > 0}
+								{#if getTotalElevationGain(adventure, measurementSystem) > 0}
 									<div class="stat">
 										<div class="stat-title">Total Elevation</div>
 										<div class="stat-value text-xl">
-											{getTotalElevationGain(adventure).toFixed(0)}
+											{getTotalElevationGain(adventure, measurementSystem).toFixed(0)}
 											{measurementSystem === 'imperial' ? 'ft' : 'm'}
 										</div>
 									</div>
