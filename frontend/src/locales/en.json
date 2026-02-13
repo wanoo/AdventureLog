@@ -515,6 +515,8 @@
 		"address_examples": "Address, place...",
 		"address": "Address",
 		"addresses": "Addresses",
+		"departures": "Departures ↗",
+		"arrivals": "Arrivals ↙",
 		"route_selected": "Route Selected",
 		"search_start_end_locations": "Search start and end locations",
 		"search_start_location": "Search start location",

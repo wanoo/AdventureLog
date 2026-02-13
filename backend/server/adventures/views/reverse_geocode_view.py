@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from worldtravel.models import Region, City, VisitedRegion, VisitedCity
-from adventures.models import Location, Lodging
+from adventures.models import Location, Lodging, Transportation
 from adventures.serializers import LocationSerializer
 from adventures.geocoding import reverse_geocode
 from django.conf import settings
@@ -51,6 +51,7 @@ class ReverseGeocodeViewSet(viewsets.ViewSet):
         1. Geocoding results (addresses from Google Maps/OSM)
         2. User's own locations
         3. User's own lodgings
+        4. User's transportation departures and arrivals
 
         Returns grouped results by source type for intelligent autocomplete.
         """
@@ -58,6 +59,7 @@ class ReverseGeocodeViewSet(viewsets.ViewSet):
         include_geocode = request.query_params.get('include_geocode', 'true').lower() == 'true'
         include_locations = request.query_params.get('include_locations', 'true').lower() == 'true'
         include_lodging = request.query_params.get('include_lodging', 'true').lower() == 'true'
+        include_transportation = request.query_params.get('include_transportation', 'true').lower() == 'true'
 
         if not query or len(query) < 2:
             return Response({"error": "Query parameter must be at least 2 characters"}, status=400)
@@ -65,7 +67,9 @@ class ReverseGeocodeViewSet(viewsets.ViewSet):
         results = {
             "addresses": [],
             "locations": [],
-            "lodging": []
+            "lodging": [],
+            "departures": [],
+            "arrivals": []
         }
 
         # Search user's locations
@@ -117,6 +121,62 @@ class ReverseGeocodeViewSet(viewsets.ViewSet):
                 }
                 for ldg in lodging
             ]
+
+        # Search user's transportation departures and arrivals
+        if include_transportation:
+            # Search departures (from_location)
+            departures = Transportation.objects.filter(
+                Q(user=self.request.user) | Q(is_public=True),
+                Q(from_location__icontains=query) | Q(name__icontains=query)
+            ).exclude(
+                origin_latitude__isnull=True
+            ).exclude(
+                origin_longitude__isnull=True
+            ).order_by('-updated_at')[:10]
+
+            # Use a set to deduplicate by coordinates
+            seen_departures = set()
+            for t in departures:
+                key = (float(t.origin_latitude), float(t.origin_longitude))
+                if key not in seen_departures:
+                    seen_departures.add(key)
+                    results["departures"].append({
+                        "id": str(t.id),
+                        "name": t.from_location or t.name,
+                        "display_name": t.from_location or t.name,
+                        "lat": float(t.origin_latitude),
+                        "lon": float(t.origin_longitude),
+                        "type": t.type,
+                        "category": "departure",
+                        "source": "departure"
+                    })
+
+            # Search arrivals (to_location)
+            arrivals = Transportation.objects.filter(
+                Q(user=self.request.user) | Q(is_public=True),
+                Q(to_location__icontains=query) | Q(name__icontains=query)
+            ).exclude(
+                destination_latitude__isnull=True
+            ).exclude(
+                destination_longitude__isnull=True
+            ).order_by('-updated_at')[:10]
+
+            # Use a set to deduplicate by coordinates
+            seen_arrivals = set()
+            for t in arrivals:
+                key = (float(t.destination_latitude), float(t.destination_longitude))
+                if key not in seen_arrivals:
+                    seen_arrivals.add(key)
+                    results["arrivals"].append({
+                        "id": str(t.id),
+                        "name": t.to_location or t.name,
+                        "display_name": t.to_location or t.name,
+                        "lat": float(t.destination_latitude),
+                        "lon": float(t.destination_longitude),
+                        "type": t.type,
+                        "category": "arrival",
+                        "source": "arrival"
+                    })
 
         # Search addresses via geocoding
         if include_geocode:

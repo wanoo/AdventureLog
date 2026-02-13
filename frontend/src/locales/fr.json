@@ -425,6 +425,8 @@
 		"address_examples": "Adresse, lieu...",
 		"address": "Adresse",
 		"addresses": "Adresses",
+		"departures": "Départs ↗",
+		"arrivals": "Arrivées ↙",
 		"locations_visited": "Lieux visités",
 		"lodging_not_found": "Hébergement introuvable",
 		"lodging_types": "Types d'hébergement",
