@@ -743,6 +743,21 @@
 
 					<!-- Only show sort options for collection views, not invites -->
 					{#if activeView !== 'invites'}
+						<!-- Adventure Type Filter -->
+						{#if adventureTypeOptions.length > 0}
+							<div class="card bg-base-200/50 p-4 mb-4">
+								<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+									<TagIcon class="w-5 h-5" />
+									{$t('collection.adventure_type') ?? 'Type'}
+								</h3>
+								<TypeFilterDropdown
+									bind:types={adventureTypeString}
+									typeOptions={adventureTypeOptions}
+									on:change={(e) => updateAdventureTypeFilter(e.detail)}
+								/>
+							</div>
+						{/if}
+
 						<!-- Status Filter -->
 						<div class="card bg-base-200/50 p-4 mb-4">
 							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
@@ -885,21 +900,6 @@
 								</label>
 							</div>
 						</div>
-
-						<!-- Adventure Type Filter -->
-						{#if adventureTypeOptions.length > 0}
-							<div class="card bg-base-200/50 p-4">
-								<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
-									<TagIcon class="w-5 h-5" />
-									{$t('collection.adventure_type') ?? 'Type'}
-								</h3>
-								<TypeFilterDropdown
-									bind:types={adventureTypeString}
-									typeOptions={adventureTypeOptions}
-									on:change={(e) => updateAdventureTypeFilter(e.detail)}
-								/>
-							</div>
-						{/if}
 
 						<!-- Sort Form - Updated to use URL navigation -->
 						<div class="card bg-base-200/50 p-4">
