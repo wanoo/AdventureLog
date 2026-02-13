@@ -34,23 +34,23 @@
 
 <div class="collapse collapse-arrow bg-base-200/50 rounded-box">
 	<input type="checkbox" checked={!collapsed} />
-	<div class="collapse-title font-medium flex items-center gap-2 py-2 min-h-0 text-sm">
-		<Sort class="w-4 h-4" />
+	<div class="collapse-title font-medium flex items-center gap-2 py-2 min-h-0">
+		<Sort class="w-5 h-5" />
 		{$t('adventures.sort')}
-		<span class="badge badge-ghost badge-xs">{activeOrderLabel} {orderDirection === 'asc' ? '↑' : '↓'}</span>
+		<span class="badge badge-ghost badge-sm">{activeOrderLabel} {orderDirection === 'asc' ? '↑' : '↓'}</span>
 	</div>
 	<div class="collapse-content !pb-2">
 		<div class="space-y-2">
 			<div>
 				<div class="join w-full">
 					<button
-						class="join-item btn btn-xs flex-1 {orderDirection === 'asc' ? 'btn-active' : ''}"
+						class="join-item btn btn-sm flex-1 {orderDirection === 'asc' ? 'btn-active' : ''}"
 						on:click={() => handleDirectionChange('asc')}
 					>
 						{$t('adventures.ascending')}
 					</button>
 					<button
-						class="join-item btn btn-xs flex-1 {orderDirection === 'desc' ? 'btn-active' : ''}"
+						class="join-item btn btn-sm flex-1 {orderDirection === 'desc' ? 'btn-active' : ''}"
 						on:click={() => handleDirectionChange('desc')}
 					>
 						{$t('adventures.descending')}
@@ -64,11 +64,11 @@
 						<input
 							type="radio"
 							name="order_by_radio"
-							class="radio radio-primary radio-xs"
+							class="radio radio-primary radio-sm"
 							checked={orderBy === option.value}
 							on:change={() => handleOrderByChange(option.value)}
 						/>
-						<span class="text-sm">{option.label}</span>
+						<span>{option.label}</span>
 					</label>
 				{/each}
 			</div>

@@ -32,11 +32,11 @@
 
 <div class="collapse collapse-arrow bg-base-200/50 rounded-box">
 	<input type="checkbox" checked={!collapsed} />
-	<div class="collapse-title font-medium flex items-center gap-2 py-2 min-h-0 text-sm">
-		<Star class="w-4 h-4" />
+	<div class="collapse-title font-medium flex items-center gap-2 py-2 min-h-0">
+		<Star class="w-5 h-5" />
 		{$t('adventures.min_rating')}
 		{#if isFiltered}
-			<span class="badge badge-warning badge-xs">{minRating}+</span>
+			<span class="badge badge-warning badge-sm">{minRating}+</span>
 		{/if}
 	</div>
 	<div class="collapse-content !pb-2">
@@ -53,20 +53,20 @@
 					{@const isHovered = ratingHover !== null && rating <= ratingHover}
 					<button
 						type="button"
-						class="btn btn-ghost btn-xs p-0.5 min-h-0 h-auto transition-transform hover:scale-110"
+						class="btn btn-ghost btn-sm p-0.5 min-h-0 h-auto transition-transform hover:scale-110"
 						on:click={() => handleRatingChange(rating)}
 						on:mouseenter={() => (ratingHover = rating)}
 						aria-label="Filter by {rating}+ stars"
 					>
 						<Star
-							class="w-6 h-6 transition-all duration-150"
+							class="w-7 h-7 transition-all duration-150"
 							style="color: {isActive || isHovered ? '#FBBD23' : 'oklch(var(--bc) / 0.2)'};"
 						/>
 					</button>
 				{/each}
 			</div>
 			<!-- Current filter display -->
-			<div class="text-center text-xs text-base-content/70">
+			<div class="text-center text-sm text-base-content/70">
 				{#if minRating !== 'all'}
 					<span class="font-medium">{minRating}+ {$t('adventures.stars')}</span>
 					<button class="btn btn-ghost btn-xs ml-1" on:click={clearRating}>

@@ -415,19 +415,19 @@
 						<!-- Sources Filter -->
 						<div class="collapse collapse-arrow bg-base-200/50 rounded-box">
 							<input type="checkbox" checked />
-							<div class="collapse-title font-medium flex items-center gap-2 py-2 min-h-0 text-sm">
-								<MapMarker class="w-4 h-4" />
+							<div class="collapse-title font-medium flex items-center gap-2 py-2 min-h-0">
+								<MapMarker class="w-5 h-5" />
 								{$t('adventures.sources')}
 							</div>
 							<div class="collapse-content !pb-2">
 								<label class="flex items-center gap-2 cursor-pointer py-0.5">
 									<input
 										type="checkbox"
-										class="checkbox checkbox-primary checkbox-xs"
+										class="checkbox checkbox-primary checkbox-sm"
 										checked={currentSort.includeCollections}
 										on:change={(e) => updateIncludeCollections(e.currentTarget.checked)}
 									/>
-									<span class="text-sm">{$t('adventures.collection_locations')}</span>
+									<span>{$t('adventures.collection_locations')}</span>
 								</label>
 							</div>
 						</div>

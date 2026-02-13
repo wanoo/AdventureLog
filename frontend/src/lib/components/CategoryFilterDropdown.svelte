@@ -41,13 +41,13 @@
 
 <div class="collapse collapse-arrow bg-base-200/50 rounded-box">
 	<input type="checkbox" checked={!collapsed} />
-	<div class="collapse-title font-medium flex items-center gap-2 py-2 min-h-0 text-sm">
+	<div class="collapse-title font-medium flex items-center gap-2 py-2 min-h-0">
 		{#if icon}
-			<svelte:component this={icon} class="w-4 h-4" />
+			<svelte:component this={icon} class="w-5 h-5" />
 		{/if}
 		{title || $t('adventures.categories')}
 		{#if types_arr.length > 0}
-			<span class="badge badge-primary badge-xs">{types_arr.length}</span>
+			<span class="badge badge-primary badge-sm">{types_arr.length}</span>
 		{/if}
 	</div>
 	<div class="collapse-content !pb-2">
@@ -56,12 +56,12 @@
 				<label class="flex items-center gap-2 cursor-pointer py-0.5">
 					<input
 						type="checkbox"
-						class="checkbox checkbox-primary checkbox-xs"
+						class="checkbox checkbox-primary checkbox-sm"
 						value={type.name}
 						on:change={() => toggleSelect(type.name)}
 						checked={types_arr.includes(type.name)}
 					/>
-					<span class="text-sm flex items-center gap-1">
+					<span class="flex items-center gap-1">
 						<span>{type.icon}</span>
 						{type.display_name}
 						<span class="text-xs opacity-60">({type.num_locations})</span>
