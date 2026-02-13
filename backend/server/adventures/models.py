@@ -206,6 +206,9 @@ class Visit(models.Model):
     timezone = models.CharField(max_length=50, choices=[(tz, tz) for tz in TIMEZONES], null=True, blank=True)
     notes = models.TextField(blank=True, null=True)
     rating = models.FloatField(blank=True, null=True)  # User's rating for this visit
+    # Price tracking for this visit
+    total_price = MoneyField(max_digits=12, decimal_places=2, default_currency='USD', null=True, blank=True)
+    number_of_people = models.PositiveIntegerField(null=True, blank=True)  # Number of people this price covers
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

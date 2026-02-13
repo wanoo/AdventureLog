@@ -275,6 +275,7 @@
 		ratingCount={lodging.rating_count}
 		{ratingRefreshKey}
 		badges={heroBadges}
+		averagePricePerUserPerNight={lodging.average_price_per_user_per_night}
 		on:openImage={(e) => openImageModal(e.detail)}
 	/>
 

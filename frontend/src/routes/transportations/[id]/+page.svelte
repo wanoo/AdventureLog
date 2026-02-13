@@ -384,6 +384,7 @@
 		ratingCount={transportation.rating_count}
 		{ratingRefreshKey}
 		badges={heroBadges}
+		averagePricePerUser={transportation.average_price_per_user}
 		on:openImage={(e) => openImageModal(e.detail)}
 	/>
 

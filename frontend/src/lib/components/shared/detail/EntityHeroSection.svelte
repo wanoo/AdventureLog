@@ -2,6 +2,8 @@
 	import { t } from 'svelte-i18n';
 	import { createEventDispatcher } from 'svelte';
 	import StarRating from '$lib/components/StarRating.svelte';
+	import type { DerivedPrice } from '$lib/types';
+	import { formatMoney } from '$lib/money';
 
 	const dispatch = createEventDispatcher();
 
@@ -16,8 +18,27 @@
 	export let ratingCount: number | null = null;
 	export let ratingRefreshKey: number = 0;
 
+	// Derived price props
+	export let averagePricePerUser: DerivedPrice | null = null;
+	export let averagePricePerUserPerNight: DerivedPrice | null = null;
+
 	// Badges slot content via props
 	export let badges: { label: string; class: string; href?: string }[] = [];
+
+	// Computed price label
+	$: priceLabel = (() => {
+		if (averagePricePerUserPerNight) {
+			const formatted = formatMoney({ amount: averagePricePerUserPerNight.amount, currency: averagePricePerUserPerNight.currency });
+			return formatted ? `${formatted} ${$t('adventures.avg_per_user_per_night')}` : null;
+		}
+		if (averagePricePerUser) {
+			const formatted = formatMoney({ amount: averagePricePerUser.amount, currency: averagePricePerUser.currency });
+			return formatted ? `${formatted} ${$t('adventures.avg_per_user')}` : null;
+		}
+		return null;
+	})();
+
+	$: priceVisitCount = averagePricePerUserPerNight?.visit_count ?? averagePricePerUser?.visit_count ?? 0;
 
 	let currentSlide = 0;
 
@@ -85,6 +106,18 @@
 						</div>
 					{/if}
 				{/key}
+
+				<!-- Derived Price -->
+				{#if priceLabel}
+					<div class="flex flex-col items-center mb-6">
+						<div class="badge badge-lg badge-warning font-semibold px-4 py-3">
+							{priceLabel}
+						</div>
+						{#if priceVisitCount > 0}
+							<span class="text-xs opacity-60 mt-1">{$t('adventures.based_on_visits', { values: { count: priceVisitCount } })}</span>
+						{/if}
+					</div>
+				{/if}
 
 				<!-- Quick Info Badges -->
 				{#if badges.length > 0}

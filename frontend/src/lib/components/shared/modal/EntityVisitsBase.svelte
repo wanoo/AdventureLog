@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Collection, Visit, StravaActivity, Trail, Activity } from '$lib/types';
+	import type { Collection, Visit, StravaActivity, Trail, Activity, MoneyValue } from '$lib/types';
 	import TimezoneSelector from '../../TimezoneSelector.svelte';
 	import { t } from 'svelte-i18n';
 	import { updateLocalDate, updateUTCDate, validateDateRange, formatUTCDate } from '$lib/dateUtils';
@@ -7,6 +7,8 @@
 	import { isAllDay, SPORT_TYPE_CHOICES } from '$lib';
 	import { createEventDispatcher } from 'svelte';
 	import { deserialize } from '$app/forms';
+	import { toMoneyValue, formatMoney, DEFAULT_CURRENCY } from '$lib/money';
+	import MoneyInput from '../MoneyInput.svelte';
 
 	// Icons
 	import CalendarIcon from '~icons/mdi/calendar';
@@ -25,6 +27,8 @@
 	import FileIcon from '~icons/mdi/file';
 	import CloseIcon from '~icons/mdi/close';
 	import FolderIcon from '~icons/mdi/folder-outline';
+	import CurrencyIcon from '~icons/mdi/currency-usd';
+	import UsersIcon from '~icons/mdi/account-group';
 	import StarRating from '../../StarRating.svelte';
 	import StravaActivityCard from '../../StravaActivityCard.svelte';
 	import ActivityCard from '../../cards/ActivityCard.svelte';
@@ -57,6 +61,10 @@
 	let constrainDates: boolean = false;
 	let isEditing = false;
 	let visitIdEditing: string | null = null;
+
+	// Price tracking state
+	let visitPrice: MoneyValue = { amount: null, currency: DEFAULT_CURRENCY };
+	let visitPeopleCount: number | null = null;
 
 	// Activity management state
 	let stravaEnabled: boolean = false;
@@ -218,6 +226,16 @@
 	}
 
 	async function addVisit(isAuto: boolean = false) {
+		// Build price payload fields
+		const priceFields: Record<string, any> = {};
+		if (visitPrice.amount !== null && visitPrice.amount !== undefined) {
+			priceFields.total_price = visitPrice.amount;
+			priceFields.total_price_currency = visitPrice.currency || DEFAULT_CURRENCY;
+		}
+		if (visitPeopleCount !== null && visitPeopleCount !== undefined && visitPeopleCount > 0) {
+			priceFields.number_of_people = visitPeopleCount;
+		}
+
 		// If editing an existing visit, patch instead of creating new
 		if (visitIdEditing) {
 			const response = await fetch(`/api/visits/${visitIdEditing}/`, {
@@ -230,7 +248,8 @@
 					end_date: utcEndDate,
 					notes: note,
 					rating: visitRating,
-					timezone: selectedStartTimezone
+					timezone: selectedStartTimezone,
+					...priceFields
 				})
 			});
 
@@ -250,7 +269,8 @@
 				end_date: utcEndDate,
 				notes: note,
 				rating: visitRating,
-				timezone: selectedStartTimezone
+				timezone: selectedStartTimezone,
+				...priceFields
 			};
 			payload[entityType] = entityId;
 
@@ -277,6 +297,8 @@
 		if (!initialVisitDate || isAuto) {
 			note = '';
 			visitRating = null;
+			visitPrice = { amount: null, currency: DEFAULT_CURRENCY };
+			visitPeopleCount = null;
 			localStartDate = '';
 			localEndDate = '';
 			utcStartDate = null;
@@ -614,6 +636,9 @@
 
 		note = visit.notes;
 		visitRating = visit.rating ?? null;
+		// Load price fields
+		visitPrice = toMoneyValue(visit.total_price, visit.total_price_currency);
+		visitPeopleCount = visit.number_of_people ?? null;
 		constrainDates = true;
 		utcStartDate = visit.start_date;
 		utcEndDate = visit.end_date;
@@ -881,6 +906,36 @@
 						</div>
 					</div>
 
+					<!-- Price Tracking -->
+					<div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div>
+							<label class="label-text text-sm font-medium flex items-center gap-2" for="visit-price">
+								<CurrencyIcon class="w-4 h-4" />
+								{$t('adventures.total_cost')}
+							</label>
+							<div class="mt-1">
+								<MoneyInput
+									bind:value={visitPrice}
+									placeholder="0.00"
+								/>
+							</div>
+						</div>
+						<div>
+							<label class="label-text text-sm font-medium flex items-center gap-2" for="visit-people">
+								<UsersIcon class="w-4 h-4" />
+								{$t('adventures.number_of_people')}
+							</label>
+							<input
+								id="visit-people"
+								type="number"
+								class="input input-bordered w-full mt-1"
+								min="1"
+								placeholder="1"
+								bind:value={visitPeopleCount}
+							/>
+						</div>
+					</div>
+
 					<!-- Add Visit Button -->
 					<div class="flex justify-end mt-4">
 						<button
@@ -976,6 +1031,21 @@
 											{#if visit.rating !== null && visit.rating !== undefined}
 												<div class="mt-2">
 													<StarRating rating={visit.rating} size="sm" readonly />
+												</div>
+											{/if}
+
+											<!-- Price info -->
+											{#if visit.total_price !== null && visit.total_price !== undefined}
+												<div class="flex items-center gap-2 mt-2">
+													<CurrencyIcon class="w-3 h-3 text-warning" />
+													<span class="text-xs text-warning font-medium">
+														{formatMoney(toMoneyValue(visit.total_price, visit.total_price_currency))}
+														{#if visit.number_of_people && visit.number_of_people > 1}
+															<span class="text-base-content/60">
+																({visit.number_of_people} {$t('adventures.people')})
+															</span>
+														{/if}
+													</span>
 												</div>
 											{/if}
 

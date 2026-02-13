@@ -13,7 +13,7 @@
 		step?: number;
 	};
 
-	export let label: string | undefined;
+	export let label: string | undefined = undefined;
 	export let value: MoneyValue;
 	export let currencyOptions: string[] = CURRENCY_OPTIONS;
 	export let placeholder = '0.00';

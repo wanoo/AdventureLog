@@ -215,6 +215,7 @@
 		ratingCount={adventure.rating_count}
 		{ratingRefreshKey}
 		badges={heroBadges}
+		averagePricePerUser={adventure.average_price_per_user}
 		on:openImage={(e) => openImageModal(e.detail)}
 	/>
 

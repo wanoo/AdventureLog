@@ -356,7 +356,12 @@ class VisitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Visit
-        fields = ['id', 'start_date', 'end_date', 'timezone', 'notes', 'rating', 'activities', 'location', 'transportation', 'lodging', 'created_at', 'updated_at', 'user', 'user_username', 'collection', 'collection_info']
+        fields = [
+            'id', 'start_date', 'end_date', 'timezone', 'notes', 'rating',
+            'total_price', 'total_price_currency', 'number_of_people',
+            'activities', 'location', 'transportation', 'lodging',
+            'created_at', 'updated_at', 'user', 'user_username', 'collection', 'collection_info'
+        ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'user_username', 'collection_info']
 
     def get_collection_info(self, obj):
@@ -418,6 +423,8 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
     last_modified_by = serializers.SerializerMethodField()
     # average_rating is now a stored field, not calculated
     rating_count = serializers.SerializerMethodField()
+    # Derived price metrics computed from visits
+    average_price_per_user = serializers.SerializerMethodField()
     country = CountrySerializer(read_only=True)
     region = RegionSerializer(read_only=True)
     city = CitySerializer(read_only=True)
@@ -434,13 +441,54 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
             'id', 'name', 'description', 'rating', 'average_rating', 'rating_count', 'tags', 'location',
             'is_public', 'collections', 'created_at', 'updated_at', 'images', 'link', 'longitude',
             'latitude', 'visits', 'is_visited', 'is_owned', 'contributors', 'last_modified_by', 'category', 'attachments', 'user', 'city', 'country', 'region', 'trails',
-            'price', 'price_currency'
+            'price', 'price_currency', 'average_price_per_user'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'is_owned', 'contributors', 'last_modified_by', 'average_rating', 'rating_count']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'is_owned', 'contributors', 'last_modified_by', 'average_rating', 'rating_count', 'average_price_per_user']
 
     def get_rating_count(self, obj):
         """Return the count of visits with a rating."""
         return obj.visits.filter(rating__isnull=False).count()
+
+    def get_average_price_per_user(self, obj):
+        """
+        Calculate average price per user from visit-level costs.
+        Formula: SUM(visit_total_price) / SUM(visit_people_count)
+        Returns dict with amount, currency, and count of visits with pricing data.
+        """
+        visits_with_price = obj.visits.filter(
+            total_price__isnull=False,
+            number_of_people__isnull=False,
+            number_of_people__gt=0
+        )
+
+        if not visits_with_price.exists():
+            return None
+
+        # Group by currency to avoid mixing currencies
+        currency_totals = {}
+        for visit in visits_with_price:
+            currency = str(visit.total_price_currency)
+            if currency not in currency_totals:
+                currency_totals[currency] = {'total_price': 0, 'total_people': 0, 'count': 0}
+            currency_totals[currency]['total_price'] += float(visit.total_price.amount)
+            currency_totals[currency]['total_people'] += visit.number_of_people
+            currency_totals[currency]['count'] += 1
+
+        # Return the primary currency (most visits or highest total)
+        if not currency_totals:
+            return None
+
+        primary_currency = max(currency_totals.keys(), key=lambda c: currency_totals[c]['count'])
+        data = currency_totals[primary_currency]
+
+        if data['total_people'] == 0:
+            return None
+
+        return {
+            'amount': round(data['total_price'] / data['total_people'], 2),
+            'currency': primary_currency,
+            'visit_count': data['count']
+        }
 
     def get_is_owned(self, obj):
         request = self.context.get('request')
@@ -813,6 +861,8 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
     is_visited = serializers.SerializerMethodField()
     # average_rating is now a stored field, not calculated
     rating_count = serializers.SerializerMethodField()
+    # Derived price metrics computed from visits
+    average_price_per_user = serializers.SerializerMethodField()
     collections = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Collection.objects.all(),
@@ -827,13 +877,54 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
             'is_public', 'collections', 'created_at', 'updated_at',
             'origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude',
             'distance', 'images', 'attachments', 'start_code', 'end_code',
-            'travel_duration_minutes', 'visits', 'is_visited'
+            'travel_duration_minutes', 'visits', 'is_visited', 'average_price_per_user'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'distance', 'travel_duration_minutes', 'is_visited', 'average_rating', 'rating_count']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'distance', 'travel_duration_minutes', 'is_visited', 'average_rating', 'rating_count', 'average_price_per_user']
 
     def get_rating_count(self, obj):
         """Return the count of visits with a rating."""
         return obj.visits.filter(rating__isnull=False).count()
+
+    def get_average_price_per_user(self, obj):
+        """
+        Calculate average price per user from visit-level costs.
+        Formula: SUM(visit_total_price) / SUM(visit_people_count)
+        Returns dict with amount, currency, and count of visits with pricing data.
+        """
+        visits_with_price = obj.visits.filter(
+            total_price__isnull=False,
+            number_of_people__isnull=False,
+            number_of_people__gt=0
+        )
+
+        if not visits_with_price.exists():
+            return None
+
+        # Group by currency to avoid mixing currencies
+        currency_totals = {}
+        for visit in visits_with_price:
+            currency = str(visit.total_price_currency)
+            if currency not in currency_totals:
+                currency_totals[currency] = {'total_price': 0, 'total_people': 0, 'count': 0}
+            currency_totals[currency]['total_price'] += float(visit.total_price.amount)
+            currency_totals[currency]['total_people'] += visit.number_of_people
+            currency_totals[currency]['count'] += 1
+
+        # Return the primary currency (most visits or highest total)
+        if not currency_totals:
+            return None
+
+        primary_currency = max(currency_totals.keys(), key=lambda c: currency_totals[c]['count'])
+        data = currency_totals[primary_currency]
+
+        if data['total_people'] == 0:
+            return None
+
+        return {
+            'amount': round(data['total_price'] / data['total_people'], 2),
+            'currency': primary_currency,
+            'visit_count': data['count']
+        }
 
     def get_images(self, obj):
         serializer = ContentImageSerializer(obj.images.filter(is_deleted=False), many=True, context=self.context)
@@ -940,6 +1031,8 @@ class LodgingSerializer(VisitStatusMixin, CustomModelSerializer):
     is_visited = serializers.SerializerMethodField()
     # average_rating is now a stored field, not calculated
     rating_count = serializers.SerializerMethodField()
+    # Derived price metrics computed from visits
+    average_price_per_user_per_night = serializers.SerializerMethodField()
     collections = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Collection.objects.all(),
@@ -951,13 +1044,62 @@ class LodgingSerializer(VisitStatusMixin, CustomModelSerializer):
         fields = [
             'id', 'user', 'name', 'description', 'rating', 'average_rating', 'rating_count', 'link',
             'reservation_number', 'price', 'price_currency', 'latitude', 'longitude', 'location', 'tags', 'is_public',
-            'collections', 'created_at', 'updated_at', 'type', 'images', 'attachments', 'visits', 'is_visited'
+            'collections', 'created_at', 'updated_at', 'type', 'images', 'attachments', 'visits', 'is_visited',
+            'average_price_per_user_per_night'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'average_rating', 'rating_count']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'average_rating', 'rating_count', 'average_price_per_user_per_night']
 
     def get_rating_count(self, obj):
         """Return the count of visits with a rating."""
         return obj.visits.filter(rating__isnull=False).count()
+
+    def get_average_price_per_user_per_night(self, obj):
+        """
+        Calculate average price per user per night from visit-level costs.
+        Formula: SUM(visit_total_price) / SUM(visit_people_count * visit_nights)
+        Returns dict with amount, currency, and count of visits with pricing data.
+        """
+        visits_with_price = obj.visits.filter(
+            total_price__isnull=False,
+            number_of_people__isnull=False,
+            number_of_people__gt=0,
+            start_date__isnull=False,
+            end_date__isnull=False
+        )
+
+        if not visits_with_price.exists():
+            return None
+
+        # Group by currency to avoid mixing currencies
+        currency_totals = {}
+        for visit in visits_with_price:
+            # Calculate nights from start/end dates
+            nights = (visit.end_date.date() - visit.start_date.date()).days
+            if nights < 1:
+                nights = 1  # Minimum 1 night
+
+            currency = str(visit.total_price_currency)
+            if currency not in currency_totals:
+                currency_totals[currency] = {'total_price': 0, 'total_person_nights': 0, 'count': 0}
+            currency_totals[currency]['total_price'] += float(visit.total_price.amount)
+            currency_totals[currency]['total_person_nights'] += visit.number_of_people * nights
+            currency_totals[currency]['count'] += 1
+
+        # Return the primary currency (most visits or highest total)
+        if not currency_totals:
+            return None
+
+        primary_currency = max(currency_totals.keys(), key=lambda c: currency_totals[c]['count'])
+        data = currency_totals[primary_currency]
+
+        if data['total_person_nights'] == 0:
+            return None
+
+        return {
+            'amount': round(data['total_price'] / data['total_person_nights'], 2),
+            'currency': primary_currency,
+            'visit_count': data['count']
+        }
 
     def get_images(self, obj):
         serializer = ContentImageSerializer(obj.images.filter(is_deleted=False), many=True, context=self.context)

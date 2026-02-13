@@ -54,6 +54,13 @@ export type ContentImage = {
 	is_owner?: boolean;
 };
 
+// Derived price information computed from visit-level costs
+export type DerivedPrice = {
+	amount: number;
+	currency: string;
+	visit_count: number;
+};
+
 export type Location = {
 	id: string;
 	name: string;
@@ -65,6 +72,7 @@ export type Location = {
 	rating_count?: number | null;
 	price?: number | null;
 	price_currency?: string | null;
+	average_price_per_user?: DerivedPrice | null; // Computed from visits: SUM(price) / SUM(people)
 	link?: string | null;
 	images: ContentImage[];
 	visits: Visit[];
@@ -238,6 +246,7 @@ export type Transportation = {
 	rating_count?: number | null;
 	price: number | null;
 	price_currency: string | null;
+	average_price_per_user?: DerivedPrice | null; // Computed from visits: SUM(price) / SUM(people)
 	link: string | null;
 	// Date fields removed - now handled by Visit
 	flight_number: string | null;
@@ -395,6 +404,7 @@ export type Lodging = {
 	reservation_number: string | null;
 	price: number | null;
 	price_currency: string | null;
+	average_price_per_user_per_night?: DerivedPrice | null; // Computed from visits: SUM(price) / SUM(people * nights)
 	latitude: number | null;
 	longitude: number | null;
 	location: string | null;
@@ -532,6 +542,10 @@ export type Visit = {
 	notes: string;
 	timezone: string | null;
 	rating?: number | null;
+	// Price tracking for this visit
+	total_price?: number | null;
+	total_price_currency?: string | null;
+	number_of_people?: number | null;
 	activities: Activity[];
 	location?: string | null;
 	transportation?: string | null;
