@@ -20,11 +20,6 @@
 	import Calendar from '~icons/mdi/calendar';
 	import type { CollectionItineraryItem } from '$lib/types';
 	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge, VisitCountBadge, TagsDisplay, getVisitSummary } from '../shared/cards';
-	import {
-		getTimezoneLabel,
-		getTimezoneTip,
-		shouldShowTimezoneBadge
-	} from '../shared/detail/detailUtils';
 	import { getLodgingIcon as getLodgingIconFromStore } from '$lib/stores/entityTypes';
 
 	let actionsMenu: { close: () => void };
@@ -44,14 +39,15 @@
 		return '🏨';
 	}
 
-	// Use shared timezone utilities
-	$: timezoneTip = (zone?: string | null) =>
-		getTimezoneTip(zone, $t('adventures.trip_timezone') ?? 'Trip TZ', $t('adventures.your_time') ?? 'Your time');
+	// Format date for inline display (works for both all-day and timed)
+	function formatVisitDate(date: string | null, timezone: string | null): string {
+		if (!date) return '';
+		if (isAllDay(date)) {
+			return formatAllDayDate(date);
+		}
+		return formatDateInTimezone(date, timezone);
+	}
 
-	const hasTimePortion = (date: string | null) => !!date && !isAllDay(date);
-	const isTimedStay = (date: string | null) => hasTimePortion(date);
-
-	let showMoreDetails = false;
 	// Use LAST visit's dates for display (sorted by start_date desc)
 	$: visitSummary = getVisitSummary(lodging?.visits);
 	$: lastVisit = visitSummary.lastVisit;
@@ -59,10 +55,6 @@
 	$: visitStartDate = lastVisit?.start_date ?? null;
 	$: visitEndDate = lastVisit?.end_date ?? null;
 	$: visitTimezone = lastVisit?.timezone ?? null;
-	$: hasExpandableDetails = Boolean(
-		visitEndDate && (isTimedStay(visitEndDate) || isTimedStay(visitStartDate))
-	);
-	$: if (!hasExpandableDetails) showMoreDetails = false;
 
 	export let lodging: Lodging;
 	export let user: User | null = null;
@@ -300,150 +292,23 @@
 			</div>
 		{/if}
 
-		<!-- Check-in & Check-out Section (from last visit) -->
+		<!-- Check-in & Check-out Section (from last visit) - Simple inline format -->
 		{#if visitStartDate || visitEndDate}
-			<div class="flex flex-col gap-1.5">
+			<div class="flex flex-col gap-1">
 				{#if visitCount > 1}
 					<span class="text-xs text-base-content/60 font-medium">{$t('adventures.last_stay')}</span>
 				{/if}
-				{#if visitStartDate && visitEndDate}
-					<!-- Both dates present -->
-					{#if isAllDay(visitStartDate) && isAllDay(visitEndDate)}
-						<!-- All-day dates -->
-						<div class="flex items-center gap-2 text-sm">
-							<span class="font-medium text-base-content">{formatAllDayDate(visitStartDate)}</span
-							>
-							<span class="text-primary">→</span>
-							<span class="font-medium text-base-content"
-								>{formatAllDayDate(visitEndDate)}</span
-							>
-						</div>
-					{:else}
-						<!-- Timed dates with tidy mini cards and toggle -->
-						<div class="flex flex-col gap-2">
-							<!-- Check-in Card (always shown) -->
-							<div class="bg-base-200 rounded-lg px-3 py-2 flex flex-col gap-2">
-								<div class="flex items-start justify-between gap-2">
-									<div class="flex flex-col gap-0.5 min-w-0">
-										<span class="text-xs text-base-content/60">{$t('adventures.check_in')}</span>
-										<span class="text-sm font-semibold text-base-content">
-											{#if isAllDay(visitStartDate)}
-												{formatAllDayDate(visitStartDate)}
-											{:else}
-												{formatDateInTimezone(visitStartDate, visitTimezone)}
-											{/if}
-										</span>
-									</div>
-								</div>
-
-								{#if hasTimePortion(visitStartDate) && shouldShowTimezoneBadge(visitTimezone)}
-									<div class="flex items-center gap-2 text-xs text-base-content/70">
-										<div class="tooltip" data-tip={timezoneTip(visitTimezone) ?? undefined}>
-											<span class="badge badge-ghost badge-sm">
-												{getTimezoneLabel(visitTimezone)}
-											</span>
-										</div>
-									</div>
-								{/if}
-							</div>
-
-							{#if hasExpandableDetails}
-								<div class="flex justify-end">
-									<button
-										class="btn btn-neutral-200 btn-xs"
-										aria-expanded={showMoreDetails}
-										on:click={() => (showMoreDetails = !showMoreDetails)}
-										type="button"
-									>
-										{showMoreDetails
-											? ($t('common.show_less') ?? 'Hide details')
-											: ($t('common.show_more') ?? 'Show more')}
-									</button>
-								</div>
-							{/if}
-
-							{#if showMoreDetails && hasExpandableDetails}
-								<!-- Check-out Card (expandable) -->
-								<div class="bg-base-200 rounded-lg px-3 py-2 flex flex-col gap-2">
-									<div class="flex items-start justify-between gap-2">
-										<div class="flex flex-col gap-0.5 min-w-0">
-											<span class="text-xs text-base-content/60">{$t('adventures.check_out')}</span>
-											<span class="text-sm font-semibold text-base-content">
-												{#if isAllDay(visitEndDate)}
-													{formatAllDayDate(visitEndDate)}
-												{:else}
-													{formatDateInTimezone(visitEndDate, visitTimezone)}
-												{/if}
-											</span>
-										</div>
-									</div>
-
-									{#if hasTimePortion(visitEndDate) && shouldShowTimezoneBadge(visitTimezone)}
-										<div class="flex items-center gap-2 text-xs text-base-content/70">
-											<div class="tooltip" data-tip={timezoneTip(visitTimezone) ?? undefined}>
-												<span class="badge badge-ghost badge-sm">
-													{getTimezoneLabel(visitTimezone)}
-												</span>
-											</div>
-										</div>
-									{/if}
-								</div>
-							{/if}
-						</div>
+				<div class="flex items-center gap-2 text-sm">
+					{#if visitStartDate}
+						<span class="font-medium text-base-content">{formatVisitDate(visitStartDate, visitTimezone)}</span>
 					{/if}
-				{:else if visitStartDate}
-					<!-- Check-in only -->
-					<div class="bg-base-200 rounded-lg px-3 py-2 flex flex-col gap-2">
-						<div class="flex items-start justify-between gap-2">
-							<div class="flex flex-col gap-0.5">
-								<span class="text-xs text-base-content/60">{$t('adventures.check_in')}</span>
-								<span class="text-sm font-semibold text-base-content">
-									{#if isAllDay(visitStartDate)}
-										{formatAllDayDate(visitStartDate)}
-									{:else}
-										{formatDateInTimezone(visitStartDate, visitTimezone)}
-									{/if}
-								</span>
-							</div>
-						</div>
-
-						{#if hasTimePortion(visitStartDate) && shouldShowTimezoneBadge(visitTimezone)}
-							<div class="flex items-center gap-2 text-xs text-base-content/70">
-								<div class="tooltip" data-tip={timezoneTip(visitTimezone) ?? undefined}>
-									<span class="badge badge-ghost badge-sm">
-										{getTimezoneLabel(visitTimezone)}
-									</span>
-								</div>
-							</div>
-						{/if}
-					</div>
-				{:else if visitEndDate}
-					<!-- Check-out only -->
-					<div class="bg-base-200 rounded-lg px-3 py-2 flex flex-col gap-2">
-						<div class="flex items-start justify-between gap-2">
-							<div class="flex flex-col gap-0.5">
-								<span class="text-xs text-base-content/60">{$t('adventures.check_out')}</span>
-								<span class="text-sm font-semibold text-base-content">
-									{#if isAllDay(visitEndDate)}
-										{formatAllDayDate(visitEndDate)}
-									{:else}
-										{formatDateInTimezone(visitEndDate, visitTimezone)}
-									{/if}
-								</span>
-							</div>
-						</div>
-
-						{#if hasTimePortion(visitEndDate) && shouldShowTimezoneBadge(visitTimezone)}
-							<div class="flex items-center gap-2 text-xs text-base-content/70">
-								<div class="tooltip" data-tip={timezoneTip(visitTimezone) ?? undefined}>
-									<span class="badge badge-ghost badge-sm">
-										{getTimezoneLabel(visitTimezone)}
-									</span>
-								</div>
-							</div>
-						{/if}
-					</div>
-				{/if}
+					{#if visitStartDate && visitEndDate && visitStartDate !== visitEndDate}
+						<span class="text-primary">→</span>
+						<span class="font-medium text-base-content">{formatVisitDate(visitEndDate, visitTimezone)}</span>
+					{:else if !visitStartDate && visitEndDate}
+						<span class="font-medium text-base-content">{formatVisitDate(visitEndDate, visitTimezone)}</span>
+					{/if}
+				</div>
 			</div>
 		{/if}
 

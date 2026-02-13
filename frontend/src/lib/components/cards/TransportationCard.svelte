@@ -19,11 +19,6 @@
 	import { goto } from '$app/navigation';
 	import type { CollectionItineraryItem } from '$lib/types';
 	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge, VisitCountBadge, TagsDisplay, getVisitSummary } from '../shared/cards';
-	import {
-		getTimezoneLabel,
-		getTimezoneTip,
-		shouldShowTimezoneBadge
-	} from '../shared/detail/detailUtils';
 	import { getTransportationIcon as getTransportationIconFromStore } from '$lib/stores/entityTypes';
 
 	let actionsMenu: { close: () => void };
@@ -43,9 +38,14 @@
 
 	const dispatch = createEventDispatcher();
 
-	// Use shared timezone utilities
-	$: timezoneTip = (zone?: string | null) =>
-		getTimezoneTip(zone, $t('adventures.trip_timezone') ?? 'Trip TZ', $t('adventures.your_time') ?? 'Your time');
+	// Format date for inline display (works for both all-day and timed)
+	function formatVisitDate(date: string | null, timezone: string | null): string {
+		if (!date) return '';
+		if (isAllDay(date)) {
+			return formatAllDayDate(date);
+		}
+		return formatDateInTimezone(date, timezone);
+	}
 
 	export let transportation: Transportation;
 	export let user: User | null = null;
@@ -74,8 +74,6 @@
 	let travelDurationLabel: string | null = null;
 	$: travelDurationLabel = formatTravelDuration(transportation?.travel_duration_minutes ?? null);
 
-	let showMoreDetails = false;
-
 	$: hasCodePair = Boolean(transportation?.start_code && transportation?.end_code);
 	$: routeFromLabel = hasCodePair
 		? transportation.start_code
@@ -90,8 +88,6 @@
 	$: visitStartDate = lastVisit?.start_date ?? null;
 	$: visitEndDate = lastVisit?.end_date ?? null;
 	$: visitTimezone = lastVisit?.timezone ?? null;
-	$: hasExpandableDetails = Boolean(visitEndDate || travelDurationLabel);
-	$: if (!hasExpandableDetails) showMoreDetails = false;
 
 	$: routeGeojson =
 		transportation?.attachments?.find((attachment) => attachment?.geojson)?.geojson ?? null;
@@ -351,100 +347,19 @@
 			</div>
 		{/if}
 
-		<!-- Date & Time Section (from last visit) -->
+		<!-- Date & Time Section (from last visit) - Simple inline format -->
 		{#if visitStartDate}
-			<div class="flex flex-col gap-1.5">
+			<div class="flex flex-col gap-1">
 				{#if visitCount > 1}
 					<span class="text-xs text-base-content/60 font-medium">{$t('adventures.last_trip')}</span>
 				{/if}
-				{#if isAllDay(visitStartDate) && (!visitEndDate || isAllDay(visitEndDate))}
-					<!-- All-day event -->
-					<div class="flex items-center gap-2 text-sm">
-						<span class="font-medium text-base-content"
-							>{formatAllDayDate(visitStartDate)}</span
-						>
-						{#if visitEndDate && visitEndDate !== visitStartDate}
-							<span class="text-base-content/40">→</span>
-							<span class="font-medium text-base-content"
-								>{formatAllDayDate(visitEndDate)}</span
-							>
-						{/if}
-					</div>
-				{:else}
-					<!-- Compact departure card with tidy layout -->
-					<div class="bg-base-200 rounded-lg px-3 py-2 flex flex-col gap-2">
-						<div class="flex items-start justify-between gap-2">
-							<div class="flex flex-col gap-0.5 min-w-0">
-								<span class="text-xs text-base-content/60">{$t('transportation.departure')}</span>
-								<span class="text-sm font-semibold text-base-content">
-									{formatDateInTimezone(visitStartDate, visitTimezone)}
-								</span>
-							</div>
-							{#if hasCodePair}
-								<span class="badge badge-outline badge-sm font-medium whitespace-nowrap">
-									{transportation.start_code} → {transportation.end_code}
-								</span>
-							{/if}
-						</div>
-
-						<div class="flex items-center gap-2 text-xs text-base-content/70">
-							<div
-								class="tooltip"
-								data-tip={timezoneTip(visitTimezone) ?? undefined}
-							>
-								<span class="badge badge-ghost badge-sm">
-									{getTimezoneLabel(visitTimezone)}
-								</span>
-							</div>
-						</div>
-					</div>
-
-					{#if hasExpandableDetails}
-						<div class="flex justify-end">
-							<button
-								class="btn btn-neutral-200 btn-xs"
-								aria-expanded={showMoreDetails}
-								on:click={() => (showMoreDetails = !showMoreDetails)}
-								type="button"
-							>
-								{showMoreDetails
-									? ($t('common.show_less') ?? 'Hide details')
-									: ($t('common.show_more') ?? 'Show more')}
-							</button>
-						</div>
+				<div class="flex items-center gap-2 text-sm">
+					<span class="font-medium text-base-content">{formatVisitDate(visitStartDate, visitTimezone)}</span>
+					{#if visitEndDate && visitEndDate !== visitStartDate}
+						<span class="text-primary">→</span>
+						<span class="font-medium text-base-content">{formatVisitDate(visitEndDate, visitTimezone)}</span>
 					{/if}
-
-					{#if showMoreDetails && hasExpandableDetails}
-						<div class="flex flex-col gap-1">
-							{#if visitEndDate}
-								<div class="bg-base-200 rounded-lg px-3 py-2 flex flex-col gap-2">
-									<div class="flex items-center justify-between gap-2">
-										<div class="flex flex-col gap-0.5 min-w-0">
-											<span class="text-xs text-base-content/60">{$t('transportation.arrival')}</span>
-											<span class="text-sm font-semibold text-base-content">
-												{formatDateInTimezone(
-													visitEndDate,
-													visitTimezone
-												)}
-											</span>
-										</div>
-									</div>
-
-									<div class="flex items-center gap-2 text-xs text-base-content/70">
-										<div
-											class="tooltip"
-											data-tip={timezoneTip(visitTimezone) ?? undefined}
-										>
-											<span class="badge badge-ghost badge-sm">
-												{getTimezoneLabel(visitTimezone)}
-											</span>
-										</div>
-									</div>
-								</div>
-							{/if}
-						</div>
-					{/if}
-				{/if}
+				</div>
 			</div>
 		{/if}
 
