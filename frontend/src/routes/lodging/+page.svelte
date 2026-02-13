@@ -331,15 +331,15 @@
 					</div>
 
 					<!-- Filters -->
-					<div class="space-y-6">
+					<div class="space-y-4">
 						<!-- Type Filter -->
-						<div class="card bg-base-200/50 p-4">
-							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
-								<Bed class="w-5 h-5" />
-								{$t('transportation.type') || 'Type'}
-							</h3>
-							<TypeFilterDropdown bind:types={typeString} {typeOptions} on:change={updateTypeFilter} />
-						</div>
+						<TypeFilterDropdown
+							bind:types={typeString}
+							{typeOptions}
+							on:change={updateTypeFilter}
+							title={$t('lodging.type') || 'Type'}
+							icon={Bed}
+						/>
 
 						<SortOptions
 							orderBy={currentSort.order_by}

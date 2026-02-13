@@ -368,14 +368,14 @@
 					</div>
 
 					<!-- Filters (Dynamic like collections) -->
-					<div class="space-y-6">
+					<div class="space-y-4">
 						<!-- Category Filter -->
-						<div class="card bg-base-200/50 p-4">
-							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
-								<Tag class="w-5 h-5" />
-								{$t('adventures.categories')}
-							</h3>
-							<CategoryFilterDropdown bind:types={typeString} on:change={updateCategoryFilter} />
+						<CategoryFilterDropdown
+							bind:types={typeString}
+							on:change={updateCategoryFilter}
+							title={$t('adventures.categories')}
+							icon={Tag}
+						>
 							<button
 								type="button"
 								on:click={() => (is_category_modal_open = true)}
@@ -384,7 +384,7 @@
 								<Tag class="w-4 h-4" />
 								{$t('categories.manage_categories')}
 							</button>
-						</div>
+						</CategoryFilterDropdown>
 
 						<SortOptions
 							orderBy={currentSort.order_by}
@@ -413,20 +413,23 @@
 						/>
 
 						<!-- Sources Filter -->
-						<div class="card bg-base-200/50 p-4">
-							<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+						<div class="collapse collapse-arrow bg-base-200/50 rounded-box">
+							<input type="checkbox" checked />
+							<div class="collapse-title font-semibold text-lg flex items-center gap-2 py-3 min-h-0">
 								<MapMarker class="w-5 h-5" />
 								{$t('adventures.sources')}
-							</h3>
-							<label class="label cursor-pointer justify-start gap-3">
-								<input
-									type="checkbox"
-									class="checkbox checkbox-primary"
-									checked={currentSort.includeCollections}
-									on:change={(e) => updateIncludeCollections(e.currentTarget.checked)}
-								/>
-								<span class="label-text">{$t('adventures.collection_locations')}</span>
-							</label>
+							</div>
+							<div class="collapse-content">
+								<label class="label cursor-pointer justify-start gap-3 py-1">
+									<input
+										type="checkbox"
+										class="checkbox checkbox-primary checkbox-sm"
+										checked={currentSort.includeCollections}
+										on:change={(e) => updateIncludeCollections(e.currentTarget.checked)}
+									/>
+									<span class="label-text">{$t('adventures.collection_locations')}</span>
+								</label>
+							</div>
 						</div>
 
 						<RatingFilter
