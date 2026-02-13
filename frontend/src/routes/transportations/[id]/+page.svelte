@@ -22,6 +22,7 @@
 	import { formatDateInTimezone, formatAllDayDate } from '$lib/dateUtils';
 	import TransportationModal from '$lib/components/transportation/TransportationModal.svelte';
 	import { DEFAULT_CURRENCY, formatMoney, toMoneyValue } from '$lib/money';
+import { fetchExchangeRates, formatConvertedPrice, ratesLoaded } from '$lib/stores/exchangeRates';
 	import HistoryPanel from '$lib/components/HistoryPanel.svelte';
 
 	// Shared components
@@ -288,6 +289,9 @@
 	$: attachmentGeojson = transportation ? collectAttachmentGeojson(transportation) : null;
 
 	onMount(async () => {
+		// Fetch exchange rates for currency conversion
+		fetchExchangeRates();
+
 		if (data.props.transportation) {
 			transportation = data.props.transportation;
 			transportation.images = sortImagesByPrimary(transportation.images || []);
@@ -762,16 +766,29 @@
 				<!-- Average Price from Visits -->
 				{#if transportation.average_price_per_user}
 					{@const avgPrice = transportation.average_price_per_user}
+					{@const userCurrency = data.user?.default_currency || DEFAULT_CURRENCY}
 					<div class="card bg-base-200 shadow-xl">
 						<div class="card-body">
 							<h3 class="card-title text-lg mb-3">💰 {$t('adventures.avg_price')}</h3>
 							<div class="space-y-2">
+								<!-- Main price in original currency -->
 								<div class="text-2xl font-bold text-success">
 									{formatMoney({ amount: avgPrice.amount, currency: avgPrice.currency })}
 								</div>
 								<div class="text-sm opacity-70">
 									{$t('adventures.avg_per_user')}
 								</div>
+
+								<!-- Converted price in user's currency -->
+								{#if $ratesLoaded && avgPrice.currency !== userCurrency}
+									{@const userConverted = formatConvertedPrice(avgPrice.amount, avgPrice.currency, userCurrency)}
+									{#if userConverted}
+										<div class="text-sm text-base-content/70">
+											{userConverted}
+										</div>
+									{/if}
+								{/if}
+
 								{#if avgPrice.visit_count > 0}
 									<div class="text-xs opacity-50">
 										{$t('adventures.based_on_visits', { values: { count: avgPrice.visit_count } })}
