@@ -35,6 +35,8 @@
 	import LodgingLink from '$lib/components/LodgingLink.svelte';
 	import Car from '~icons/mdi/car';
 	import LocationMarker from '~icons/mdi/map-marker';
+	import TrashCan from '~icons/mdi/trash-can';
+	import AlertCircle from '~icons/mdi/alert-circle';
 	import { t } from 'svelte-i18n';
 	import { addToast } from '$lib/toasts';
 	import Globe from '~icons/mdi/globe';
@@ -129,6 +131,66 @@
 		const itemToRemove = event.detail;
 		collection.itinerary = collection.itinerary?.filter((it) => it.id !== itemToRemove.id);
 		days = groupItemsByDay(collection);
+	}
+
+	// Broken item removal state
+	let brokenItemToRemove: ResolvedItineraryItem | null = null;
+	let showBrokenItemConfirmModal = false;
+	let isRemovingBrokenItem = false;
+
+	function promptRemoveBrokenItem(item: ResolvedItineraryItem) {
+		brokenItemToRemove = item;
+		showBrokenItemConfirmModal = true;
+	}
+
+	function cancelRemoveBrokenItem() {
+		brokenItemToRemove = null;
+		showBrokenItemConfirmModal = false;
+	}
+
+	async function confirmRemoveBrokenItem() {
+		if (!brokenItemToRemove) return;
+
+		isRemovingBrokenItem = true;
+
+		try {
+			const response = await fetch(`/api/itineraries/${brokenItemToRemove.id}/`, {
+				method: 'DELETE'
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to remove broken item');
+			}
+
+			// Update local state
+			collection.itinerary = collection.itinerary?.filter((it) => it.id !== brokenItemToRemove!.id);
+			days = groupItemsByDay(collection);
+			globalItems = (collection.itinerary || [])
+				.filter((it) => it.is_global)
+				.map((it) => resolveItineraryItem(it, collection))
+				.sort((a, b) => a.order - b.order);
+
+			addToast('success', $t('itinerary.broken_item_removed'));
+		} catch (error) {
+			console.error('Error removing broken item:', error);
+			addToast('error', $t('itinerary.broken_item_remove_error'));
+		} finally {
+			isRemovingBrokenItem = false;
+			brokenItemToRemove = null;
+			showBrokenItemConfirmModal = false;
+		}
+	}
+
+	// Helper to get a human-readable type name for broken items
+	function getBrokenItemTypeName(objectType: string): string {
+		const typeMap: Record<string, string> = {
+			location: $t('navbar.locations'),
+			transportation: $t('navbar.transportations'),
+			lodging: $t('navbar.lodging'),
+			note: $t('adventures.note'),
+			checklist: $t('adventures.checklist')
+		};
+		return typeMap[objectType] || objectType;
 	}
 
 	let locationToEdit: Location | null = null;
@@ -1932,8 +1994,33 @@
 											/>
 										{/if}
 									{:else}
-										<div class="alert alert-warning">
-											<span>⚠️ {$t('itinerary.item_not_found')} (ID: {item.object_id})</span>
+										<!-- Broken/missing item card -->
+										<div class="card bg-warning/10 border border-warning/30 shadow-sm h-full">
+											<div class="card-body p-4 flex flex-col justify-between h-full">
+												<div class="flex items-start gap-3">
+													<div class="flex-shrink-0">
+														<AlertCircle class="w-6 h-6 text-warning" />
+													</div>
+													<div class="flex-1 min-w-0">
+														<h3 class="font-semibold text-warning-content">{$t('itinerary.broken_item')}</h3>
+														<p class="text-sm opacity-70 mt-1">
+															{$t('itinerary.broken_item_desc', { values: { type: getBrokenItemTypeName(objectType) } })}
+														</p>
+														<p class="text-xs opacity-50 mt-2 font-mono truncate">ID: {item.object_id}</p>
+													</div>
+												</div>
+												{#if canModify}
+													<div class="mt-4">
+														<button
+															class="btn btn-warning btn-sm w-full gap-2"
+															on:click={() => promptRemoveBrokenItem(item)}
+														>
+															<TrashCan class="w-4 h-4" />
+															{$t('itinerary.remove_broken_item')}
+														</button>
+													</div>
+												{/if}
+											</div>
 										</div>
 									{/if}
 								</div>
@@ -2420,9 +2507,33 @@
 												{/if}
 											</div>
 										{:else}
-											<!-- Fallback for unresolved items -->
-											<div class="alert alert-warning">
-												<span>⚠️ {$t('itinerary.item_not_found')} (ID: {item.object_id})</span>
+											<!-- Broken/missing item card -->
+											<div class="card bg-warning/10 border border-warning/30 shadow-sm h-full">
+												<div class="card-body p-4 flex flex-col justify-between h-full">
+													<div class="flex items-start gap-3">
+														<div class="flex-shrink-0">
+															<AlertCircle class="w-6 h-6 text-warning" />
+														</div>
+														<div class="flex-1 min-w-0">
+															<h3 class="font-semibold text-warning-content">{$t('itinerary.broken_item')}</h3>
+															<p class="text-sm opacity-70 mt-1">
+																{$t('itinerary.broken_item_desc', { values: { type: getBrokenItemTypeName(objectType) } })}
+															</p>
+															<p class="text-xs opacity-50 mt-2 font-mono truncate">ID: {item.object_id}</p>
+														</div>
+													</div>
+													{#if canModify}
+														<div class="mt-4">
+															<button
+																class="btn btn-warning btn-sm w-full gap-2"
+																on:click={() => promptRemoveBrokenItem(item)}
+															>
+																<TrashCan class="w-4 h-4" />
+																{$t('itinerary.remove_broken_item')}
+															</button>
+														</div>
+													{/if}
+												</div>
 											</div>
 										{/if}
 									</div>
@@ -2681,5 +2792,42 @@
 				</div>
 			</div>
 		{/if}
+	</div>
+{/if}
+
+<!-- Broken Item Removal Confirmation Modal -->
+{#if showBrokenItemConfirmModal}
+	<div class="modal modal-open">
+		<div class="modal-box">
+			<h3 class="font-bold text-lg flex items-center gap-2">
+				<AlertCircle class="w-5 h-5 text-warning" />
+				{$t('itinerary.remove_broken_item')}
+			</h3>
+			<p class="py-4">{$t('itinerary.remove_broken_item_confirm')}</p>
+			{#if brokenItemToRemove}
+				<div class="bg-base-200 rounded-lg p-3 text-sm">
+					<p><strong>{$t('adventures.type')}:</strong> {getBrokenItemTypeName(brokenItemToRemove.item?.type || '')}</p>
+					<p class="font-mono text-xs mt-1 opacity-60">ID: {brokenItemToRemove.object_id}</p>
+				</div>
+			{/if}
+			<div class="modal-action">
+				<button class="btn" on:click={cancelRemoveBrokenItem} disabled={isRemovingBrokenItem}>
+					{$t('about.close')}
+				</button>
+				<button
+					class="btn btn-warning"
+					on:click={confirmRemoveBrokenItem}
+					disabled={isRemovingBrokenItem}
+				>
+					{#if isRemovingBrokenItem}
+						<span class="loading loading-spinner loading-sm"></span>
+					{:else}
+						<TrashCan class="w-4 h-4" />
+					{/if}
+					{$t('adventures.delete')}
+				</button>
+			</div>
+		</div>
+		<div class="modal-backdrop" on:click={cancelRemoveBrokenItem}></div>
 	</div>
 {/if}

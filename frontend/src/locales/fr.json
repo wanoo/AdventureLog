@@ -1220,7 +1220,13 @@
 		"trip_context_info": "Les éléments de contexte du voyage s'appliquent à l'ensemble du voyage, par exemple les lieux qui constituent la destination elle-même, les notes générales ou les listes de colisage importantes pour l'ensemble du voyage.",
 		"unscheduled_items": "Éléments non planifiés",
 		"unscheduled_items_desc": "Ces éléments sont liés à ce voyage mais n'ont pas encore été ajoutés à un jour spécifique.",
-		"link_existing_item": "Lier un élément existant"
+		"link_existing_item": "Lier un élément existant",
+		"broken_item": "Élément manquant",
+		"broken_item_desc": "L'élément {type} lié n'existe plus ou a été supprimé.",
+		"broken_item_removed": "Entrée cassée supprimée",
+		"broken_item_remove_error": "Échec de la suppression de l'entrée cassée",
+		"remove_broken_item": "Supprimer l'entrée cassée",
+		"remove_broken_item_confirm": "Supprimer cette entrée cassée de l'itinéraire ?"
 	},
 	"templates": {
 		"title": "Modèles de collection",

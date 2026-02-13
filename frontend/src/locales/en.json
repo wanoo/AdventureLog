@@ -1174,7 +1174,13 @@
 		"failed_to_add_to_trip_context": "Failed to add item to trip context",
 		"remove_from_trip_context": "Remove from Context",
 		"drag_to_reorder": "Drag to reorder",
-		"add_to_day": "Add to day"
+		"add_to_day": "Add to day",
+		"broken_item": "Missing Item",
+		"broken_item_desc": "The linked {type} no longer exists or was deleted.",
+		"remove_broken_item": "Remove broken entry",
+		"remove_broken_item_confirm": "Remove this broken entry from the itinerary?",
+		"broken_item_removed": "Broken entry removed",
+		"broken_item_remove_error": "Failed to remove broken entry"
 	},
 	"common": {
 		"show_less": "Hide details",

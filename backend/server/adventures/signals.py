@@ -100,9 +100,9 @@ def _get_auditable_models():
     """Returns list of models that should be audited in collaborative mode."""
     from adventures.models import (
         Location, Collection, Category, Visit, ContentImage, ContentAttachment,
-        Note, Transportation, Lodging
+        Note, Transportation, Lodging, CollectionItineraryItem
     )
-    return [Location, Collection, Category, Visit, ContentImage, ContentAttachment, Note, Transportation, Lodging]
+    return [Location, Collection, Category, Visit, ContentImage, ContentAttachment, Note, Transportation, Lodging, CollectionItineraryItem]
 
 
 @receiver(pre_save)
