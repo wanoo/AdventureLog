@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django.db.models import Q
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+import requests
 from adventures.models import Lodging, LODGING_TYPES, AuditLog, ContentImage, ContentAttachment
 from adventures.serializers import LodgingSerializer, LodgingMapPinSerializer, AuditLogSerializer
 from rest_framework.exceptions import PermissionDenied
@@ -54,6 +55,53 @@ class LodgingViewSet(FilteringMixin, ViewsetUtilsMixin, viewsets.ModelViewSet):
 
         serializer = LodgingMapPinSerializer(lodgings, many=True, context={'request': request})
         return Response(serializer.data)
+
+    @action(detail=True, methods=['get'], url_path='additional-info')
+    def additional_info(self, request, pk=None):
+        """Get lodging with additional sunrise/sunset information."""
+        lodging = self.get_object()
+
+        # Get base lodging data
+        serializer = self.get_serializer(lodging)
+        response_data = serializer.data
+
+        # Add sunrise/sunset data
+        response_data['sun_times'] = self._get_sun_times(lodging, response_data.get('visits', []))
+
+        return Response(response_data)
+
+    def _get_sun_times(self, lodging, visits):
+        """Get sunrise/sunset times for lodging visits."""
+        sun_times = []
+
+        for visit in visits:
+            date = visit.get('start_date')
+            if not (date and lodging.longitude and lodging.latitude):
+                continue
+
+            api_url = (
+                f'https://api.sunrisesunset.io/json?'
+                f'lat={lodging.latitude}&lng={lodging.longitude}&date={date}'
+            )
+
+            try:
+                response = requests.get(api_url)
+                if response.status_code == 200:
+                    data = response.json()
+                    results = data.get('results', {})
+
+                    if results.get('sunrise') and results.get('sunset'):
+                        sun_times.append({
+                            "date": date,
+                            "visit_id": visit.get('id'),
+                            "sunrise": results.get('sunrise'),
+                            "sunset": results.get('sunset')
+                        })
+            except requests.RequestException:
+                # Skip this visit if API call fails
+                continue
+
+        return sun_times
 
     @action(detail=False, methods=['get'])
     def filtered(self, request):

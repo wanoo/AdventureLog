@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Lodging } from '$lib/types';
+	import type { AdditionalLodging } from '$lib/types';
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
@@ -42,7 +42,7 @@
 
 	export let data: PageData;
 
-	let lodging: Lodging;
+	let lodging: AdditionalLodging;
 	let notFound: boolean = false;
 	let modalInitialIndex: number = 0;
 	let isImageModalOpen: boolean = false;
@@ -287,6 +287,7 @@
 				<EntityVisitsTimeline
 					visits={lodging.visits || []}
 					measurementSystem={data.user?.measurement_system || 'metric'}
+					sunTimes={lodging.sun_times || []}
 				/>
 
 				<!-- Map Section -->

@@ -260,6 +260,15 @@ export type Transportation = {
 	is_visited?: boolean; // Whether this transportation has been visited
 };
 
+export type AdditionalTransportation = Transportation & {
+	sun_times: {
+		date: string;
+		visit_id: string;
+		sunrise: string;
+		sunset: string;
+	}[];
+};
+
 export type Note = {
 	id: string;
 	user: string;
@@ -395,6 +404,15 @@ export type Lodging = {
 	attachments: Attachment[]; // Array of attachments associated with the lodging
 	visits?: Visit[]; // Array of visits associated with the lodging
 	is_visited?: boolean; // Whether this lodging has been visited
+};
+
+export type AdditionalLodging = Lodging & {
+	sun_times: {
+		date: string;
+		visit_id: string;
+		sunrise: string;
+		sunset: string;
+	}[];
 };
 
 export type CollectionInvite = {

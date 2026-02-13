@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Transportation } from '$lib/types';
+	import type { AdditionalTransportation } from '$lib/types';
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
@@ -43,7 +43,7 @@
 
 	export let data: PageData;
 
-	let transportation: Transportation;
+	let transportation: AdditionalTransportation;
 	let notFound: boolean = false;
 	let mapCenter: [number, number] | null = null;
 	let attachmentGeojson: any = null;
@@ -396,6 +396,7 @@
 				<EntityVisitsTimeline
 					visits={transportation.visits || []}
 					measurementSystem={data.user?.measurement_system || 'metric'}
+					sunTimes={transportation.sun_times || []}
 				/>
 
 				<!-- Map Section -->
