@@ -589,7 +589,7 @@
 							</p>
 						</div>
 					{:else}
-						<div class="space-y-4">
+						<div class="space-y-2">
 							{#each invites as invite}
 								<div
 									class="card bg-base-100 shadow-lg border border-base-300 hover:shadow-xl transition-shadow"
@@ -743,7 +743,7 @@
 
 					<!-- Only show sort options for collection views, not invites -->
 					{#if activeView !== 'invites'}
-						<div class="space-y-4">
+						<div class="space-y-2">
 							<!-- Adventure Type Filter -->
 							{#if adventureTypeOptions.length > 0}
 								<TypeFilterDropdown
@@ -758,64 +758,64 @@
 							<!-- Status Filter -->
 							<div class="collapse collapse-arrow bg-base-200/50 rounded-box">
 								<input type="checkbox" checked />
-								<div class="collapse-title font-semibold text-lg flex items-center gap-2 py-3 min-h-0">
-									<Filter class="w-5 h-5" />
+								<div class="collapse-title font-medium flex items-center gap-2 py-2 min-h-0 text-sm">
+									<Filter class="w-4 h-4" />
 									{$t('adventures.status_filter')}
 									{#if statusFilter}
-										<span class="badge badge-primary badge-sm">{statusFilter}</span>
+										<span class="badge badge-primary badge-xs">{statusFilter}</span>
 									{/if}
 								</div>
-								<div class="collapse-content">
-									<div class="space-y-2 pt-2">
-										<label class="label cursor-pointer justify-start gap-3 py-1">
+								<div class="collapse-content !pb-2">
+									<div class="space-y-0">
+										<label class="flex items-center gap-2 cursor-pointer py-0.5">
 											<input
 												type="radio"
 												name="status_filter"
-												class="radio radio-primary radio-sm"
+												class="radio radio-primary radio-xs"
 												checked={statusFilter === ''}
 												on:change={() => updateStatusFilter('')}
 											/>
-											<span class="label-text">{$t('adventures.all')}</span>
+											<span class="text-sm">{$t('adventures.all')}</span>
 										</label>
-										<label class="label cursor-pointer justify-start gap-3 py-1">
+										<label class="flex items-center gap-2 cursor-pointer py-0.5">
 											<input
 												type="radio"
 												name="status_filter"
-												class="radio radio-primary radio-sm"
+												class="radio radio-primary radio-xs"
 												checked={statusFilter === 'folder'}
 												on:change={() => updateStatusFilter('folder')}
 											/>
-											<span class="label-text">📁 {$t('adventures.folder')}</span>
+											<span class="text-sm">📁 {$t('adventures.folder')}</span>
 										</label>
-										<label class="label cursor-pointer justify-start gap-3 py-1">
+										<label class="flex items-center gap-2 cursor-pointer py-0.5">
 											<input
 												type="radio"
 												name="status_filter"
-												class="radio radio-primary radio-sm"
+												class="radio radio-primary radio-xs"
 												checked={statusFilter === 'upcoming'}
 												on:change={() => updateStatusFilter('upcoming')}
 											/>
-											<span class="label-text">🚀 {$t('adventures.upcoming')}</span>
+											<span class="text-sm">🚀 {$t('adventures.upcoming')}</span>
 										</label>
-										<label class="label cursor-pointer justify-start gap-3 py-1">
+										<label class="flex items-center gap-2 cursor-pointer py-0.5">
 											<input
 												type="radio"
 												name="status_filter"
-												class="radio radio-primary radio-sm"
+												class="radio radio-primary radio-xs"
 												checked={statusFilter === 'in_progress'}
 												on:change={() => updateStatusFilter('in_progress')}
 											/>
-											<span class="label-text">🎯 {$t('adventures.in_progress')}</span>
+											<span class="text-sm">🎯 {$t('adventures.in_progress')}</span>
 										</label>
-										<label class="label cursor-pointer justify-start gap-3 py-1">
+										<label class="flex items-center gap-2 cursor-pointer py-0.5">
 											<input
 												type="radio"
 												name="status_filter"
-												class="radio radio-primary radio-sm"
+												class="radio radio-primary radio-xs"
 												checked={statusFilter === 'completed'}
 												on:change={() => updateStatusFilter('completed')}
 											/>
-											<span class="label-text">✓ {$t('adventures.completed')}</span>
+											<span class="text-sm">✓ {$t('adventures.completed')}</span>
 										</label>
 									</div>
 								</div>
@@ -824,44 +824,44 @@
 							<!-- Visibility Filter -->
 							<div class="collapse collapse-arrow bg-base-200/50 rounded-box">
 								<input type="checkbox" checked />
-								<div class="collapse-title font-semibold text-lg flex items-center gap-2 py-3 min-h-0">
-									<Filter class="w-5 h-5" />
+								<div class="collapse-title font-medium flex items-center gap-2 py-2 min-h-0 text-sm">
+									<Filter class="w-4 h-4" />
 									{$t('adventures.visibility')}
 									{#if isPublicFilter !== 'all'}
-										<span class="badge badge-primary badge-sm">{isPublicFilter === 'true' ? $t('adventures.public') : $t('adventures.private')}</span>
+										<span class="badge badge-primary badge-xs">{isPublicFilter === 'true' ? $t('adventures.public') : $t('adventures.private')}</span>
 									{/if}
 								</div>
-								<div class="collapse-content">
-									<div class="space-y-2 pt-2">
-										<label class="label cursor-pointer justify-start gap-3 py-1">
+								<div class="collapse-content !pb-2">
+									<div class="space-y-0">
+										<label class="flex items-center gap-2 cursor-pointer py-0.5">
 											<input
 												type="radio"
 												name="visibility_filter"
-												class="radio radio-primary radio-sm"
+												class="radio radio-primary radio-xs"
 												checked={isPublicFilter === 'all'}
 												on:change={() => updateVisibilityFilter('all')}
 											/>
-											<span class="label-text">{$t('adventures.all')}</span>
+											<span class="text-sm">{$t('adventures.all')}</span>
 										</label>
-										<label class="label cursor-pointer justify-start gap-3 py-1">
+										<label class="flex items-center gap-2 cursor-pointer py-0.5">
 											<input
 												type="radio"
 												name="visibility_filter"
-												class="radio radio-primary radio-sm"
+												class="radio radio-primary radio-xs"
 												checked={isPublicFilter === 'true'}
 												on:change={() => updateVisibilityFilter('true')}
 											/>
-											<span class="label-text">{$t('adventures.public')}</span>
+											<span class="text-sm">{$t('adventures.public')}</span>
 										</label>
-										<label class="label cursor-pointer justify-start gap-3 py-1">
+										<label class="flex items-center gap-2 cursor-pointer py-0.5">
 											<input
 												type="radio"
 												name="visibility_filter"
-												class="radio radio-primary radio-sm"
+												class="radio radio-primary radio-xs"
 												checked={isPublicFilter === 'false'}
 												on:change={() => updateVisibilityFilter('false')}
 											/>
-											<span class="label-text">{$t('adventures.private')}</span>
+											<span class="text-sm">{$t('adventures.private')}</span>
 										</label>
 									</div>
 								</div>
@@ -870,44 +870,44 @@
 							<!-- Sharing Filter -->
 							<div class="collapse collapse-arrow bg-base-200/50 rounded-box">
 								<input type="checkbox" checked />
-								<div class="collapse-title font-semibold text-lg flex items-center gap-2 py-3 min-h-0">
-									<Share class="w-5 h-5" />
+								<div class="collapse-title font-medium flex items-center gap-2 py-2 min-h-0 text-sm">
+									<Share class="w-4 h-4" />
 									{$t('share.shared')}
 									{#if sharingFilter !== 'all'}
-										<span class="badge badge-primary badge-sm">{sharingFilter === 'shared' ? $t('share.shared') : $t('adventures.private')}</span>
+										<span class="badge badge-primary badge-xs">{sharingFilter === 'shared' ? $t('share.shared') : $t('adventures.private')}</span>
 									{/if}
 								</div>
-								<div class="collapse-content">
-									<div class="space-y-2 pt-2">
-										<label class="label cursor-pointer justify-start gap-3 py-1">
+								<div class="collapse-content !pb-2">
+									<div class="space-y-0">
+										<label class="flex items-center gap-2 cursor-pointer py-0.5">
 											<input
 												type="radio"
 												name="sharing_filter"
-												class="radio radio-primary radio-sm"
+												class="radio radio-primary radio-xs"
 												checked={sharingFilter === 'all'}
 												on:change={() => updateSharingFilter('all')}
 											/>
-											<span class="label-text">{$t('adventures.all')}</span>
+											<span class="text-sm">{$t('adventures.all')}</span>
 										</label>
-										<label class="label cursor-pointer justify-start gap-3 py-1">
+										<label class="flex items-center gap-2 cursor-pointer py-0.5">
 											<input
 												type="radio"
 												name="sharing_filter"
-												class="radio radio-primary radio-sm"
+												class="radio radio-primary radio-xs"
 												checked={sharingFilter === 'shared'}
 												on:change={() => updateSharingFilter('shared')}
 											/>
-											<span class="label-text">{$t('share.shared')}</span>
+											<span class="text-sm">{$t('share.shared')}</span>
 										</label>
-										<label class="label cursor-pointer justify-start gap-3 py-1">
+										<label class="flex items-center gap-2 cursor-pointer py-0.5">
 											<input
 												type="radio"
 												name="sharing_filter"
-												class="radio radio-primary radio-sm"
+												class="radio radio-primary radio-xs"
 												checked={sharingFilter === 'not_shared'}
 												on:change={() => updateSharingFilter('not_shared')}
 											/>
-											<span class="label-text">{$t('adventures.private')}</span>
+											<span class="text-sm">{$t('adventures.private')}</span>
 										</label>
 									</div>
 								</div>
@@ -916,78 +916,66 @@
 							<!-- Sort Form - Updated to use URL navigation -->
 							<div class="collapse collapse-arrow bg-base-200/50 rounded-box">
 								<input type="checkbox" checked />
-								<div class="collapse-title font-semibold text-lg flex items-center gap-2 py-3 min-h-0">
-									<Sort class="w-5 h-5" />
+								<div class="collapse-title font-medium flex items-center gap-2 py-2 min-h-0 text-sm">
+									<Sort class="w-4 h-4" />
 									{$t(`adventures.sort`)}
-									<span class="badge badge-ghost badge-sm">
+									<span class="badge badge-ghost badge-xs">
 										{orderBy === 'updated_at' ? $t('adventures.updated') : orderBy === 'start_date' ? $t('adventures.start_date') : $t('adventures.name')}
 										{orderDirection === 'asc' ? '↑' : '↓'}
 									</span>
 								</div>
-								<div class="collapse-content">
-									<div class="space-y-4 pt-2">
-										<div>
-											<!-- svelte-ignore a11y-label-has-associated-control -->
-											<label class="label">
-												<span class="label-text font-medium">{$t(`adventures.order_direction`)}</span>
-											</label>
-											<div class="join w-full">
-												<button
-													class="join-item btn btn-sm flex-1 {orderDirection === 'asc'
-														? 'btn-active'
-														: ''}"
-													on:click={() => updateSort(orderBy, 'asc')}
-												>
-													{$t(`adventures.ascending`)}
-												</button>
-												<button
-													class="join-item btn btn-sm flex-1 {orderDirection === 'desc'
-														? 'btn-active'
-														: ''}"
-													on:click={() => updateSort(orderBy, 'desc')}
-												>
-													{$t(`adventures.descending`)}
-												</button>
-											</div>
+								<div class="collapse-content !pb-2">
+									<div class="space-y-2">
+										<div class="join w-full">
+											<button
+												class="join-item btn btn-xs flex-1 {orderDirection === 'asc'
+													? 'btn-active'
+													: ''}"
+												on:click={() => updateSort(orderBy, 'asc')}
+											>
+												{$t(`adventures.ascending`)}
+											</button>
+											<button
+												class="join-item btn btn-xs flex-1 {orderDirection === 'desc'
+													? 'btn-active'
+													: ''}"
+												on:click={() => updateSort(orderBy, 'desc')}
+											>
+												{$t(`adventures.descending`)}
+											</button>
 										</div>
 
-										<div>
-											<!-- svelte-ignore a11y-label-has-associated-control -->
-											<label class="label">
-												<span class="label-text font-medium">{$t('adventures.order_by')}</span>
+										<div class="space-y-0">
+											<label class="flex items-center gap-2 cursor-pointer py-0.5">
+												<input
+													type="radio"
+													name="order_by_radio"
+													class="radio radio-primary radio-xs"
+													checked={orderBy === 'updated_at'}
+													on:change={() => updateSort('updated_at', orderDirection)}
+												/>
+												<span class="text-sm">{$t('adventures.updated')}</span>
 											</label>
-											<div class="space-y-2">
-												<label class="label cursor-pointer justify-start gap-3 py-1">
-													<input
-														type="radio"
-														name="order_by_radio"
-														class="radio radio-primary radio-sm"
-														checked={orderBy === 'updated_at'}
-														on:change={() => updateSort('updated_at', orderDirection)}
-													/>
-													<span class="label-text">{$t('adventures.updated')}</span>
-												</label>
-												<label class="label cursor-pointer justify-start gap-3 py-1">
-													<input
-														type="radio"
-														name="order_by_radio"
-														class="radio radio-primary radio-sm"
-														checked={orderBy === 'start_date'}
-														on:change={() => updateSort('start_date', orderDirection)}
-													/>
-													<span class="label-text">{$t('adventures.start_date')}</span>
-												</label>
-												<label class="label cursor-pointer justify-start gap-3 py-1">
-													<input
-														type="radio"
-														name="order_by_radio"
-														class="radio radio-primary radio-sm"
-														checked={orderBy === 'name'}
-														on:change={() => updateSort('name', orderDirection)}
-													/>
-													<span class="label-text">{$t('adventures.name')}</span>
-												</label>
-											</div>
+											<label class="flex items-center gap-2 cursor-pointer py-0.5">
+												<input
+													type="radio"
+													name="order_by_radio"
+													class="radio radio-primary radio-xs"
+													checked={orderBy === 'start_date'}
+													on:change={() => updateSort('start_date', orderDirection)}
+												/>
+												<span class="text-sm">{$t('adventures.start_date')}</span>
+											</label>
+											<label class="flex items-center gap-2 cursor-pointer py-0.5">
+												<input
+													type="radio"
+													name="order_by_radio"
+													class="radio radio-primary radio-xs"
+													checked={orderBy === 'name'}
+													on:change={() => updateSort('name', orderDirection)}
+												/>
+												<span class="text-sm">{$t('adventures.name')}</span>
+											</label>
 										</div>
 									</div>
 								</div>

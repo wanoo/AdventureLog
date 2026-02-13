@@ -25,25 +25,25 @@
 
 <div class="collapse collapse-arrow bg-base-200/50 rounded-box">
 	<input type="checkbox" checked={!collapsed} />
-	<div class="collapse-title font-semibold text-lg flex items-center gap-2 py-3 min-h-0">
-		<svelte:component this={icon} class="w-5 h-5" />
+	<div class="collapse-title font-medium flex items-center gap-2 py-2 min-h-0 text-sm">
+		<svelte:component this={icon} class="w-4 h-4" />
 		{title}
 		{#if isFiltered}
-			<span class="badge badge-primary badge-sm">{activeLabel}</span>
+			<span class="badge badge-primary badge-xs">{activeLabel}</span>
 		{/if}
 	</div>
-	<div class="collapse-content">
-		<div class="space-y-2 pt-2">
+	<div class="collapse-content !pb-2">
+		<div class="space-y-0">
 			{#each options as option}
-				<label class="label cursor-pointer justify-start gap-3 py-1">
+				<label class="flex items-center gap-2 cursor-pointer py-0.5">
 					<input
 						type="radio"
 						name={name}
-						class="radio radio-primary radio-sm"
+						class="radio radio-primary radio-xs"
 						checked={value === option.value}
 						on:change={() => handleChange(option.value)}
 					/>
-					<span class="label-text">{option.label}</span>
+					<span class="text-sm">{option.label}</span>
 				</label>
 			{/each}
 		</div>

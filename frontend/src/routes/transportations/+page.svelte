@@ -335,7 +335,7 @@
 					</div>
 
 					<!-- Filters -->
-					<div class="space-y-4">
+					<div class="space-y-2">
 						<!-- Type Filter -->
 						<TypeFilterDropdown
 							bind:types={typeString}

@@ -34,27 +34,23 @@
 
 <div class="collapse collapse-arrow bg-base-200/50 rounded-box">
 	<input type="checkbox" checked={!collapsed} />
-	<div class="collapse-title font-semibold text-lg flex items-center gap-2 py-3 min-h-0">
-		<Sort class="w-5 h-5" />
+	<div class="collapse-title font-medium flex items-center gap-2 py-2 min-h-0 text-sm">
+		<Sort class="w-4 h-4" />
 		{$t('adventures.sort')}
-		<span class="badge badge-ghost badge-sm">{activeOrderLabel} {orderDirection === 'asc' ? '↑' : '↓'}</span>
+		<span class="badge badge-ghost badge-xs">{activeOrderLabel} {orderDirection === 'asc' ? '↑' : '↓'}</span>
 	</div>
-	<div class="collapse-content">
-		<div class="space-y-4 pt-2">
+	<div class="collapse-content !pb-2">
+		<div class="space-y-2">
 			<div>
-				<!-- svelte-ignore a11y-label-has-associated-control -->
-				<label class="label">
-					<span class="label-text font-medium">{$t('adventures.order_direction')}</span>
-				</label>
 				<div class="join w-full">
 					<button
-						class="join-item btn btn-sm flex-1 {orderDirection === 'asc' ? 'btn-active' : ''}"
+						class="join-item btn btn-xs flex-1 {orderDirection === 'asc' ? 'btn-active' : ''}"
 						on:click={() => handleDirectionChange('asc')}
 					>
 						{$t('adventures.ascending')}
 					</button>
 					<button
-						class="join-item btn btn-sm flex-1 {orderDirection === 'desc' ? 'btn-active' : ''}"
+						class="join-item btn btn-xs flex-1 {orderDirection === 'desc' ? 'btn-active' : ''}"
 						on:click={() => handleDirectionChange('desc')}
 					>
 						{$t('adventures.descending')}
@@ -62,25 +58,19 @@
 				</div>
 			</div>
 
-			<div>
-				<!-- svelte-ignore a11y-label-has-associated-control -->
-				<label class="label">
-					<span class="label-text font-medium">{$t('adventures.order_by')}</span>
-				</label>
-				<div class="space-y-2">
-					{#each orderByOptions as option}
-						<label class="label cursor-pointer justify-start gap-3 py-1">
-							<input
-								type="radio"
-								name="order_by_radio"
-								class="radio radio-primary radio-sm"
-								checked={orderBy === option.value}
-								on:change={() => handleOrderByChange(option.value)}
-							/>
-							<span class="label-text">{option.label}</span>
-						</label>
-					{/each}
-				</div>
+			<div class="space-y-0">
+				{#each orderByOptions as option}
+					<label class="flex items-center gap-2 cursor-pointer py-0.5">
+						<input
+							type="radio"
+							name="order_by_radio"
+							class="radio radio-primary radio-xs"
+							checked={orderBy === option.value}
+							on:change={() => handleOrderByChange(option.value)}
+						/>
+						<span class="text-sm">{option.label}</span>
+					</label>
+				{/each}
 			</div>
 		</div>
 	</div>
