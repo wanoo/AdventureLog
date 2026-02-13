@@ -3,10 +3,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from worldtravel.models import Region, City, VisitedRegion, VisitedCity
-from adventures.models import Location
+from adventures.models import Location, Lodging
 from adventures.serializers import LocationSerializer
 from adventures.geocoding import reverse_geocode
 from django.conf import settings
+from django.db.models import Q
 from adventures.geocoding import search_google, search_osm
 
 class ReverseGeocodeViewSet(viewsets.ViewSet):
@@ -42,6 +43,101 @@ class ReverseGeocodeViewSet(viewsets.ViewSet):
             return Response(results)
         except Exception:
             return Response({"error": "An internal error occurred while processing the request"}, status=500)
+
+    @action(detail=False, methods=['get'])
+    def unified_search(self, request):
+        """
+        Unified search endpoint that combines:
+        1. Geocoding results (addresses from Google Maps/OSM)
+        2. User's own locations
+        3. User's own lodgings
+
+        Returns grouped results by source type for intelligent autocomplete.
+        """
+        query = request.query_params.get('query', '')
+        include_geocode = request.query_params.get('include_geocode', 'true').lower() == 'true'
+        include_locations = request.query_params.get('include_locations', 'true').lower() == 'true'
+        include_lodging = request.query_params.get('include_lodging', 'true').lower() == 'true'
+
+        if not query or len(query) < 2:
+            return Response({"error": "Query parameter must be at least 2 characters"}, status=400)
+
+        results = {
+            "addresses": [],
+            "locations": [],
+            "lodging": []
+        }
+
+        # Search user's locations
+        if include_locations:
+            locations = Location.objects.filter(
+                Q(user=self.request.user) | Q(is_public=True),
+                Q(name__icontains=query) | Q(location__icontains=query)
+            ).exclude(
+                latitude__isnull=True
+            ).exclude(
+                longitude__isnull=True
+            ).order_by('-updated_at')[:10]
+
+            results["locations"] = [
+                {
+                    "id": str(loc.id),
+                    "name": loc.name,
+                    "display_name": loc.location or loc.name,
+                    "lat": float(loc.latitude),
+                    "lon": float(loc.longitude),
+                    "type": "location",
+                    "category": loc.category.name if loc.category else None,
+                    "source": "location"
+                }
+                for loc in locations
+            ]
+
+        # Search user's lodging
+        if include_lodging:
+            lodging = Lodging.objects.filter(
+                Q(user=self.request.user) | Q(is_public=True),
+                Q(name__icontains=query) | Q(location__icontains=query)
+            ).exclude(
+                latitude__isnull=True
+            ).exclude(
+                longitude__isnull=True
+            ).order_by('-updated_at')[:10]
+
+            results["lodging"] = [
+                {
+                    "id": str(ldg.id),
+                    "name": ldg.name,
+                    "display_name": ldg.location or ldg.name,
+                    "lat": float(ldg.latitude),
+                    "lon": float(ldg.longitude),
+                    "type": ldg.type,
+                    "category": "lodging",
+                    "source": "lodging"
+                }
+                for ldg in lodging
+            ]
+
+        # Search addresses via geocoding
+        if include_geocode:
+            try:
+                if getattr(settings, 'GOOGLE_MAPS_API_KEY', None):
+                    geocode_results = search_google(query)
+                else:
+                    geocode_results = search_osm(query)
+
+                results["addresses"] = [
+                    {
+                        **r,
+                        "source": "address"
+                    }
+                    for r in geocode_results[:10]
+                ]
+            except Exception:
+                # Geocoding failed, but we can still return internal results
+                pass
+
+        return Response(results)
 
     @action(detail=False, methods=['post'])
     def mark_visited_region(self, request):

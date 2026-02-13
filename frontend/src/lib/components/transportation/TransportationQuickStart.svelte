@@ -83,6 +83,7 @@
 	<LocationSearchMap
 		bind:isReverseGeocoding
 		transportationMode={true}
+		unifiedSearch={true}
 		bind:searchMode
 		showDisplayNameInput={false}
 		on:transportationUpdate={handleTransportationUpdate}

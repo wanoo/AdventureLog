@@ -372,6 +372,7 @@
 		<LocationSearchMap
 			bind:isReverseGeocoding
 			transportationMode={true}
+			unifiedSearch={true}
 			bind:searchMode
 			showDisplayNameInput={false}
 			initialStartLocation={initialTransportation?.origin_latitude && initialTransportation?.origin_longitude

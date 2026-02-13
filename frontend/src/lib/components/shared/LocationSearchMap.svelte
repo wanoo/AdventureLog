@@ -1,6 +1,18 @@
 <script context="module" lang="ts">
 	// Search mode type for transportation - exported for use in other components
 	export type SearchMode = 'location' | 'airport' | 'train' | 'bus' | 'cab' | 'vtc';
+
+	// Type for unified search results with source grouping
+	export type UnifiedSearchResult = {
+		id?: string;
+		name: string;
+		display_name: string;
+		lat: number;
+		lon: number;
+		type?: string;
+		category?: string;
+		source: 'address' | 'location' | 'lodging';
+	};
 </script>
 
 <script lang="ts">
@@ -21,6 +33,7 @@
 	import TaxiIcon from '~icons/mdi/taxi';
 	import LimoIcon from '~icons/mdi/car-estate';
 	import SwapIcon from '~icons/mdi/swap-horizontal';
+	import BedIcon from '~icons/mdi/bed';
 
 	// Search mode configuration
 	const SEARCH_MODE_CONFIG: Record<SearchMode, {
@@ -118,9 +131,17 @@
 	} | null = null;
 	export let initialStartCode: string | null = null;
 	export let initialEndCode: string | null = null;
+	// Enable unified search to include user's locations and lodgings
+	export let unifiedSearch = false;
 
 	let isSearching = false;
 	let searchResults: GeoSelection[] = [];
+	// Grouped results for unified search mode
+	let unifiedResults: {
+		addresses: UnifiedSearchResult[];
+		locations: UnifiedSearchResult[];
+		lodging: UnifiedSearchResult[];
+	} = { addresses: [], locations: [], lodging: [] };
 	let selectedLocation: GeoSelection | null = null;
 	let selectedMarker: { lng: number; lat: number } | null = null;
 	let locationData: LocationMeta | null = null;
@@ -182,8 +203,19 @@
 	// Transportation mode variables
 	let startSearchQuery = '';
 	let endSearchQuery = '';
-	let startSearchResults: GeoSelection[] = [];
-	let endSearchResults: GeoSelection[] = [];
+	let startSearchResults: (GeoSelection & { source?: string })[] = [];
+	let endSearchResults: (GeoSelection & { source?: string })[] = [];
+	// Grouped results for unified search in transportation mode
+	let startUnifiedResults: {
+		addresses: UnifiedSearchResult[];
+		locations: UnifiedSearchResult[];
+		lodging: UnifiedSearchResult[];
+	} = { addresses: [], locations: [], lodging: [] };
+	let endUnifiedResults: {
+		addresses: UnifiedSearchResult[];
+		locations: UnifiedSearchResult[];
+		lodging: UnifiedSearchResult[];
+	} = { addresses: [], locations: [], lodging: [] };
 	let selectedStartLocation: GeoSelection | null = null;
 	let selectedEndLocation: GeoSelection | null = null;
 	let startMarker: { lng: number; lat: number } | null = null;
@@ -271,34 +303,70 @@
 		return result.name || '';
 	}
 
+	// Helper to convert unified search result to GeoSelection
+	function unifiedToGeoSelection(result: UnifiedSearchResult): GeoSelection & { source?: string } {
+		return {
+			name: result.name,
+			lat: result.lat,
+			lng: result.lon,
+			location: result.display_name,
+			type: result.type,
+			category: result.category,
+			source: result.source
+		};
+	}
+
 	async function searchLocations(query: string) {
 		if (!query.trim() || query.length < 3) {
 			searchResults = [];
+			unifiedResults = { addresses: [], locations: [], lodging: [] };
 			return;
 		}
 
 		isSearching = true;
 		try {
-			const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
-			const response = await fetch(
-				`/api/reverse-geocode/search/?query=${encodeURIComponent(searchTerm)}`
-			);
-			const results = await response.json();
+			if (unifiedSearch) {
+				// Use unified search endpoint
+				const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
+				const response = await fetch(
+					`/api/reverse-geocode/unified_search/?query=${encodeURIComponent(searchTerm)}`
+				);
+				const data = await response.json();
+				unifiedResults = {
+					addresses: data.addresses || [],
+					locations: data.locations || [],
+					lodging: data.lodging || []
+				};
+				// Combine all results for backward compatibility
+				searchResults = [
+					...unifiedResults.locations.map(unifiedToGeoSelection),
+					...unifiedResults.lodging.map(unifiedToGeoSelection),
+					...unifiedResults.addresses.map(unifiedToGeoSelection)
+				];
+			} else {
+				// Original geocode-only search
+				const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
+				const response = await fetch(
+					`/api/reverse-geocode/search/?query=${encodeURIComponent(searchTerm)}`
+				);
+				const results = await response.json();
 
-			searchResults = results.map((result: any) => ({
-				id: result.name + result.lat + result.lon,
-				name: extractName(result),
-				lat: parseFloat(result.lat),
-				lng: parseFloat(result.lon),
-				type: result.type,
-				category: result.category,
-				location: result.display_name,
-				importance: result.importance,
-				powered_by: result.powered_by
-			}));
+				searchResults = results.map((result: any) => ({
+					id: result.name + result.lat + result.lon,
+					name: extractName(result),
+					lat: parseFloat(result.lat),
+					lng: parseFloat(result.lon),
+					type: result.type,
+					category: result.category,
+					location: result.display_name,
+					importance: result.importance,
+					powered_by: result.powered_by
+				}));
+			}
 		} catch (error) {
 			console.error('Search error:', error);
 			searchResults = [];
+			unifiedResults = { addresses: [], locations: [], lodging: [] };
 		} finally {
 			isSearching = false;
 		}
@@ -307,31 +375,53 @@
 	async function searchStartLocation(query: string) {
 		if (!query.trim() || query.length < 3) {
 			startSearchResults = [];
+			startUnifiedResults = { addresses: [], locations: [], lodging: [] };
 			return;
 		}
 
 		isSearchingStart = true;
 		try {
-			const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
-			const response = await fetch(
-				`/api/reverse-geocode/search/?query=${encodeURIComponent(searchTerm)}`
-			);
-			const results = await response.json();
+			if (unifiedSearch) {
+				// Use unified search endpoint
+				const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
+				const response = await fetch(
+					`/api/reverse-geocode/unified_search/?query=${encodeURIComponent(searchTerm)}`
+				);
+				const data = await response.json();
+				startUnifiedResults = {
+					addresses: data.addresses || [],
+					locations: data.locations || [],
+					lodging: data.lodging || []
+				};
+				// Combine all results for the dropdown
+				startSearchResults = [
+					...startUnifiedResults.locations.map(unifiedToGeoSelection),
+					...startUnifiedResults.lodging.map(unifiedToGeoSelection),
+					...startUnifiedResults.addresses.map(unifiedToGeoSelection)
+				];
+			} else {
+				const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
+				const response = await fetch(
+					`/api/reverse-geocode/search/?query=${encodeURIComponent(searchTerm)}`
+				);
+				const results = await response.json();
 
-			startSearchResults = results.map((result: any) => ({
-				id: result.name + result.lat + result.lon,
-				name: extractName(result),
-				lat: parseFloat(result.lat),
-				lng: parseFloat(result.lon),
-				type: result.type,
-				category: result.category,
-				location: result.display_name,
-				importance: result.importance,
-				powered_by: result.powered_by
-			}));
+				startSearchResults = results.map((result: any) => ({
+					id: result.name + result.lat + result.lon,
+					name: extractName(result),
+					lat: parseFloat(result.lat),
+					lng: parseFloat(result.lon),
+					type: result.type,
+					category: result.category,
+					location: result.display_name,
+					importance: result.importance,
+					powered_by: result.powered_by
+				}));
+			}
 		} catch (error) {
 			console.error('Search error:', error);
 			startSearchResults = [];
+			startUnifiedResults = { addresses: [], locations: [], lodging: [] };
 		} finally {
 			isSearchingStart = false;
 		}
@@ -340,31 +430,53 @@
 	async function searchEndLocation(query: string) {
 		if (!query.trim() || query.length < 3) {
 			endSearchResults = [];
+			endUnifiedResults = { addresses: [], locations: [], lodging: [] };
 			return;
 		}
 
 		isSearchingEnd = true;
 		try {
-			const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
-			const response = await fetch(
-				`/api/reverse-geocode/search/?query=${encodeURIComponent(searchTerm)}`
-			);
-			const results = await response.json();
+			if (unifiedSearch) {
+				// Use unified search endpoint
+				const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
+				const response = await fetch(
+					`/api/reverse-geocode/unified_search/?query=${encodeURIComponent(searchTerm)}`
+				);
+				const data = await response.json();
+				endUnifiedResults = {
+					addresses: data.addresses || [],
+					locations: data.locations || [],
+					lodging: data.lodging || []
+				};
+				// Combine all results for the dropdown
+				endSearchResults = [
+					...endUnifiedResults.locations.map(unifiedToGeoSelection),
+					...endUnifiedResults.lodging.map(unifiedToGeoSelection),
+					...endUnifiedResults.addresses.map(unifiedToGeoSelection)
+				];
+			} else {
+				const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
+				const response = await fetch(
+					`/api/reverse-geocode/search/?query=${encodeURIComponent(searchTerm)}`
+				);
+				const results = await response.json();
 
-			endSearchResults = results.map((result: any) => ({
-				id: result.name + result.lat + result.lon,
-				name: extractName(result),
-				lat: parseFloat(result.lat),
-				lng: parseFloat(result.lon),
-				type: result.type,
-				category: result.category,
-				location: result.display_name,
-				importance: result.importance,
-				powered_by: result.powered_by
-			}));
+				endSearchResults = results.map((result: any) => ({
+					id: result.name + result.lat + result.lon,
+					name: extractName(result),
+					lat: parseFloat(result.lat),
+					lng: parseFloat(result.lon),
+					type: result.type,
+					category: result.category,
+					location: result.display_name,
+					importance: result.importance,
+					powered_by: result.powered_by
+				}));
+			}
 		} catch (error) {
 			console.error('Search error:', error);
 			endSearchResults = [];
+			endUnifiedResults = { addresses: [], locations: [], lodging: [] };
 		} finally {
 			isSearchingEnd = false;
 		}
@@ -891,23 +1003,97 @@
 			{:else if startSearchResults.length > 0}
 				<div class="space-y-2">
 					<div class="max-h-48 overflow-y-auto space-y-1">
-						{#each startSearchResults as result}
-							<button
-								class="w-full text-left p-3 rounded-lg border border-base-300 hover:bg-base-100 hover:border-success/50 transition-colors"
-								on:click={() => selectStartSearchResult(result)}
-							>
-								<div class="flex items-start gap-3">
-									<PinIcon class="w-4 h-4 text-success mt-1 flex-shrink-0" />
-									<div class="min-w-0 flex-1">
-										<div class="font-medium text-sm truncate">{result.name}</div>
-										<div class="text-xs text-base-content/60 truncate">{result.location}</div>
-										{#if result.category}
-											<div class="text-xs text-success/70 capitalize">{result.category}</div>
-										{/if}
-									</div>
+						{#if unifiedSearch && (startUnifiedResults.locations.length > 0 || startUnifiedResults.lodging.length > 0 || startUnifiedResults.addresses.length > 0)}
+							<!-- Grouped results for unified search -->
+							{#if startUnifiedResults.locations.length > 0}
+								<div class="text-xs font-semibold text-base-content/50 px-2 pt-1 flex items-center gap-1">
+									<PinIcon class="w-3 h-3" />
+									{$t('navbar.locations')}
 								</div>
-							</button>
-						{/each}
+								{#each startUnifiedResults.locations as result}
+									<button
+										class="w-full text-left p-3 rounded-lg border border-base-300 hover:bg-base-100 hover:border-primary/50 transition-colors"
+										on:click={() => selectStartSearchResult(unifiedToGeoSelection(result))}
+									>
+										<div class="flex items-start gap-3">
+											<PinIcon class="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+											<div class="min-w-0 flex-1">
+												<div class="font-medium text-sm truncate">{result.name}</div>
+												<div class="text-xs text-base-content/60 truncate">{result.display_name}</div>
+												{#if result.category}
+													<div class="text-xs text-primary/70 capitalize">{result.category}</div>
+												{/if}
+											</div>
+										</div>
+									</button>
+								{/each}
+							{/if}
+							{#if startUnifiedResults.lodging.length > 0}
+								<div class="text-xs font-semibold text-base-content/50 px-2 pt-1 flex items-center gap-1">
+									<BedIcon class="w-3 h-3" />
+									{$t('navbar.lodging')}
+								</div>
+								{#each startUnifiedResults.lodging as result}
+									<button
+										class="w-full text-left p-3 rounded-lg border border-base-300 hover:bg-base-100 hover:border-pink-500/50 transition-colors"
+										on:click={() => selectStartSearchResult(unifiedToGeoSelection(result))}
+									>
+										<div class="flex items-start gap-3">
+											<BedIcon class="w-4 h-4 text-pink-500 mt-1 flex-shrink-0" />
+											<div class="min-w-0 flex-1">
+												<div class="font-medium text-sm truncate">{result.name}</div>
+												<div class="text-xs text-base-content/60 truncate">{result.display_name}</div>
+												{#if result.type}
+													<div class="text-xs text-pink-500/70 capitalize">{result.type}</div>
+												{/if}
+											</div>
+										</div>
+									</button>
+								{/each}
+							{/if}
+							{#if startUnifiedResults.addresses.length > 0}
+								<div class="text-xs font-semibold text-base-content/50 px-2 pt-1 flex items-center gap-1">
+									<MapIcon class="w-3 h-3" />
+									{$t('adventures.addresses')}
+								</div>
+								{#each startUnifiedResults.addresses as result}
+									<button
+										class="w-full text-left p-3 rounded-lg border border-base-300 hover:bg-base-100 hover:border-success/50 transition-colors"
+										on:click={() => selectStartSearchResult(unifiedToGeoSelection(result))}
+									>
+										<div class="flex items-start gap-3">
+											<MapIcon class="w-4 h-4 text-success mt-1 flex-shrink-0" />
+											<div class="min-w-0 flex-1">
+												<div class="font-medium text-sm truncate">{result.name}</div>
+												<div class="text-xs text-base-content/60 truncate">{result.display_name}</div>
+												{#if result.category}
+													<div class="text-xs text-success/70 capitalize">{result.category}</div>
+												{/if}
+											</div>
+										</div>
+									</button>
+								{/each}
+							{/if}
+						{:else}
+							<!-- Non-grouped results (original behavior) -->
+							{#each startSearchResults as result}
+								<button
+									class="w-full text-left p-3 rounded-lg border border-base-300 hover:bg-base-100 hover:border-success/50 transition-colors"
+									on:click={() => selectStartSearchResult(result)}
+								>
+									<div class="flex items-start gap-3">
+										<PinIcon class="w-4 h-4 text-success mt-1 flex-shrink-0" />
+										<div class="min-w-0 flex-1">
+											<div class="font-medium text-sm truncate">{result.name}</div>
+											<div class="text-xs text-base-content/60 truncate">{result.location}</div>
+											{#if result.category}
+												<div class="text-xs text-success/70 capitalize">{result.category}</div>
+											{/if}
+										</div>
+									</div>
+								</button>
+							{/each}
+						{/if}
 					</div>
 				</div>
 			{/if}
@@ -955,23 +1141,97 @@
 			{:else if endSearchResults.length > 0}
 				<div class="space-y-2">
 					<div class="max-h-48 overflow-y-auto space-y-1">
-						{#each endSearchResults as result}
-							<button
-								class="w-full text-left p-3 rounded-lg border border-base-300 hover:bg-base-100 hover:border-error/50 transition-colors"
-								on:click={() => selectEndSearchResult(result)}
-							>
-								<div class="flex items-start gap-3">
-									<PinIcon class="w-4 h-4 text-error mt-1 flex-shrink-0" />
-									<div class="min-w-0 flex-1">
-										<div class="font-medium text-sm truncate">{result.name}</div>
-										<div class="text-xs text-base-content/60 truncate">{result.location}</div>
-										{#if result.category}
-											<div class="text-xs text-error/70 capitalize">{result.category}</div>
-										{/if}
-									</div>
+						{#if unifiedSearch && (endUnifiedResults.locations.length > 0 || endUnifiedResults.lodging.length > 0 || endUnifiedResults.addresses.length > 0)}
+							<!-- Grouped results for unified search -->
+							{#if endUnifiedResults.locations.length > 0}
+								<div class="text-xs font-semibold text-base-content/50 px-2 pt-1 flex items-center gap-1">
+									<PinIcon class="w-3 h-3" />
+									{$t('navbar.locations')}
 								</div>
-							</button>
-						{/each}
+								{#each endUnifiedResults.locations as result}
+									<button
+										class="w-full text-left p-3 rounded-lg border border-base-300 hover:bg-base-100 hover:border-primary/50 transition-colors"
+										on:click={() => selectEndSearchResult(unifiedToGeoSelection(result))}
+									>
+										<div class="flex items-start gap-3">
+											<PinIcon class="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+											<div class="min-w-0 flex-1">
+												<div class="font-medium text-sm truncate">{result.name}</div>
+												<div class="text-xs text-base-content/60 truncate">{result.display_name}</div>
+												{#if result.category}
+													<div class="text-xs text-primary/70 capitalize">{result.category}</div>
+												{/if}
+											</div>
+										</div>
+									</button>
+								{/each}
+							{/if}
+							{#if endUnifiedResults.lodging.length > 0}
+								<div class="text-xs font-semibold text-base-content/50 px-2 pt-1 flex items-center gap-1">
+									<BedIcon class="w-3 h-3" />
+									{$t('navbar.lodging')}
+								</div>
+								{#each endUnifiedResults.lodging as result}
+									<button
+										class="w-full text-left p-3 rounded-lg border border-base-300 hover:bg-base-100 hover:border-pink-500/50 transition-colors"
+										on:click={() => selectEndSearchResult(unifiedToGeoSelection(result))}
+									>
+										<div class="flex items-start gap-3">
+											<BedIcon class="w-4 h-4 text-pink-500 mt-1 flex-shrink-0" />
+											<div class="min-w-0 flex-1">
+												<div class="font-medium text-sm truncate">{result.name}</div>
+												<div class="text-xs text-base-content/60 truncate">{result.display_name}</div>
+												{#if result.type}
+													<div class="text-xs text-pink-500/70 capitalize">{result.type}</div>
+												{/if}
+											</div>
+										</div>
+									</button>
+								{/each}
+							{/if}
+							{#if endUnifiedResults.addresses.length > 0}
+								<div class="text-xs font-semibold text-base-content/50 px-2 pt-1 flex items-center gap-1">
+									<MapIcon class="w-3 h-3" />
+									{$t('adventures.addresses')}
+								</div>
+								{#each endUnifiedResults.addresses as result}
+									<button
+										class="w-full text-left p-3 rounded-lg border border-base-300 hover:bg-base-100 hover:border-error/50 transition-colors"
+										on:click={() => selectEndSearchResult(unifiedToGeoSelection(result))}
+									>
+										<div class="flex items-start gap-3">
+											<MapIcon class="w-4 h-4 text-error mt-1 flex-shrink-0" />
+											<div class="min-w-0 flex-1">
+												<div class="font-medium text-sm truncate">{result.name}</div>
+												<div class="text-xs text-base-content/60 truncate">{result.display_name}</div>
+												{#if result.category}
+													<div class="text-xs text-error/70 capitalize">{result.category}</div>
+												{/if}
+											</div>
+										</div>
+									</button>
+								{/each}
+							{/if}
+						{:else}
+							<!-- Non-grouped results (original behavior) -->
+							{#each endSearchResults as result}
+								<button
+									class="w-full text-left p-3 rounded-lg border border-base-300 hover:bg-base-100 hover:border-error/50 transition-colors"
+									on:click={() => selectEndSearchResult(result)}
+								>
+									<div class="flex items-start gap-3">
+										<PinIcon class="w-4 h-4 text-error mt-1 flex-shrink-0" />
+										<div class="min-w-0 flex-1">
+											<div class="font-medium text-sm truncate">{result.name}</div>
+											<div class="text-xs text-base-content/60 truncate">{result.location}</div>
+											{#if result.category}
+												<div class="text-xs text-error/70 capitalize">{result.category}</div>
+											{/if}
+										</div>
+									</div>
+								</button>
+							{/each}
+						{/if}
 					</div>
 				</div>
 			{/if}
