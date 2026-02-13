@@ -13,9 +13,10 @@
 		let categoryFetch = await fetch('/api/categories');
 		let categoryData = await categoryFetch.json();
 		adventure_types = categoryData;
-		console.log(categoryData);
-		types_arr = types.split(',');
+		types_arr = types ? types.split(',').filter((t) => t !== '') : [];
 	});
+
+	$: types_arr = types ? types.split(',').filter((t) => t !== '') : [];
 
 	function clearTypes() {
 		types = '';
@@ -27,48 +28,34 @@
 		if (types_arr.indexOf(type) > -1) {
 			types_arr = types_arr.filter((item) => item !== type);
 		} else {
-			types_arr.push(type);
+			types_arr = [...types_arr, type];
 		}
 		types_arr = types_arr.filter((item) => item !== '');
-		// turn types_arr into a comma seperated list with no spaces
 		types = types_arr.join(',');
 		dispatch('change', types);
-
-		console.log(types);
-		console.log(types_arr);
 	}
 </script>
 
-<div class="collapse collapse-plus mb-4">
-	<input type="checkbox" />
-
-	<div class="collapse-title text-xl bg-base-300 font-medium">
-		{$t('adventures.category_filter')}
-	</div>
-
-	<div class="collapse-content bg-base-300">
-		<button class="btn btn-sm btn-neutral-300 w-full mb-2" on:click={clearTypes}>
+<div class="space-y-2">
+	{#each adventure_types as type}
+		<label class="label cursor-pointer justify-start gap-3 py-1">
+			<input
+				type="checkbox"
+				class="checkbox checkbox-primary checkbox-sm"
+				value={type.name}
+				on:change={() => toggleSelect(type.name)}
+				checked={types_arr.includes(type.name)}
+			/>
+			<span class="label-text flex items-center gap-1.5">
+				<span class="text-base">{type.icon}</span>
+				{type.display_name}
+				<span class="text-xs opacity-60">({type.num_locations})</span>
+			</span>
+		</label>
+	{/each}
+	{#if types_arr.length > 0}
+		<button class="btn btn-ghost btn-xs mt-2" on:click={clearTypes}>
 			{$t('adventures.clear')}
 		</button>
-
-		<ul>
-			{#each adventure_types as type}
-				<li class="mb-1">
-					<label class="cursor-pointer flex items-center gap-2">
-						<input
-							type="checkbox"
-							class="checkbox"
-							value={type.name}
-							on:change={() => toggleSelect(type.name)}
-							checked={types.indexOf(type.name) > -1}
-						/>
-						<span>
-							{type.display_name}
-							{type.icon} ({type.num_locations})
-						</span>
-					</label>
-				</li>
-			{/each}
-		</ul>
-	</div>
+	{/if}
 </div>

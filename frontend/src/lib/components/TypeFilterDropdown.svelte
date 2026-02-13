@@ -27,41 +27,27 @@
 		types = types_arr.join(',');
 		dispatch('change', types);
 	}
-
-	function getCount(typeValue: string): number {
-		return typeOptions.find((t) => t.value === typeValue) ? 1 : 0;
-	}
 </script>
 
-<div class="collapse collapse-plus mb-4">
-	<input type="checkbox" checked />
-
-	<div class="collapse-title text-xl bg-base-300 font-medium">
-		{$t('adventures.filter_by_type') || 'Filter by Type'}
-	</div>
-
-	<div class="collapse-content bg-base-300">
-		<button class="btn btn-sm btn-neutral-300 w-full mb-2" on:click={clearTypes}>
+<div class="space-y-2">
+	{#each typeOptions as type}
+		<label class="label cursor-pointer justify-start gap-3 py-1">
+			<input
+				type="checkbox"
+				class="checkbox checkbox-primary checkbox-sm"
+				value={type.value}
+				on:change={() => toggleSelect(type.value)}
+				checked={types_arr.includes(type.value)}
+			/>
+			<span class="label-text flex items-center gap-1.5">
+				<span class="text-base">{type.icon}</span>
+				{type.label}
+			</span>
+		</label>
+	{/each}
+	{#if types_arr.length > 0}
+		<button class="btn btn-ghost btn-xs mt-2" on:click={clearTypes}>
 			{$t('adventures.clear')}
 		</button>
-
-		<ul>
-			{#each typeOptions as type}
-				<li class="mb-1">
-					<label class="cursor-pointer flex items-center gap-2">
-						<input
-							type="checkbox"
-							class="checkbox"
-							value={type.value}
-							on:change={() => toggleSelect(type.value)}
-							checked={types_arr.includes(type.value)}
-						/>
-						<span>
-							{type.icon} {type.label}
-						</span>
-					</label>
-				</li>
-			{/each}
-		</ul>
-	</div>
+	{/if}
 </div>

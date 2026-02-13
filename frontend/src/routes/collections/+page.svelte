@@ -22,6 +22,7 @@
 	import CheckIcon from '~icons/mdi/check';
 	import CloseIcon from '~icons/mdi/close';
 	import FileDocumentPlus from '~icons/mdi/file-document-plus';
+	import TagIcon from '~icons/mdi/tag';
 	import GlobeIcon from '~icons/mdi/earth';
 	import { addToast } from '$lib/toasts';
 	import DeleteWarning from '$lib/components/DeleteWarning.svelte';
@@ -887,11 +888,17 @@
 
 						<!-- Adventure Type Filter -->
 						{#if adventureTypeOptions.length > 0}
-							<TypeFilterDropdown
-								bind:types={adventureTypeString}
-								typeOptions={adventureTypeOptions}
-								on:change={(e) => updateAdventureTypeFilter(e.detail)}
-							/>
+							<div class="card bg-base-200/50 p-4">
+								<h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+									<TagIcon class="w-5 h-5" />
+									{$t('collection.adventure_type') ?? 'Type'}
+								</h3>
+								<TypeFilterDropdown
+									bind:types={adventureTypeString}
+									typeOptions={adventureTypeOptions}
+									on:change={(e) => updateAdventureTypeFilter(e.detail)}
+								/>
+							</div>
 						{/if}
 
 						<!-- Sort Form - Updated to use URL navigation -->
