@@ -388,5 +388,27 @@ DJANGO_MCP_AUTHENTICATION_CLASSES = [
 # MCP Server configuration
 DJANGO_MCP_GLOBAL_SERVER_CONFIG = {
     'name': 'AdventureLog',
-    'instructions': 'AdventureLog travel planning assistant. Use tools to search locations, create visits, and manage trip collections.',
+    'instructions': (
+        'AdventureLog travel planning assistant. '
+        'Available tools:\n'
+        '- search_items: Search locations, transportations, or lodging by text\n'
+        '- get_item: Get full details of a location, transportation, or lodging\n'
+        '- list_items: List your items by type (location/transportation/lodging)\n'
+        '- create_location: Create a new location with coordinates and tags\n'
+        '- create_transportation: Create a transportation (car/plane/train/bus/boat/bike/walking/cab/vtc/other)\n'
+        '- create_lodging: Create a lodging (hotel/hostel/resort/bnb/campground/cabin/apartment/house/villa/motel/other)\n'
+        '- edit_location: Edit an existing location\n'
+        '- edit_transportation: Edit an existing transportation\n'
+        '- edit_lodging: Edit an existing lodging\n'
+        '- create_visit: Record a visit with dates, rating, price, and people count\n'
+        '- edit_visit: Edit a visit (dates, notes, rating, price)\n'
+        '- delete_visit: Delete a visit\n'
+        '- list_visits: List visits, optionally filtered by parent item\n'
+        '- create_collection: Create a trip collection with optional date range\n'
+        '- edit_collection: Edit a collection\n'
+        '- list_collections: List trip collections by status (all/upcoming/in_progress/completed/folder)\n'
+        '- add_to_collection: Add a location, transportation, or lodging to a collection\n'
+        '- reverse_geocode: Get address details from latitude/longitude coordinates\n'
+        '- list_reference_types: List all available types (transportation, lodging, adventure, activity)'
+    ),
 }
