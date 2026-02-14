@@ -1,7 +1,7 @@
 from django.urls import include, re_path, path
 from django.contrib import admin
 from django.views.generic import RedirectView, TemplateView
-from users.views import IsRegistrationDisabled, PublicUserListView, PublicUserDetailView, UserMetadataView, UpdateUserMetadataView, EnabledSocialProvidersView, DisablePasswordAuthenticationView
+from users.views import IsRegistrationDisabled, PublicUserListView, PublicUserDetailView, UserMetadataView, UpdateUserMetadataView, EnabledSocialProvidersView, DisablePasswordAuthenticationView, APITokenView
 from .views import get_csrf_token, get_public_url, serve_protected_media
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -15,6 +15,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('api/', include('adventures.urls')),
     path('api/', include('worldtravel.urls')),
+    path('api/', include('mcp_server.urls')),  # MCP Server endpoint for AI Agents (endpoint at /api/mcp)
     path("auth/", include("allauth.headless.urls")),
 
     # Serve protected media files
@@ -30,6 +31,8 @@ urlpatterns = [
     path('auth/social-providers/', EnabledSocialProvidersView.as_view(), name='enabled-social-providers'),
 
     path('auth/disable-password/', DisablePasswordAuthenticationView.as_view(), name='disable-password-authentication'),
+
+    path('auth/api-token/', APITokenView.as_view(), name='api-token'),  # MCP token management
 
     path('csrf/', get_csrf_token, name='get_csrf_token'),
     path('public-url/', get_public_url, name='get_public_url'),

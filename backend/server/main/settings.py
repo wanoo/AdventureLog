@@ -73,6 +73,7 @@ INSTALLED_APPS = (
     # 'achievements', # Not done yet, will be added later in a future update
     'widget_tweaks',
     'slippers',
+    'mcp_server',  # MCP Server for AI Agent integration
 
 )
 
@@ -374,3 +375,18 @@ COUNTRY_REGION_JSON_VERSION = 'v3.0'
 GOOGLE_MAPS_API_KEY = getenv('GOOGLE_MAPS_API_KEY', '')
 STRAVA_CLIENT_ID = getenv('STRAVA_CLIENT_ID', '')
 STRAVA_CLIENT_SECRET = getenv('STRAVA_CLIENT_SECRET', '')
+
+# ---------------------------------------------------------------------------
+# MCP Server Configuration (Model Context Protocol for AI Agents)
+# ---------------------------------------------------------------------------
+# Authentication classes for MCP endpoint - uses Token auth for remote access
+DJANGO_MCP_AUTHENTICATION_CLASSES = [
+    'rest_framework.authentication.TokenAuthentication',
+    'rest_framework.authentication.SessionAuthentication',
+]
+
+# MCP Server configuration
+DJANGO_MCP_GLOBAL_SERVER_CONFIG = {
+    'name': 'AdventureLog',
+    'instructions': 'AdventureLog travel planning assistant. Use tools to search locations, create visits, and manage trip collections.',
+}
