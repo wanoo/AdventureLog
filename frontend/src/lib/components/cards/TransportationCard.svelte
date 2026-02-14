@@ -371,7 +371,7 @@
 			class:text-xs={compact}
 			class:text-sm={!compact}
 		>
-			<AvgPriceBadge avgPricePerUser={transportation.average_price_per_user} countryCurrency={transportation.origin_country?.currency_code || null} />
+			<AvgPriceBadge avgPricePerUser={transportation.average_price_per_user} countryCurrency={transportation.origin_country?.currency_code || null} userCurrency={user?.default_currency || null} />
 
 			{#if transportation.distance && !isNaN(+transportation.distance)}
 				<span class="badge badge-ghost badge-sm">

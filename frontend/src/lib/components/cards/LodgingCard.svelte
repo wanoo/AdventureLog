@@ -336,7 +336,7 @@
 				{/if}
 			{/if}
 
-			<AvgPriceBadge avgPricePerUserPerNight={lodging.average_price_per_user_per_night} countryCurrency={lodging.country?.currency_code || null} />
+			<AvgPriceBadge avgPricePerUserPerNight={lodging.average_price_per_user_per_night} countryCurrency={lodging.country?.currency_code || null} userCurrency={user?.default_currency || null} />
 		</div>
 
 		<!-- Tags -->

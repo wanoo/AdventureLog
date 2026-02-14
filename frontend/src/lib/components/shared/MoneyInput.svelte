@@ -25,23 +25,24 @@
 	function updateAmount(event: Event) {
 		const target = event.target as HTMLInputElement;
 		const amount = target.value === '' ? null : Number(target.value);
-		const next: MoneyValue = {
+		value = {
 			amount: Number.isNaN(amount) ? null : amount,
 			currency: value.currency
 		};
-		dispatch('change', next);
+		dispatch('change', value);
 	}
 
 	function updateCurrency(event: CustomEvent<string | null>) {
-		const next: MoneyValue = {
+		value = {
 			amount: value.amount,
 			currency: event.detail || null
 		};
-		dispatch('change', next);
+		dispatch('change', value);
 	}
 
 	function clearValue() {
-		dispatch('change', { amount: null, currency: null });
+		value = { amount: null, currency: null };
+		dispatch('change', value);
 	}
 </script>
 

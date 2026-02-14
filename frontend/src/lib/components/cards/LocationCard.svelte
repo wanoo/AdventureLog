@@ -392,7 +392,7 @@
 				ratingCount={adventure.rating_count}
 			/>
 
-			<AvgPriceBadge avgPricePerUser={adventure.average_price_per_user} countryCurrency={adventure.country?.currency_code || null} />
+			<AvgPriceBadge avgPricePerUser={adventure.average_price_per_user} countryCurrency={adventure.country?.currency_code || null} userCurrency={user?.default_currency || null} />
 
 			<VisitCountBadge visitCount={visitSummary.visitCount} />
 		</div>
