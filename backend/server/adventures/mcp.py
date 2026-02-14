@@ -82,13 +82,15 @@ class AdventureLogTools(MCPToolset):
         limit = min(limit, 50)
         results = []
 
+        accessible = Q(user=user) | Q(is_public=True) | Q(collections__shared_with=user)
+
         if item_type in ("all", "location"):
             locations = Location.objects.annotate(
                 search=SearchVector('name', 'description', 'location')
             ).filter(
                 search=SearchQuery(query),
             ).filter(
-                Q(user=user) | Q(is_public=True)
+                accessible
             ).distinct()[:limit]
 
             for loc in locations:
@@ -110,7 +112,7 @@ class AdventureLogTools(MCPToolset):
             ).filter(
                 search=SearchQuery(query),
             ).filter(
-                Q(user=user) | Q(is_public=True)
+                accessible
             ).distinct()[:limit]
 
             for t in transportations:
@@ -132,7 +134,7 @@ class AdventureLogTools(MCPToolset):
             ).filter(
                 search=SearchQuery(query),
             ).filter(
-                Q(user=user) | Q(is_public=True)
+                accessible
             ).distinct()[:limit]
 
             for l in lodgings:
@@ -221,9 +223,11 @@ class AdventureLogTools(MCPToolset):
         limit = min(limit, 50)
         results = []
 
+        accessible = Q(user=user) | Q(is_public=True) | Q(collections__shared_with=user)
+
         if item_type == "location":
             items = Location.objects.filter(
-                Q(user=user) | Q(is_public=True)
+                accessible
             ).distinct().order_by('-updated_at')[:limit]
             for item in items:
                 results.append({
@@ -238,7 +242,7 @@ class AdventureLogTools(MCPToolset):
 
         elif item_type == "transportation":
             items = Transportation.objects.filter(
-                Q(user=user) | Q(is_public=True)
+                accessible
             ).distinct().order_by('-updated_at')[:limit]
             for item in items:
                 results.append({
@@ -255,7 +259,7 @@ class AdventureLogTools(MCPToolset):
 
         elif item_type == "lodging":
             items = Lodging.objects.filter(
-                Q(user=user) | Q(is_public=True)
+                accessible
             ).distinct().order_by('-updated_at')[:limit]
             for item in items:
                 results.append({
