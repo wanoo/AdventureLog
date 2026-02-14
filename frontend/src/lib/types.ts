@@ -61,6 +61,15 @@ export type DerivedPrice = {
 	visit_count: number;
 };
 
+// Price tier based on local (country) comparison
+export type PriceTier = {
+	tier: 1 | 2 | 3 | 4; // 1=budget, 2=moderate, 3=expensive, 4=premium
+	country_code: string;
+	country_name: string;
+	sample_size: number;
+	percentile: number;
+} | null;
+
 export type Location = {
 	id: string;
 	name: string;
@@ -73,6 +82,7 @@ export type Location = {
 	price?: number | null;
 	price_currency?: string | null;
 	average_price_per_user?: DerivedPrice | null; // Computed from visits: SUM(price) / SUM(people)
+	price_tier?: PriceTier; // Local price tier (1-4) based on country comparison
 	link?: string | null;
 	images: ContentImage[];
 	visits: Visit[];
@@ -249,6 +259,7 @@ export type Transportation = {
 	price: number | null;
 	price_currency: string | null;
 	average_price_per_user?: DerivedPrice | null; // Computed from visits: SUM(price) / SUM(people)
+	price_tier?: PriceTier; // Local price tier (1-4) based on country comparison
 	link: string | null;
 	// Date fields removed - now handled by Visit
 	flight_number: string | null;
@@ -409,6 +420,7 @@ export type Lodging = {
 	price: number | null;
 	price_currency: string | null;
 	average_price_per_user_per_night?: DerivedPrice | null; // Computed from visits: SUM(price) / SUM(people * nights)
+	price_tier?: PriceTier; // Local price tier (1-4) based on country comparison
 	latitude: number | null;
 	longitude: number | null;
 	location: string | null;

@@ -20,7 +20,7 @@
 	import CollectionItineraryPlanner from '../collections/CollectionItineraryPlanner.svelte';
 	import CalendarRemove from '~icons/mdi/calendar-remove';
 	import Globe from '~icons/mdi/globe';
-	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge, AvgPriceBadge, CopyLinkButton, TagsDisplay, VisitCountBadge, getVisitSummary } from '../shared/cards';
+	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge, AvgPriceBadge, PriceTierBadge, CopyLinkButton, TagsDisplay, VisitCountBadge, getVisitSummary } from '../shared/cards';
 
 	export let type: string | null = null;
 	export let user: User | null;
@@ -392,7 +392,7 @@
 				ratingCount={adventure.rating_count}
 			/>
 
-			<AvgPriceBadge avgPricePerUser={adventure.average_price_per_user} countryCurrency={adventure.country?.currency_code || null} userCurrency={user?.default_currency || null} />
+			<PriceTierBadge priceTier={adventure.price_tier} />
 
 			<VisitCountBadge visitCount={visitSummary.visitCount} />
 		</div>

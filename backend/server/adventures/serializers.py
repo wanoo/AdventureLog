@@ -42,6 +42,108 @@ def _serialize_collaborator(user, owner_id=None, request_user=None):
     }
 
 
+def _calculate_price_tier(entity, entity_type='location'):
+    """
+    Calculate price tier (1-4) based on local comparison within same country.
+
+    💰      = budget-friendly (bottom 25%)
+    💰💰     = moderate (25-50%)
+    💰💰💰   = expensive (50-75%)
+    💰💰💰💰   = premium (top 25%)
+
+    Returns dict with tier and context, or None if insufficient data.
+    """
+    from django.db.models import Avg, F, FloatField
+    from django.db.models.functions import Cast
+
+    # Get the entity's average price per user
+    if entity_type == 'location':
+        country = entity.country
+        model_class = Location
+        visits_relation = 'visits'
+    elif entity_type == 'transportation':
+        country = entity.origin_country
+        model_class = Transportation
+        visits_relation = 'visits'
+    elif entity_type == 'lodging':
+        country = entity.country
+        model_class = Lodging
+        visits_relation = 'visits'
+    else:
+        return None
+
+    if not country:
+        return None
+
+    # Get this entity's average price per user
+    entity_visits = entity.visits.filter(
+        total_price__isnull=False,
+        number_of_people__isnull=False,
+        number_of_people__gt=0
+    )
+
+    if not entity_visits.exists():
+        return None
+
+    # Calculate this entity's price per user
+    total_price = sum(float(v.total_price.amount) for v in entity_visits)
+    total_people = sum(v.number_of_people for v in entity_visits)
+
+    if total_people == 0:
+        return None
+
+    entity_price = total_price / total_people
+
+    # Get all entities of same type in same country with pricing data
+    if entity_type == 'location':
+        same_country = model_class.objects.filter(country=country)
+    elif entity_type == 'transportation':
+        same_country = model_class.objects.filter(origin_country=country)
+    else:  # lodging
+        same_country = model_class.objects.filter(country=country)
+
+    # Calculate prices for all entities in same country
+    all_prices = []
+    for e in same_country.prefetch_related('visits'):
+        visits = e.visits.filter(
+            total_price__isnull=False,
+            number_of_people__isnull=False,
+            number_of_people__gt=0
+        )
+        if visits.exists():
+            t_price = sum(float(v.total_price.amount) for v in visits)
+            t_people = sum(v.number_of_people for v in visits)
+            if t_people > 0:
+                all_prices.append(t_price / t_people)
+
+    if len(all_prices) < 2:
+        # Not enough data for comparison, return tier based on absolute judgment
+        return None
+
+    # Calculate percentile rank
+    all_prices.sort()
+    rank = sum(1 for p in all_prices if p <= entity_price)
+    percentile = (rank / len(all_prices)) * 100
+
+    # Determine tier based on percentile
+    if percentile <= 25:
+        tier = 1  # 💰 budget
+    elif percentile <= 50:
+        tier = 2  # 💰💰 moderate
+    elif percentile <= 75:
+        tier = 3  # 💰💰💰 expensive
+    else:
+        tier = 4  # 💰💰💰💰 premium
+
+    return {
+        'tier': tier,
+        'country_code': country.country_code,
+        'country_name': country.name,
+        'sample_size': len(all_prices),
+        'percentile': round(percentile, 1)
+    }
+
+
 class TransportationTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TransportationType
@@ -425,6 +527,7 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
     rating_count = serializers.SerializerMethodField()
     # Derived price metrics computed from visits
     average_price_per_user = serializers.SerializerMethodField()
+    price_tier = serializers.SerializerMethodField()
     country = CountrySerializer(read_only=True)
     region = RegionSerializer(read_only=True)
     city = CitySerializer(read_only=True)
@@ -441,9 +544,9 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
             'id', 'name', 'description', 'rating', 'average_rating', 'rating_count', 'tags', 'location',
             'is_public', 'collections', 'created_at', 'updated_at', 'images', 'link', 'longitude',
             'latitude', 'visits', 'is_visited', 'is_owned', 'contributors', 'last_modified_by', 'category', 'attachments', 'user', 'city', 'country', 'region', 'trails',
-            'price', 'price_currency', 'average_price_per_user'
+            'price', 'price_currency', 'average_price_per_user', 'price_tier'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'is_owned', 'contributors', 'last_modified_by', 'average_rating', 'rating_count', 'average_price_per_user']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'is_owned', 'contributors', 'last_modified_by', 'average_rating', 'rating_count', 'average_price_per_user', 'price_tier']
 
     def get_rating_count(self, obj):
         """Return the count of visits with a rating."""
@@ -489,6 +592,10 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
             'currency': primary_currency,
             'visit_count': data['count']
         }
+
+    def get_price_tier(self, obj):
+        """Calculate local price tier (1-4) based on country comparison."""
+        return _calculate_price_tier(obj, entity_type='location')
 
     def get_is_owned(self, obj):
         request = self.context.get('request')
@@ -863,6 +970,7 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
     rating_count = serializers.SerializerMethodField()
     # Derived price metrics computed from visits
     average_price_per_user = serializers.SerializerMethodField()
+    price_tier = serializers.SerializerMethodField()
     collections = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Collection.objects.all(),
@@ -878,9 +986,9 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
             'is_public', 'collections', 'created_at', 'updated_at',
             'origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude',
             'origin_country', 'distance', 'images', 'attachments', 'start_code', 'end_code',
-            'travel_duration_minutes', 'visits', 'is_visited', 'average_price_per_user'
+            'travel_duration_minutes', 'visits', 'is_visited', 'average_price_per_user', 'price_tier'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'distance', 'travel_duration_minutes', 'is_visited', 'average_rating', 'rating_count', 'average_price_per_user', 'origin_country']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'distance', 'travel_duration_minutes', 'is_visited', 'average_rating', 'rating_count', 'average_price_per_user', 'price_tier', 'origin_country']
 
     def get_rating_count(self, obj):
         """Return the count of visits with a rating."""
@@ -926,6 +1034,10 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
             'currency': primary_currency,
             'visit_count': data['count']
         }
+
+    def get_price_tier(self, obj):
+        """Calculate local price tier (1-4) based on country comparison."""
+        return _calculate_price_tier(obj, entity_type='transportation')
 
     def get_images(self, obj):
         serializer = ContentImageSerializer(obj.images.filter(is_deleted=False), many=True, context=self.context)
@@ -1034,6 +1146,7 @@ class LodgingSerializer(VisitStatusMixin, CustomModelSerializer):
     rating_count = serializers.SerializerMethodField()
     # Derived price metrics computed from visits
     average_price_per_user_per_night = serializers.SerializerMethodField()
+    price_tier = serializers.SerializerMethodField()
     collections = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Collection.objects.all(),
@@ -1047,9 +1160,9 @@ class LodgingSerializer(VisitStatusMixin, CustomModelSerializer):
             'id', 'user', 'name', 'description', 'rating', 'average_rating', 'rating_count', 'link',
             'reservation_number', 'price', 'price_currency', 'latitude', 'longitude', 'location', 'country', 'tags', 'is_public',
             'collections', 'created_at', 'updated_at', 'type', 'images', 'attachments', 'visits', 'is_visited',
-            'average_price_per_user_per_night'
+            'average_price_per_user_per_night', 'price_tier'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'average_rating', 'rating_count', 'average_price_per_user_per_night', 'country']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'average_rating', 'rating_count', 'average_price_per_user_per_night', 'price_tier', 'country']
 
     def get_rating_count(self, obj):
         """Return the count of visits with a rating."""
@@ -1102,6 +1215,10 @@ class LodgingSerializer(VisitStatusMixin, CustomModelSerializer):
             'currency': primary_currency,
             'visit_count': data['count']
         }
+
+    def get_price_tier(self, obj):
+        """Calculate local price tier (1-4) based on country comparison."""
+        return _calculate_price_tier(obj, entity_type='lodging')
 
     def get_images(self, obj):
         serializer = ContentImageSerializer(obj.images.filter(is_deleted=False), many=True, context=self.context)
