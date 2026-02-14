@@ -538,4 +538,9 @@ class Command(BaseCommand):
             'STN': 22.50,
             'SHP': 0.79,
             'MRU': 39.50,
+            # Special/restricted currencies
+            'CUP': 24.00,     # Cuban Peso
+            'GIP': 0.79,      # Gibraltar Pound (pegged to GBP)
+            'KPW': 900.00,    # North Korean Won (official rate)
+            'SLE': 22.50,     # Sierra Leonean Leone (new)
         }
