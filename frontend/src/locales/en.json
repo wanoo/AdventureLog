@@ -783,7 +783,22 @@
 		"use_imperial": "Use Imperial Units",
 		"use_imperial_desc": "Use imperial units (feet, inches, pounds) instead of metric units",
 		"trails": "Trails",
-		"activities": "Activities"
+		"activities": "Activities",
+		"mcp_title": "AI Assistant (MCP)",
+		"mcp_desc": "Connect Claude or other AI assistants to manage your adventures",
+		"mcp_endpoint": "MCP Endpoint",
+		"api_token": "API Token",
+		"no_mcp_token": "No API token exists. Create one to connect AI assistants.",
+		"mcp_help": "Use this token to connect Claude Desktop or Claude Code to AdventureLog.",
+		"mcp_instructions": "Add the MCP endpoint URL and use the token for authentication.",
+		"mcp_token_created": "API token created",
+		"mcp_token_deleted": "API token deleted",
+		"mcp_token_error": "Failed to manage API token",
+		"copied_to_clipboard": "Copied to clipboard",
+		"token_created": "Created",
+		"regenerate_token": "Regenerate Token",
+		"revoke_token": "Revoke Token",
+		"create_token": "Create API Token"
 	},
 	"collection": {
 		"collection_created": "Collection created successfully!",
