@@ -17,6 +17,10 @@ Provides AI agents with tools to interact with AdventureLog:
 - list_collections: List user's trip collections
 - add_to_collection: Add an item to a collection
 - reverse_geocode: Get address info from coordinates
+- edit_visit: Edit an existing visit
+- delete_visit: Delete a visit
+- list_visits: List user's visits
+- list_reference_types: List all available types (transportation, lodging, adventure, activity)
 """
 
 from typing import Optional
@@ -930,3 +934,175 @@ class AdventureLogTools(MCPToolset):
         user = self.request.user
         result = do_reverse_geocode(latitude, longitude, user)
         return result
+
+    def edit_visit(
+        self,
+        visit_id: str,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        notes: Optional[str] = None,
+        rating: Optional[float] = None
+    ) -> dict:
+        """
+        Edit an existing visit. Only the creator can edit.
+
+        Args:
+            visit_id: UUID of the visit to edit (required)
+            start_date: New start date in ISO format (YYYY-MM-DDTHH:MM:SS)
+            end_date: New end date in ISO format (YYYY-MM-DDTHH:MM:SS)
+            notes: New notes
+            rating: New rating from 0-5
+
+        Returns:
+            The updated visit details
+        """
+        from adventures.models import Visit
+        from adventures.serializers import VisitSerializer
+        from django.utils.dateparse import parse_datetime
+
+        user = self.request.user
+
+        try:
+            visit = Visit.objects.get(id=visit_id, user=user)
+        except Visit.DoesNotExist:
+            return {"error": f"Visit {visit_id} not found or you don't have permission to edit it"}
+
+        if rating is not None and (rating < 0 or rating > 5):
+            return {"error": "Rating must be between 0 and 5"}
+
+        if start_date is not None:
+            parsed = parse_datetime(start_date)
+            if not parsed:
+                return {"error": f"Invalid start_date format: {start_date}. Use YYYY-MM-DDTHH:MM:SS."}
+            visit.start_date = parsed
+
+        if end_date is not None:
+            parsed = parse_datetime(end_date)
+            if not parsed:
+                return {"error": f"Invalid end_date format: {end_date}. Use YYYY-MM-DDTHH:MM:SS."}
+            visit.end_date = parsed
+
+        if notes is not None:
+            visit.notes = notes
+        if rating is not None:
+            visit.rating = rating
+        visit.save()
+
+        serializer = VisitSerializer(visit, context={'request': self.request})
+        return {
+            "success": True,
+            "message": f"Updated visit {visit_id}",
+            "visit": serializer.data
+        }
+
+    def delete_visit(self, visit_id: str) -> dict:
+        """
+        Delete a visit. Only the creator can delete.
+
+        Args:
+            visit_id: UUID of the visit to delete (required)
+
+        Returns:
+            Success message or error
+        """
+        from adventures.models import Visit
+
+        user = self.request.user
+
+        try:
+            visit = Visit.objects.get(id=visit_id, user=user)
+        except Visit.DoesNotExist:
+            return {"error": f"Visit {visit_id} not found or you don't have permission to delete it"}
+
+        visit.delete()
+        return {"success": True, "message": f"Deleted visit {visit_id}"}
+
+    def list_visits(
+        self,
+        item_type: Optional[str] = None,
+        item_id: Optional[str] = None,
+        limit: int = 20
+    ) -> list:
+        """
+        List user's visits, optionally filtered by parent item.
+
+        Args:
+            item_type: Filter by parent type. Options: "location", "transportation", "lodging" (optional)
+            item_id: Filter by parent item UUID (requires item_type)
+            limit: Maximum number of results to return (default 20, max 50)
+
+        Returns:
+            List of visits with basic info ordered by most recent first
+        """
+        from adventures.models import Visit
+
+        user = self.request.user
+        limit = min(limit, 50)
+
+        queryset = Visit.objects.filter(user=user)
+
+        if item_type and item_id:
+            if item_type == "location":
+                queryset = queryset.filter(location_id=item_id)
+            elif item_type == "transportation":
+                queryset = queryset.filter(transportation_id=item_id)
+            elif item_type == "lodging":
+                queryset = queryset.filter(lodging_id=item_id)
+            else:
+                return [{"error": f"Invalid item_type: {item_type}"}]
+
+        visits = queryset.order_by('-start_date', '-created_at')[:limit]
+
+        results = []
+        for v in visits:
+            parent_name = None
+            parent_type = None
+            if v.location:
+                parent_name = v.location.name
+                parent_type = "location"
+            elif v.transportation:
+                parent_name = v.transportation.name
+                parent_type = "transportation"
+            elif v.lodging:
+                parent_name = v.lodging.name
+                parent_type = "lodging"
+
+            results.append({
+                "id": str(v.id),
+                "parent_type": parent_type,
+                "parent_name": parent_name,
+                "start_date": v.start_date.isoformat() if v.start_date else None,
+                "end_date": v.end_date.isoformat() if v.end_date else None,
+                "notes": (v.notes or "")[:200],
+                "rating": v.rating,
+            })
+
+        return results
+
+    def list_reference_types(self) -> dict:
+        """
+        List all available reference types (transportation types, lodging types, adventure types, activity types).
+
+        Returns:
+            Dictionary with transportation_types, lodging_types, adventure_types, and activity_types
+        """
+        from adventures.models import TRANSPORTATION_TYPES, LODGING_TYPES, AdventureType, ActivityType
+
+        adventure_types = list(
+            AdventureType.objects.filter(is_active=True)
+            .order_by('display_order', 'name')
+            .values('key', 'name', 'icon')
+        )
+
+        activity_types = list(
+            ActivityType.objects.filter(is_active=True)
+            .order_by('display_order', 'name')
+            .values('key', 'name', 'icon', 'color')
+        )
+
+        return {
+            "transportation_types": [{"key": k, "label": v} for k, v in TRANSPORTATION_TYPES],
+            "lodging_types": [{"key": k, "label": v} for k, v in LODGING_TYPES],
+            "adventure_types": adventure_types,
+            "activity_types": activity_types,
+        }
