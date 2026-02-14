@@ -25,7 +25,7 @@ def background_geocode_and_assign(location_id: str):
         location = Location.objects.get(id=location_id)
         if not (location.latitude and location.longitude):
             return
-        
+
         from adventures.geocoding import reverse_geocode  # or wherever you defined it
         is_visited = location.is_visited_status()
         result = reverse_geocode(location.latitude, location.longitude, location.user)
@@ -56,6 +56,67 @@ def background_geocode_and_assign(location_id: str):
     except Exception as e:
         # Optional: log or print the error
         print(f"[Location Geocode Thread] Error processing {location_id}: {e}")
+
+
+def background_geocode_lodging(lodging_id: str):
+    """Geocode lodging to populate country, region, city fields"""
+    print(f"[Lodging Geocode Thread] Starting geocode for lodging {lodging_id}")
+    try:
+        lodging = Lodging.objects.get(id=lodging_id)
+        if not (lodging.latitude and lodging.longitude):
+            return
+
+        from adventures.geocoding import reverse_geocode
+        result = reverse_geocode(lodging.latitude, lodging.longitude, lodging.user)
+
+        if 'region_id' in result:
+            region = Region.objects.filter(id=result['region_id']).first()
+            if region:
+                lodging.region = region
+
+        if 'city_id' in result:
+            city = City.objects.filter(id=result['city_id']).first()
+            if city:
+                lodging.city = city
+
+        if 'country_id' in result:
+            country = Country.objects.filter(country_code=result['country_id']).first()
+            if country:
+                lodging.country = country
+
+        lodging.save(update_fields=["region", "city", "country"], _skip_geocode=True)
+
+    except Exception as e:
+        print(f"[Lodging Geocode Thread] Error processing {lodging_id}: {e}")
+
+
+def background_geocode_transportation(transportation_id: str):
+    """Geocode transportation to populate origin_country and destination_country fields"""
+    print(f"[Transportation Geocode Thread] Starting geocode for transportation {transportation_id}")
+    try:
+        transportation = Transportation.objects.get(id=transportation_id)
+        from adventures.geocoding import reverse_geocode
+
+        # Geocode origin
+        if transportation.origin_latitude and transportation.origin_longitude:
+            result = reverse_geocode(transportation.origin_latitude, transportation.origin_longitude, transportation.user)
+            if 'country_id' in result:
+                country = Country.objects.filter(country_code=result['country_id']).first()
+                if country:
+                    transportation.origin_country = country
+
+        # Geocode destination
+        if transportation.destination_latitude and transportation.destination_longitude:
+            result = reverse_geocode(transportation.destination_latitude, transportation.destination_longitude, transportation.user)
+            if 'country_id' in result:
+                country = Country.objects.filter(country_code=result['country_id']).first()
+                if country:
+                    transportation.destination_country = country
+
+        transportation.save(update_fields=["origin_country", "destination_country"], _skip_geocode=True)
+
+    except Exception as e:
+        print(f"[Transportation Geocode Thread] Error processing {transportation_id}: {e}")
 
 def validate_file_extension(value):
     import os
@@ -446,6 +507,8 @@ class Transportation(models.Model):
     origin_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     destination_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     destination_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    origin_country = models.ForeignKey(Country, on_delete=models.SET_NULL, blank=True, null=True, related_name='transportation_origins')
+    destination_country = models.ForeignKey(Country, on_delete=models.SET_NULL, blank=True, null=True, related_name='transportation_destinations')
     start_code = models.CharField(max_length=100, blank=True, null=True) # Could be airport code, station code, etc.
     end_code = models.CharField(max_length=100, blank=True, null=True)   # Could be airport code, station code, etc.
     to_location = models.CharField(max_length=200, blank=True, null=True)
@@ -458,6 +521,24 @@ class Transportation(models.Model):
     # Generic relations for images and attachments
     images = GenericRelation('ContentImage', related_query_name='transportation')
     attachments = GenericRelation('ContentAttachment', related_query_name='transportation')
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None, _skip_geocode=False):
+        if force_insert and force_update:
+            raise ValueError("Cannot force both insert and updating in model saving.")
+
+        result = super().save(force_insert, force_update, using, update_fields)
+
+        # Skip threading if called from geocode background thread
+        if _skip_geocode:
+            return result
+
+        # Trigger geocoding if origin or destination coordinates are set
+        if (self.origin_latitude and self.origin_longitude) or (self.destination_latitude and self.destination_longitude):
+            thread = threading.Thread(target=background_geocode_transportation, args=(str(self.id),))
+            thread.daemon = True
+            thread.start()
+
+        return result
 
     def delete(self, *args, **kwargs):
         # Delete all associated images and attachments
@@ -743,6 +824,9 @@ class Lodging(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     location = models.CharField(max_length=200, blank=True, null=True)
+    country = models.ForeignKey(Country, on_delete=models.SET_NULL, blank=True, null=True, related_name='lodgings')
+    region = models.ForeignKey(Region, on_delete=models.SET_NULL, blank=True, null=True, related_name='lodgings')
+    city = models.ForeignKey(City, on_delete=models.SET_NULL, blank=True, null=True, related_name='lodgings')
     tags = ArrayField(models.CharField(max_length=100), blank=True, null=True)
     is_public = models.BooleanField(default=False)
     collections = models.ManyToManyField('Collection', blank=True, related_name='lodgings')
@@ -752,6 +836,23 @@ class Lodging(models.Model):
     # Generic relations for images and attachments
     images = GenericRelation('ContentImage', related_query_name='lodging')
     attachments = GenericRelation('ContentAttachment', related_query_name='lodging')
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None, _skip_geocode=False):
+        if force_insert and force_update:
+            raise ValueError("Cannot force both insert and updating in model saving.")
+
+        result = super().save(force_insert, force_update, using, update_fields)
+
+        # Skip threading if called from geocode background thread
+        if _skip_geocode:
+            return result
+
+        if self.latitude and self.longitude:
+            thread = threading.Thread(target=background_geocode_lodging, args=(str(self.id),))
+            thread.daemon = True
+            thread.start()
+
+        return result
 
     def delete(self, *args, **kwargs):
         # Delete all associated images and attachments
@@ -763,7 +864,7 @@ class Lodging(models.Model):
 
     def __str__(self):
         return self.name
-    
+
 class Trail(models.Model):
     """
     Represents a trail associated with a user.

@@ -767,6 +767,7 @@ import { fetchExchangeRates, formatConvertedPrice, ratesLoaded } from '$lib/stor
 				{#if transportation.average_price_per_user}
 					{@const avgPrice = transportation.average_price_per_user}
 					{@const userCurrency = data.user?.default_currency || DEFAULT_CURRENCY}
+					{@const countryCurrency = transportation.origin_country?.currency_code}
 					<div class="card bg-base-200 shadow-xl">
 						<div class="card-body">
 							<h3 class="card-title text-lg mb-3">💰 {$t('adventures.avg_price')}</h3>
@@ -785,6 +786,16 @@ import { fetchExchangeRates, formatConvertedPrice, ratesLoaded } from '$lib/stor
 									{#if userConverted}
 										<div class="text-sm text-base-content/70">
 											{userConverted}
+										</div>
+									{/if}
+								{/if}
+
+								<!-- Converted price in origin country's currency -->
+								{#if $ratesLoaded && countryCurrency && avgPrice.currency !== countryCurrency && countryCurrency !== userCurrency}
+									{@const countryConverted = formatConvertedPrice(avgPrice.amount, avgPrice.currency, countryCurrency)}
+									{#if countryConverted}
+										<div class="text-sm text-base-content/70">
+											{countryConverted} ({transportation.origin_country?.name})
 										</div>
 									{/if}
 								{/if}

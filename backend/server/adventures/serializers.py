@@ -868,6 +868,7 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
         queryset=Collection.objects.all(),
         required=False
     )
+    origin_country = CountrySerializer(read_only=True)
 
     class Meta:
         model = Transportation
@@ -876,10 +877,10 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
             'link', 'flight_number', 'from_location', 'to_location', 'tags',
             'is_public', 'collections', 'created_at', 'updated_at',
             'origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude',
-            'distance', 'images', 'attachments', 'start_code', 'end_code',
+            'origin_country', 'distance', 'images', 'attachments', 'start_code', 'end_code',
             'travel_duration_minutes', 'visits', 'is_visited', 'average_price_per_user'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'distance', 'travel_duration_minutes', 'is_visited', 'average_rating', 'rating_count', 'average_price_per_user']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'distance', 'travel_duration_minutes', 'is_visited', 'average_rating', 'rating_count', 'average_price_per_user', 'origin_country']
 
     def get_rating_count(self, obj):
         """Return the count of visits with a rating."""
@@ -1038,16 +1039,17 @@ class LodgingSerializer(VisitStatusMixin, CustomModelSerializer):
         queryset=Collection.objects.all(),
         required=False
     )
+    country = CountrySerializer(read_only=True)
 
     class Meta:
         model = Lodging
         fields = [
             'id', 'user', 'name', 'description', 'rating', 'average_rating', 'rating_count', 'link',
-            'reservation_number', 'price', 'price_currency', 'latitude', 'longitude', 'location', 'tags', 'is_public',
+            'reservation_number', 'price', 'price_currency', 'latitude', 'longitude', 'location', 'country', 'tags', 'is_public',
             'collections', 'created_at', 'updated_at', 'type', 'images', 'attachments', 'visits', 'is_visited',
             'average_price_per_user_per_night'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'average_rating', 'rating_count', 'average_price_per_user_per_night']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'average_rating', 'rating_count', 'average_price_per_user_per_night', 'country']
 
     def get_rating_count(self, obj):
         """Return the count of visits with a rating."""
