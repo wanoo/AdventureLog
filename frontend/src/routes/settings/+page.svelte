@@ -416,7 +416,7 @@
 		mcpTokenLoading = true;
 		mcpTokenError = null;
 		try {
-			const res = await fetch('/auth/api-token/');
+			const res = await fetch('/api/user/api-token/');
 			if (res.ok) {
 				mcpToken = await res.json();
 			} else if (res.status === 404) {
@@ -434,7 +434,7 @@
 		mcpTokenLoading = true;
 		mcpTokenError = null;
 		try {
-			const res = await fetch('/auth/api-token/', { method: 'POST' });
+			const res = await fetch('/api/user/api-token/', { method: 'POST' });
 			if (res.ok) {
 				mcpToken = await res.json();
 				addToast('success', $t('settings.mcp_token_created') || 'API token created');
@@ -453,7 +453,7 @@
 		mcpTokenLoading = true;
 		mcpTokenError = null;
 		try {
-			const res = await fetch('/auth/api-token/', { method: 'DELETE' });
+			const res = await fetch('/api/user/api-token/', { method: 'DELETE' });
 			if (res.ok) {
 				mcpToken = null;
 				addToast('success', $t('settings.mcp_token_deleted') || 'API token deleted');

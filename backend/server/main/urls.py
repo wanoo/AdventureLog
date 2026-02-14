@@ -25,10 +25,12 @@ urlpatterns = [
     path('auth/user-metadata/', UserMetadataView.as_view(), name='user-metadata'),
     path('auth/social-providers/', EnabledSocialProvidersView.as_view(), name='enabled-social-providers'),
     path('auth/disable-password/', DisablePasswordAuthenticationView.as_view(), name='disable-password-authentication'),
-    path('auth/api-token/', APITokenView.as_view(), name='api-token'),  # MCP token management
 
     # Allauth headless URLs (catch-all for auth/ - must come after specific auth endpoints)
     path("auth/", include("allauth.headless.urls")),
+
+    # MCP token management (under /api/ to avoid auth conflicts)
+    path('api/user/api-token/', APITokenView.as_view(), name='api-token'),
 
     # Serve protected media files
     re_path(r'^media/(?P<path>.*)$', serve_protected_media, name='serve-protected-media'),
