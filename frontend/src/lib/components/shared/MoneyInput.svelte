@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { MoneyValue } from '$lib/types';
-	import { CURRENCY_OPTIONS } from '$lib/money';
 	import { createEventDispatcher } from 'svelte';
 	import CurrencyDropdown from './CurrencyDropdown.svelte';
 
@@ -15,7 +14,7 @@
 
 	export let label: string | undefined = undefined;
 	export let value: MoneyValue;
-	export let currencyOptions: string[] = CURRENCY_OPTIONS;
+	export let currencyOptions: string[] | undefined = undefined; // Use API currencies by default
 	export let placeholder = '0.00';
 	export let min: number | undefined = 0;
 	export let step: number | undefined = 0.01;
@@ -66,7 +65,7 @@
 		<CurrencyDropdown
 			id={currencyId}
 			value={value.currency}
-			options={currencyOptions}
+			options={currencyOptions || undefined}
 			on:change={updateCurrency}
 		/>
 		<button type="button" class="btn btn-neutral-200" on:click={clearValue}> Clear </button>
