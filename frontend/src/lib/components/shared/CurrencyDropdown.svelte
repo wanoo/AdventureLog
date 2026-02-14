@@ -10,6 +10,7 @@
 	type Props = {
 		value?: string | null;
 		options?: string[];
+		priorityCurrencies?: string[];
 		placeholder?: string;
 		disabled?: boolean;
 		id?: string;
@@ -17,6 +18,7 @@
 
 	export let value: Props['value'] = null;
 	export let options: string[] | undefined = undefined; // If provided, use these; otherwise use API
+	export let priorityCurrencies: string[] = []; // Currencies to show first in dropdown
 	export let placeholder = '';
 	export let disabled = false;
 	export let id: string | undefined;
@@ -35,7 +37,16 @@
 	});
 
 	// Use provided options, or API currencies, or fallback to hardcoded list
-	$: effectiveOptions = options ?? ($ratesLoaded && $availableCurrencies.length > 0 ? $availableCurrencies : CURRENCY_OPTIONS);
+	$: baseOptions = options ?? ($ratesLoaded && $availableCurrencies.length > 0 ? $availableCurrencies : CURRENCY_OPTIONS);
+
+	// Reorder options to put priority currencies first
+	$: effectiveOptions = (() => {
+		if (priorityCurrencies.length === 0) return baseOptions;
+		const prioritySet = new Set(priorityCurrencies);
+		const priority = priorityCurrencies.filter((c) => baseOptions.includes(c));
+		const rest = baseOptions.filter((c) => !prioritySet.has(c));
+		return [...priority, ...rest];
+	})();
 
 	$: normalizedOptions = effectiveOptions.map((code) => ({
 		code,

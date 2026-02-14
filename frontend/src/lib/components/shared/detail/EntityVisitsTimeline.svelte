@@ -113,12 +113,13 @@
 									<!-- Price for this visit -->
 									{#if visit.total_price !== null && visit.total_price !== undefined}
 										{@const visitCurrency = visit.total_price_currency || 'USD'}
+										{@const effectiveCountryCurrency = countryCurrency || visitCurrency}
 										{@const showCountryFirst = $ratesLoaded && countryCurrency && countryCurrency !== visitCurrency}
 										<div class="mt-3 flex items-center gap-3 text-sm text-base-content/70">
 											<CashMultiple class="w-4 h-4 text-success" />
 											<span>
 												{#if showCountryFirst}
-													{@const countryPrice = formatConvertedPrice(visit.total_price, visitCurrency, countryCurrency)}
+													{@const countryPrice = formatConvertedPrice(visit.total_price, visitCurrency, effectiveCountryCurrency)}
 													{#if countryPrice}
 														<strong class="text-success">{countryPrice}</strong>
 														<span class="opacity-70"> ({formatMoney({ amount: visit.total_price, currency: visitCurrency })})</span>
@@ -133,7 +134,7 @@
 													{#if visit.number_of_people > 1}
 														{@const perPerson = visit.total_price / visit.number_of_people}
 														{#if showCountryFirst && countryCurrency}
-															{@const perPersonCountry = formatConvertedPrice(perPerson, visitCurrency, countryCurrency)}
+															{@const perPersonCountry = formatConvertedPrice(perPerson, visitCurrency, effectiveCountryCurrency)}
 															{#if perPersonCountry}
 																<span class="opacity-70"> • {perPersonCountry} {$t('adventures.avg_per_user')}</span>
 															{:else}

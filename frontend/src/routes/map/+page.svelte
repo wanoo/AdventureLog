@@ -691,10 +691,7 @@
 				if (!transport.average_rating || transport.average_rating < minRating) return false;
 			}
 
-			// Filter by minimum price tier
-			if (minPriceTier > 0) {
-				if (!transport.price_tier || transport.price_tier < minPriceTier) return false;
-			}
+			// Note: Transportation uses average_price instead of price tier, so skip tier filtering
 
 			// Filter by search query
 			if (!query) return true;

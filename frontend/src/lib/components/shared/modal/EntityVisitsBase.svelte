@@ -46,6 +46,10 @@
 	export let initialVisitDate: string | null = null;
 	export let currentUserUsername: string | null = null;
 
+	// Currency props
+	export let countryCurrency: string | null = null;
+	export let userCurrency: string | null = null;
+
 	// Location-specific props (optional)
 	export let trails: Trail[] = [];
 	export let measurementSystem: 'metric' | 'imperial' = 'metric';
@@ -62,9 +66,15 @@
 	let isEditing = false;
 	let visitIdEditing: string | null = null;
 
-	// Price tracking state
-	let visitPrice: MoneyValue = { amount: null, currency: DEFAULT_CURRENCY };
+	// Price tracking state - default to country currency, then user's, then USD
+	$: defaultCurrency = countryCurrency || userCurrency || DEFAULT_CURRENCY;
+	let visitPrice: MoneyValue = { amount: null, currency: countryCurrency || userCurrency || DEFAULT_CURRENCY };
 	let visitPeopleCount: number | null = null;
+
+	// Build priority currencies list for dropdown ordering
+	$: priorityCurrencies = [countryCurrency, userCurrency, 'USD', 'EUR', 'GBP'].filter(
+		(c): c is string => c !== null && c !== undefined
+	);
 
 	// Activity management state
 	let stravaEnabled: boolean = false;
@@ -297,7 +307,7 @@
 		if (!initialVisitDate || isAuto) {
 			note = '';
 			visitRating = null;
-			visitPrice = { amount: null, currency: DEFAULT_CURRENCY };
+			visitPrice = { amount: null, currency: defaultCurrency };
 			visitPeopleCount = null;
 			localStartDate = '';
 			localEndDate = '';
@@ -917,6 +927,7 @@
 								<MoneyInput
 									bind:value={visitPrice}
 									placeholder="0.00"
+									{priorityCurrencies}
 								/>
 							</div>
 						</div>

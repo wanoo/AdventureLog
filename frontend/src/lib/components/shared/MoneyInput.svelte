@@ -7,6 +7,7 @@
 		label?: string;
 		value: MoneyValue;
 		currencyOptions?: string[];
+		priorityCurrencies?: string[];
 		placeholder?: string;
 		min?: number;
 		step?: number;
@@ -15,6 +16,7 @@
 	export let label: string | undefined = undefined;
 	export let value: MoneyValue;
 	export let currencyOptions: string[] | undefined = undefined; // Use API currencies by default
+	export let priorityCurrencies: string[] = []; // Currencies to show first in dropdown
 	export let placeholder = '0.00';
 	export let min: number | undefined = 0;
 	export let step: number | undefined = 0.01;
@@ -67,6 +69,7 @@
 			id={currencyId}
 			value={value.currency}
 			options={currencyOptions || undefined}
+			{priorityCurrencies}
 			on:change={updateCurrency}
 		/>
 		<button type="button" class="btn btn-neutral-200" on:click={clearValue}> Clear </button>

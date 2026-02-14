@@ -226,6 +226,8 @@
 			transportationId={transportation.id}
 			initialVisitDate={storedInitialVisitDate}
 			currentUserUsername={user?.username || null}
+			countryCurrency={transportation.origin_country?.currency_code || null}
+			userCurrency={user?.default_currency || null}
 			on:back={() => {
 				steps = navigateToStep(steps, 1);
 			}}

@@ -72,27 +72,30 @@ def _calculate_price_tier(entity, entity_type='location'):
     else:
         return None
 
-    if not country:
-        return None
-
-    # Get this entity's average price per user
-    entity_visits = entity.visits.filter(
-        total_price__isnull=False,
-        number_of_people__isnull=False,
-        number_of_people__gt=0
-    )
+    # Get this entity's average price per user (only require total_price)
+    entity_visits = entity.visits.filter(total_price__isnull=False)
 
     if not entity_visits.exists():
         return None
 
-    # Calculate this entity's price per user
+    # Calculate this entity's price per user (default number_of_people to 1)
     total_price = sum(float(v.total_price.amount) for v in entity_visits)
-    total_people = sum(v.number_of_people for v in entity_visits)
+    total_people = sum(v.number_of_people or 1 for v in entity_visits)
 
     if total_people == 0:
         return None
 
     entity_price = total_price / total_people
+
+    # If no country, show fallback tier with "Global" label
+    if not country:
+        return {
+            'tier': 2,  # Default to moderate
+            'country_code': None,
+            'country_name': 'Global',
+            'sample_size': 1,
+            'percentile': 50.0
+        }
 
     # Get all entities of same type in same country with pricing data
     if entity_type == 'location':
@@ -102,23 +105,25 @@ def _calculate_price_tier(entity, entity_type='location'):
     else:  # lodging
         same_country = model_class.objects.filter(country=country)
 
-    # Calculate prices for all entities in same country
+    # Calculate prices for all entities in same country (only require total_price)
     all_prices = []
     for e in same_country.prefetch_related('visits'):
-        visits = e.visits.filter(
-            total_price__isnull=False,
-            number_of_people__isnull=False,
-            number_of_people__gt=0
-        )
+        visits = e.visits.filter(total_price__isnull=False)
         if visits.exists():
             t_price = sum(float(v.total_price.amount) for v in visits)
-            t_people = sum(v.number_of_people for v in visits)
+            t_people = sum(v.number_of_people or 1 for v in visits)  # Default to 1
             if t_people > 0:
                 all_prices.append(t_price / t_people)
 
     if len(all_prices) < 2:
-        # Not enough data for comparison, return tier based on absolute judgment
-        return None
+        # Not enough data for comparison, show fallback tier with country info
+        return {
+            'tier': 2,  # Default to moderate
+            'country_code': country.country_code,
+            'country_name': country.name,
+            'sample_size': 1,
+            'percentile': 50.0
+        }
 
     # Calculate percentile rank
     all_prices.sort()
@@ -557,12 +562,9 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
         Calculate average price per user from visit-level costs.
         Formula: SUM(visit_total_price) / SUM(visit_people_count)
         Returns dict with amount, currency, and count of visits with pricing data.
+        Only requires total_price to be set; defaults number_of_people to 1.
         """
-        visits_with_price = obj.visits.filter(
-            total_price__isnull=False,
-            number_of_people__isnull=False,
-            number_of_people__gt=0
-        )
+        visits_with_price = obj.visits.filter(total_price__isnull=False)
 
         if not visits_with_price.exists():
             return None
@@ -574,7 +576,7 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
             if currency not in currency_totals:
                 currency_totals[currency] = {'total_price': 0, 'total_people': 0, 'count': 0}
             currency_totals[currency]['total_price'] += float(visit.total_price.amount)
-            currency_totals[currency]['total_people'] += visit.number_of_people
+            currency_totals[currency]['total_people'] += visit.number_of_people or 1  # Default to 1
             currency_totals[currency]['count'] += 1
 
         # Return the primary currency (most visits or highest total)
@@ -970,8 +972,28 @@ class TransportationMapPinSerializer(VisitStatusMixin, serializers.ModelSerializ
         return False
 
     def get_price_tier(self, obj):
-        tier_data = _calculate_price_tier(obj, 'transportation')
-        return tier_data.get('tier') if tier_data else None
+        """Return average price per user for transportation (no tier comparison)."""
+        visits_with_price = obj.visits.filter(
+            total_price__isnull=False,
+            number_of_people__isnull=False,
+            number_of_people__gt=0
+        )
+        if not visits_with_price.exists():
+            return None
+
+        # Calculate average price per user
+        total_price = sum(float(v.total_price.amount) for v in visits_with_price)
+        total_people = sum(v.number_of_people for v in visits_with_price)
+        if total_people == 0:
+            return None
+
+        # Get primary currency
+        currency = str(visits_with_price.first().total_price_currency)
+
+        return {
+            'average_price': round(total_price / total_people, 2),
+            'currency': currency
+        }
 
 
 class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
@@ -1015,11 +1037,7 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
         Formula: SUM(visit_total_price) / SUM(visit_people_count)
         Returns dict with amount, currency, and count of visits with pricing data.
         """
-        visits_with_price = obj.visits.filter(
-            total_price__isnull=False,
-            number_of_people__isnull=False,
-            number_of_people__gt=0
-        )
+        visits_with_price = obj.visits.filter(total_price__isnull=False)
 
         if not visits_with_price.exists():
             return None
@@ -1031,7 +1049,7 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
             if currency not in currency_totals:
                 currency_totals[currency] = {'total_price': 0, 'total_people': 0, 'count': 0}
             currency_totals[currency]['total_price'] += float(visit.total_price.amount)
-            currency_totals[currency]['total_people'] += visit.number_of_people
+            currency_totals[currency]['total_people'] += visit.number_of_people or 1  # Default to 1
             currency_totals[currency]['count'] += 1
 
         # Return the primary currency (most visits or highest total)
@@ -1051,8 +1069,15 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
         }
 
     def get_price_tier(self, obj):
-        """Calculate local price tier (1-4) based on country comparison."""
-        return _calculate_price_tier(obj, entity_type='transportation')
+        """Return average price per user for transportation (no tier comparison)."""
+        # Transportation uses average_price_per_user instead of tier comparison
+        avg = self.get_average_price_per_user(obj)
+        if not avg:
+            return None
+        return {
+            'average_price': avg['amount'],
+            'currency': avg['currency']
+        }
 
     def get_images(self, obj):
         serializer = ContentImageSerializer(obj.images.filter(is_deleted=False), many=True, context=self.context)
@@ -1188,11 +1213,10 @@ class LodgingSerializer(VisitStatusMixin, CustomModelSerializer):
         Calculate average price per user per night from visit-level costs.
         Formula: SUM(visit_total_price) / SUM(visit_people_count * visit_nights)
         Returns dict with amount, currency, and count of visits with pricing data.
+        Only requires total_price and dates to be set; defaults number_of_people to 1.
         """
         visits_with_price = obj.visits.filter(
             total_price__isnull=False,
-            number_of_people__isnull=False,
-            number_of_people__gt=0,
             start_date__isnull=False,
             end_date__isnull=False
         )
@@ -1212,7 +1236,7 @@ class LodgingSerializer(VisitStatusMixin, CustomModelSerializer):
             if currency not in currency_totals:
                 currency_totals[currency] = {'total_price': 0, 'total_person_nights': 0, 'count': 0}
             currency_totals[currency]['total_price'] += float(visit.total_price.amount)
-            currency_totals[currency]['total_person_nights'] += visit.number_of_people * nights
+            currency_totals[currency]['total_person_nights'] += (visit.number_of_people or 1) * nights  # Default to 1
             currency_totals[currency]['count'] += 1
 
         # Return the primary currency (most visits or highest total)

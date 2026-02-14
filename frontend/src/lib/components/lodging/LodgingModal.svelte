@@ -210,6 +210,8 @@
 			lodgingId={lodging.id}
 			initialVisitDate={storedInitialVisitDate}
 			currentUserUsername={user?.username || null}
+			countryCurrency={lodging.country?.currency_code || null}
+			userCurrency={user?.default_currency || null}
 			on:back={() => {
 				steps = navigateToStep(steps, 1);
 			}}

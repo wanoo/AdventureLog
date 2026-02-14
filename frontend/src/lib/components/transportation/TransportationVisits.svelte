@@ -11,6 +11,8 @@
 	export let transportationId: string;
 	export let initialVisitDate: string | null = null;
 	export let currentUserUsername: string | null = null;
+	export let countryCurrency: string | null = null;
+	export let userCurrency: string | null = null;
 	// Optional activity props
 	export let trails: Trail[] = [];
 	export let measurementSystem: 'metric' | 'imperial' = 'metric';
@@ -25,6 +27,8 @@
 	{measurementSystem}
 	{initialVisitDate}
 	{currentUserUsername}
+	{countryCurrency}
+	{userCurrency}
 	on:back
 	on:close
 	on:visitAdded

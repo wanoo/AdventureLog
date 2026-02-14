@@ -23,7 +23,6 @@
 	import TransportationModal from '$lib/components/transportation/TransportationModal.svelte';
 	import { DEFAULT_CURRENCY, formatMoney, toMoneyValue } from '$lib/money';
 import { fetchExchangeRates, formatConvertedPrice, ratesLoaded } from '$lib/stores/exchangeRates';
-import { PriceTierBadge } from '$lib/components/shared/cards';
 	import HistoryPanel from '$lib/components/HistoryPanel.svelte';
 
 	// Shared components
@@ -765,23 +764,12 @@ import { PriceTierBadge } from '$lib/components/shared/cards';
 					</div>
 				</div>
 
-				<!-- Price Tier & Average Price -->
-				{#if transportation.price_tier || transportation.average_price_per_user}
+				<!-- Average Price -->
+				{#if transportation.average_price_per_user}
 					<div class="card bg-base-200 shadow-xl">
 						<div class="card-body">
 							<h3 class="card-title text-lg mb-3">💰 {$t('adventures.price')}</h3>
 							<div class="space-y-4">
-								<!-- Price Tier -->
-								{#if transportation.price_tier}
-									<div class="flex items-center gap-3">
-										<PriceTierBadge priceTier={transportation.price_tier} size="lg" />
-										<div class="text-sm opacity-70">
-											{$t('adventures.price_tier_local', { values: { country: transportation.price_tier.country_name } })}
-										</div>
-									</div>
-								{/if}
-
-								<!-- Average Price -->
 								{#if transportation.average_price_per_user}
 									{@const avgPrice = transportation.average_price_per_user}
 									{@const userCurrency = data.user?.default_currency || DEFAULT_CURRENCY}

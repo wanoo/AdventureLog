@@ -195,6 +195,8 @@
 			{collection}
 			initialVisitDate={storedInitialVisitDate}
 			currentUserUsername={user?.username || null}
+			countryCurrency={location.country?.currency_code || null}
+			userCurrency={user?.default_currency || null}
 		/>
 	{/if}
 	{#if steps[3].selected}

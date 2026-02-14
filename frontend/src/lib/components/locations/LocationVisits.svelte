@@ -14,6 +14,8 @@
 	export let measurementSystem: 'metric' | 'imperial' = 'metric';
 	export let initialVisitDate: string | null = null;
 	export let currentUserUsername: string | null = null;
+	export let countryCurrency: string | null = null;
+	export let userCurrency: string | null = null;
 </script>
 
 <EntityVisitsBase
@@ -25,6 +27,8 @@
 	{measurementSystem}
 	{initialVisitDate}
 	{currentUserUsername}
+	{countryCurrency}
+	{userCurrency}
 	on:back
 	on:close
 	on:visitAdded
