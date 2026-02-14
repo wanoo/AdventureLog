@@ -347,6 +347,7 @@ import { fetchExchangeRates, formatConvertedPrice, ratesLoaded } from '$lib/stor
 					measurementSystem={data.user?.measurement_system || 'metric'}
 					trails={adventure.trails || []}
 					sunTimes={adventure.sun_times || []}
+					countryCurrency={adventure.country?.currency_code || null}
 				/>
 
 				<!-- Map Section -->
@@ -578,29 +579,40 @@ import { fetchExchangeRates, formatConvertedPrice, ratesLoaded } from '$lib/stor
 						<div class="card-body">
 							<h3 class="card-title text-lg mb-3">💰 {$t('adventures.avg_price')}</h3>
 							<div class="space-y-2">
-								<!-- Main price in original currency -->
-								<div class="text-2xl font-bold text-success">
-									{formatMoney({ amount: avgPrice.amount, currency: avgPrice.currency })}
-								</div>
+								<!-- Main price in country's currency (or original if no country) -->
+								{#if $ratesLoaded && countryCurrency && avgPrice.currency !== countryCurrency}
+									{@const countryConverted = formatConvertedPrice(avgPrice.amount, avgPrice.currency, countryCurrency)}
+									{#if countryConverted}
+										<div class="text-2xl font-bold text-success">
+											{countryConverted}
+										</div>
+									{:else}
+										<div class="text-2xl font-bold text-success">
+											{formatMoney({ amount: avgPrice.amount, currency: avgPrice.currency })}
+										</div>
+									{/if}
+								{:else}
+									<div class="text-2xl font-bold text-success">
+										{formatMoney({ amount: avgPrice.amount, currency: avgPrice.currency })}
+									</div>
+								{/if}
 								<div class="text-sm opacity-70">
 									{$t('adventures.avg_per_user')}
 								</div>
 
-								<!-- Converted prices -->
-								{#if $ratesLoaded && avgPrice.currency !== userCurrency}
+								<!-- Converted price in user's currency (if different from country currency) -->
+								{#if $ratesLoaded && countryCurrency && userCurrency !== countryCurrency}
 									{@const userConverted = formatConvertedPrice(avgPrice.amount, avgPrice.currency, userCurrency)}
 									{#if userConverted}
 										<div class="text-sm text-base-content/70">
 											{userConverted}
 										</div>
 									{/if}
-								{/if}
-
-								{#if $ratesLoaded && countryCurrency && avgPrice.currency !== countryCurrency && countryCurrency !== userCurrency}
-									{@const countryConverted = formatConvertedPrice(avgPrice.amount, avgPrice.currency, countryCurrency)}
-									{#if countryConverted}
+								{:else if $ratesLoaded && !countryCurrency && avgPrice.currency !== userCurrency}
+									{@const userConverted = formatConvertedPrice(avgPrice.amount, avgPrice.currency, userCurrency)}
+									{#if userConverted}
 										<div class="text-sm text-base-content/70">
-											{countryConverted} ({adventure.country?.name})
+											{userConverted}
 										</div>
 									{/if}
 								{/if}

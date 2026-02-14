@@ -258,6 +258,8 @@ export type Transportation = {
 	origin_longitude: number | null;
 	destination_latitude: number | null;
 	destination_longitude: number | null;
+	origin_country?: Country | null;
+	destination_country?: Country | null;
 	start_code: string | null; // Could be airport code, station code, etc.
 	end_code: string | null; // Could be airport code, station code, etc.
 	tags: string[] | null;
@@ -410,6 +412,7 @@ export type Lodging = {
 	latitude: number | null;
 	longitude: number | null;
 	location: string | null;
+	country?: Country | null;
 	tags: string[] | null;
 	is_public: boolean;
 	collections: string[]; // Array of collection IDs

@@ -9,6 +9,7 @@
 	import WeatherSunset from '~icons/mdi/weather-sunset';
 	import CashMultiple from '~icons/mdi/cash-multiple';
 	import { formatMoney } from '$lib/money';
+	import { formatConvertedPrice, ratesLoaded } from '$lib/stores/exchangeRates';
 
 	export let visits: any[] = [];
 	export let title: string = $t('adventures.visits') || 'Visits';
@@ -17,6 +18,7 @@
 	export let trails: any[] = [];
 	export let showActivities: boolean = true;
 	export let sunTimes: { date: string; visit_id: string; sunrise: string; sunset: string }[] = [];
+	export let countryCurrency: string | null = null;
 
 	// Helper to get sun times for a specific visit
 	function getSunTimesForVisit(visitId: string) {
@@ -110,15 +112,36 @@
 
 									<!-- Price for this visit -->
 									{#if visit.total_price !== null && visit.total_price !== undefined}
+										{@const visitCurrency = visit.total_price_currency || 'USD'}
+										{@const showCountryFirst = $ratesLoaded && countryCurrency && countryCurrency !== visitCurrency}
 										<div class="mt-3 flex items-center gap-3 text-sm text-base-content/70">
 											<CashMultiple class="w-4 h-4 text-success" />
 											<span>
-												<strong class="text-success">{formatMoney({ amount: visit.total_price, currency: visit.total_price_currency || 'USD' })}</strong>
+												{#if showCountryFirst}
+													{@const countryPrice = formatConvertedPrice(visit.total_price, visitCurrency, countryCurrency)}
+													{#if countryPrice}
+														<strong class="text-success">{countryPrice}</strong>
+														<span class="opacity-70"> ({formatMoney({ amount: visit.total_price, currency: visitCurrency })})</span>
+													{:else}
+														<strong class="text-success">{formatMoney({ amount: visit.total_price, currency: visitCurrency })}</strong>
+													{/if}
+												{:else}
+													<strong class="text-success">{formatMoney({ amount: visit.total_price, currency: visitCurrency })}</strong>
+												{/if}
 												{#if visit.number_of_people && visit.number_of_people > 0}
-													<span class="opacity-70"> ({visit.number_of_people} {visit.number_of_people === 1 ? $t('adventures.people').replace(/s$/, '') : $t('adventures.people')})</span>
+													<span class="opacity-70"> • {visit.number_of_people} {visit.number_of_people === 1 ? $t('adventures.people').replace(/s$/, '') : $t('adventures.people')}</span>
 													{#if visit.number_of_people > 1}
 														{@const perPerson = visit.total_price / visit.number_of_people}
-														<span class="opacity-70"> • {formatMoney({ amount: perPerson, currency: visit.total_price_currency || 'USD' })} {$t('adventures.avg_per_user')}</span>
+														{#if showCountryFirst && countryCurrency}
+															{@const perPersonCountry = formatConvertedPrice(perPerson, visitCurrency, countryCurrency)}
+															{#if perPersonCountry}
+																<span class="opacity-70"> • {perPersonCountry} {$t('adventures.avg_per_user')}</span>
+															{:else}
+																<span class="opacity-70"> • {formatMoney({ amount: perPerson, currency: visitCurrency })} {$t('adventures.avg_per_user')}</span>
+															{/if}
+														{:else}
+															<span class="opacity-70"> • {formatMoney({ amount: perPerson, currency: visitCurrency })} {$t('adventures.avg_per_user')}</span>
+														{/if}
 													{/if}
 												{/if}
 											</span>
