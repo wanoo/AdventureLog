@@ -16,23 +16,22 @@ urlpatterns = [
     path('api/', include('adventures.urls')),
     path('api/', include('worldtravel.urls')),
     path('api/', include('mcp_server.urls')),  # MCP Server endpoint for AI Agents (endpoint at /api/mcp)
-    path("auth/", include("allauth.headless.urls")),
 
-    # Serve protected media files
-    re_path(r'^media/(?P<path>.*)$', serve_protected_media, name='serve-protected-media'),
-
+    # Custom auth endpoints (must come BEFORE the allauth include to take precedence)
     path('auth/is-registration-disabled/', IsRegistrationDisabled.as_view(), name='is_registration_disabled'),
     path('auth/users/', PublicUserListView.as_view(), name='public-user-list'),
     path('auth/user/<str:username>/', PublicUserDetailView.as_view(), name='public-user-detail'),
     path('auth/update-user/', UpdateUserMetadataView.as_view(), name='update-user-metadata'),
-
     path('auth/user-metadata/', UserMetadataView.as_view(), name='user-metadata'),
-
     path('auth/social-providers/', EnabledSocialProvidersView.as_view(), name='enabled-social-providers'),
-
     path('auth/disable-password/', DisablePasswordAuthenticationView.as_view(), name='disable-password-authentication'),
-
     path('auth/api-token/', APITokenView.as_view(), name='api-token'),  # MCP token management
+
+    # Allauth headless URLs (catch-all for auth/ - must come after specific auth endpoints)
+    path("auth/", include("allauth.headless.urls")),
+
+    # Serve protected media files
+    re_path(r'^media/(?P<path>.*)$', serve_protected_media, name='serve-protected-media'),
 
     path('csrf/', get_csrf_token, name='get_csrf_token'),
     path('public-url/', get_public_url, name='get_public_url'),
