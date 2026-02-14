@@ -27,9 +27,10 @@ export const load = (async (event) => {
 		const is_public = event.url.searchParams.get('is_public') || 'all';
 		const ownership = event.url.searchParams.get('ownership') || 'all';
 		const min_rating = event.url.searchParams.get('min_rating') || 'all';
+		const include_collections = event.url.searchParams.get('include_collections') || 'true';
 
 		let initialFetch = await event.fetch(
-			`${serverEndpoint}/api/lodging/filtered?types=${typeString}&order_by=${order_by}&order_direction=${order_direction}&page=${page}&is_visited=${is_visited}&is_public=${is_public}&ownership=${ownership}&min_rating=${min_rating}`,
+			`${serverEndpoint}/api/lodging/filtered?types=${typeString}&order_by=${order_by}&order_direction=${order_direction}&page=${page}&is_visited=${is_visited}&is_public=${is_public}&ownership=${ownership}&min_rating=${min_rating}&include_collections=${include_collections}`,
 			{
 				headers: {
 					Cookie: `sessionid=${event.cookies.get('sessionid')}`

@@ -22,6 +22,7 @@
 	import Filter from '~icons/mdi/filter-variant';
 	import Airplane from '~icons/mdi/airplane';
 	import Eye from '~icons/mdi/eye';
+	import MapMarker from '~icons/mdi/map-marker';
 
 	export let data: any;
 
@@ -60,6 +61,7 @@
 	let currentSort = {
 		order_by: 'updated_at',
 		order: 'asc',
+		includeCollections: true,
 		is_visited: 'all',
 		is_public: 'all',
 		ownership: 'all',
@@ -115,6 +117,13 @@
 		currentSort.order_by = url.searchParams.get('order_by') || 'updated_at';
 		currentSort.order = url.searchParams.get('order_direction') || 'asc';
 		currentSort.is_visited = url.searchParams.get('is_visited') || 'all';
+		if (url.searchParams.get('include_collections') === 'true') {
+			currentSort.includeCollections = true;
+		} else if (url.searchParams.get('include_collections') === 'false') {
+			currentSort.includeCollections = false;
+		} else {
+			currentSort.includeCollections = true;
+		}
 		currentSort.is_public = url.searchParams.get('is_public') || 'all';
 		currentSort.ownership = url.searchParams.get('ownership') || 'all';
 		currentSort.min_rating = url.searchParams.get('min_rating') || 'all';
@@ -231,6 +240,19 @@
 		url.searchParams.set('page', '1');
 		currentPage = 1;
 		currentSort.min_rating = minRating;
+		await goto(url.toString(), { invalidateAll: true, replaceState: true });
+		if (data.props.transportations) {
+			transportations = data.props.transportations;
+			count = data.props.count;
+		}
+	}
+
+	async function updateIncludeCollections(include: boolean) {
+		const url = new URL($page.url);
+		url.searchParams.set('include_collections', include.toString());
+		url.searchParams.set('page', '1');
+		currentPage = 1;
+		currentSort.includeCollections = include;
 		await goto(url.toString(), { invalidateAll: true, replaceState: true });
 		if (data.props.transportations) {
 			transportations = data.props.transportations;
@@ -370,6 +392,26 @@
 							]}
 							on:change={(e) => updateVisitedFilter(e.detail)}
 						/>
+
+						<!-- Sources Filter -->
+						<div class="collapse collapse-arrow bg-base-200/50 rounded-box">
+							<input type="checkbox" checked />
+							<div class="collapse-title font-medium flex items-center gap-2 py-2 min-h-0">
+								<MapMarker class="w-5 h-5" />
+								{$t('adventures.sources')}
+							</div>
+							<div class="collapse-content !pb-2">
+								<label class="flex items-center gap-2 cursor-pointer py-0.5">
+									<input
+										type="checkbox"
+										class="checkbox checkbox-primary checkbox-sm"
+										checked={currentSort.includeCollections}
+										on:change={(e) => updateIncludeCollections(e.currentTarget.checked)}
+									/>
+									<span>{$t('adventures.collection_locations')}</span>
+								</label>
+							</div>
+						</div>
 
 						<RadioFilter
 							title={$t('adventures.visibility')}

@@ -31,6 +31,21 @@ class LodgingViewSet(FilteringMixin, ViewsetUtilsMixin, viewsets.ModelViewSet):
     # Override valid_order_fields from SortingMixin
     valid_order_fields = ['name', 'last_visit', 'rating', 'updated_at', 'created_at']
 
+    # ==================== SORTING ====================
+
+    def apply_sorting(self, queryset):
+        """
+        Apply sorting and collection filtering to queryset.
+        Extends SortingMixin.apply_sorting with include_collections filter.
+        """
+        queryset = super().apply_sorting(queryset)
+
+        include_collections = self.request.query_params.get('include_collections', 'true')
+        if include_collections == 'false':
+            queryset = queryset.filter(collections__isnull=True)
+
+        return queryset
+
     # ==================== CUSTOM ACTIONS ====================
 
     @action(detail=False, methods=['get'], url_path='pins')
