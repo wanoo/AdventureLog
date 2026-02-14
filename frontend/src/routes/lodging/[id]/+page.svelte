@@ -22,6 +22,7 @@
 	import LodgingModal from '$lib/components/lodging/LodgingModal.svelte';
 	import { DEFAULT_CURRENCY, formatMoney, toMoneyValue } from '$lib/money';
 import { fetchExchangeRates, formatConvertedPrice, ratesLoaded } from '$lib/stores/exchangeRates';
+import { PriceTierBadge } from '$lib/components/shared/cards';
 	import HistoryPanel from '$lib/components/HistoryPanel.svelte';
 
 	// Shared components
@@ -527,57 +528,78 @@ import { fetchExchangeRates, formatConvertedPrice, ratesLoaded } from '$lib/stor
 					</div>
 				</div>
 
-				<!-- Average Price from Visits -->
-				{#if lodging.average_price_per_user_per_night}
+				<!-- Price Information -->
+				{#if lodging.average_price_per_user_per_night || lodging.price_tier}
 					{@const avgPrice = lodging.average_price_per_user_per_night}
 					{@const userCurrency = data.user?.default_currency || DEFAULT_CURRENCY}
 					{@const countryCurrency = lodging.country?.currency_code}
 					<div class="card bg-base-200 shadow-xl">
 						<div class="card-body">
 							<h3 class="card-title text-lg mb-3">💰 {$t('adventures.avg_price')}</h3>
-							<div class="space-y-2">
-								<!-- Main price in country's currency (or original if no country) -->
-								{#if $ratesLoaded && countryCurrency && avgPrice.currency !== countryCurrency}
-									{@const countryConverted = formatConvertedPrice(avgPrice.amount, avgPrice.currency, countryCurrency)}
-									{#if countryConverted}
-										<div class="text-2xl font-bold text-success">
-											{countryConverted}
-										</div>
+							<div class="space-y-3">
+								<!-- Price Tier Badge -->
+								{#if lodging.price_tier}
+									<div class="flex items-center gap-3">
+										<PriceTierBadge priceTier={lodging.price_tier} badgeClass="badge-success badge-lg text-lg" />
+										<span class="text-sm opacity-70">
+											{#if lodging.price_tier.tier === 1}
+												{$t('adventures.price_tier_budget')}
+											{:else if lodging.price_tier.tier === 2}
+												{$t('adventures.price_tier_moderate')}
+											{:else if lodging.price_tier.tier === 3}
+												{$t('adventures.price_tier_expensive')}
+											{:else}
+												{$t('adventures.price_tier_premium')}
+											{/if}
+											<span class="text-xs">({lodging.country?.name})</span>
+										</span>
+									</div>
+								{/if}
+
+								{#if avgPrice}
+									<!-- Main price in country's currency (or original if no country) -->
+									{#if $ratesLoaded && countryCurrency && avgPrice.currency !== countryCurrency}
+										{@const countryConverted = formatConvertedPrice(avgPrice.amount, avgPrice.currency, countryCurrency)}
+										{#if countryConverted}
+											<div class="text-2xl font-bold text-success">
+												{countryConverted}
+											</div>
+										{:else}
+											<div class="text-2xl font-bold text-success">
+												{formatMoney({ amount: avgPrice.amount, currency: avgPrice.currency })}
+											</div>
+										{/if}
 									{:else}
 										<div class="text-2xl font-bold text-success">
 											{formatMoney({ amount: avgPrice.amount, currency: avgPrice.currency })}
 										</div>
 									{/if}
-								{:else}
-									<div class="text-2xl font-bold text-success">
-										{formatMoney({ amount: avgPrice.amount, currency: avgPrice.currency })}
+									<div class="text-sm opacity-70">
+										{$t('adventures.avg_per_user_per_night')}
 									</div>
-								{/if}
-								<div class="text-sm opacity-70">
-									{$t('adventures.avg_per_user_per_night')}
-								</div>
 
-								<!-- Converted price in user's currency (if different from country currency) -->
-								{#if $ratesLoaded && countryCurrency && userCurrency !== countryCurrency}
-									{@const userConverted = formatConvertedPrice(avgPrice.amount, avgPrice.currency, userCurrency)}
-									{#if userConverted}
-										<div class="text-sm text-base-content/70">
-											{userConverted}
+									<!-- Converted price in user's currency (if different from country currency) -->
+									{#if $ratesLoaded && countryCurrency && userCurrency !== countryCurrency}
+										{@const userConverted = formatConvertedPrice(avgPrice.amount, avgPrice.currency, userCurrency)}
+										{#if userConverted}
+											<div class="text-sm text-base-content/70">
+												{userConverted}
+											</div>
+										{/if}
+									{:else if $ratesLoaded && !countryCurrency && avgPrice.currency !== userCurrency}
+										{@const userConverted = formatConvertedPrice(avgPrice.amount, avgPrice.currency, userCurrency)}
+										{#if userConverted}
+											<div class="text-sm text-base-content/70">
+												{userConverted}
+											</div>
+										{/if}
+									{/if}
+
+									{#if avgPrice.visit_count > 0}
+										<div class="text-xs opacity-50">
+											{$t('adventures.based_on_visits', { values: { count: avgPrice.visit_count } })}
 										</div>
 									{/if}
-								{:else if $ratesLoaded && !countryCurrency && avgPrice.currency !== userCurrency}
-									{@const userConverted = formatConvertedPrice(avgPrice.amount, avgPrice.currency, userCurrency)}
-									{#if userConverted}
-										<div class="text-sm text-base-content/70">
-											{userConverted}
-										</div>
-									{/if}
-								{/if}
-
-								{#if avgPrice.visit_count > 0}
-									<div class="text-xs opacity-50">
-										{$t('adventures.based_on_visits', { values: { count: avgPrice.visit_count } })}
-									</div>
 								{/if}
 							</div>
 						</div>

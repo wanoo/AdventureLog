@@ -627,6 +627,7 @@ export type Pin = {
 	category: Category | null;
 	is_owned?: boolean; // For collaborative mode
 	average_rating?: number | null;
+	price_tier?: number | null; // 1-4 (💰 to 💰💰💰💰)
 };
 
 export type Recommendation = {

@@ -27,6 +27,7 @@
 	import ChevronDown from '~icons/mdi/chevron-down';
 	import ChevronUp from '~icons/mdi/chevron-up';
 	import Star from '~icons/mdi/star';
+	import CashMultiple from '~icons/mdi/cash-multiple';
 	import FullMap from '$lib/components/map/FullMap.svelte';
 
 	export let data;
@@ -77,6 +78,8 @@
 	let searchQuery: string = '';
 	let minRating: number = 0; // 0 means no filter
 	let ratingHover: number | null = null;
+	let minPriceTier: number = 0; // 0 means no filter (1-4 for 💰 to 💰💰💰💰)
+	let priceTierHover: number | null = null;
 
 	// Get unique categories from pins with their icons
 	$: availableCategories = [...new Set(pins.map((pin) => pin.category?.display_name).filter(Boolean))] as string[];
@@ -622,6 +625,11 @@
 				if (!pin.average_rating || pin.average_rating < minRating) return false;
 			}
 
+			// Filter by minimum price tier
+			if (minPriceTier > 0) {
+				if (!pin.price_tier || pin.price_tier < minPriceTier) return false;
+			}
+
 			// Filter by search query
 			if (!query) return true;
 			return (
@@ -652,6 +660,11 @@
 				if (!lodging.average_rating || lodging.average_rating < minRating) return false;
 			}
 
+			// Filter by minimum price tier
+			if (minPriceTier > 0) {
+				if (!lodging.price_tier || lodging.price_tier < minPriceTier) return false;
+			}
+
 			// Filter by search query
 			if (!query) return true;
 			return lodging.name?.toLowerCase().includes(query) || lodging.type?.toLowerCase().includes(query);
@@ -676,6 +689,11 @@
 			// Filter by minimum rating
 			if (minRating > 0) {
 				if (!transport.average_rating || transport.average_rating < minRating) return false;
+			}
+
+			// Filter by minimum price tier
+			if (minPriceTier > 0) {
+				if (!transport.price_tier || transport.price_tier < minPriceTier) return false;
 			}
 
 			// Filter by search query
@@ -1787,6 +1805,66 @@
 													class="btn btn-ghost btn-xs p-0 min-h-0 h-auto ml-1"
 													on:click={() => minRating = 0}
 													aria-label="Clear rating filter"
+												>
+													✕
+												</button>
+											</span>
+										{:else}
+											<span class="text-xs text-base-content/50">{$t('adventures.all')}</span>
+										{/if}
+									</div>
+								</div>
+							</div>
+
+							<!-- Price Tier Filter -->
+							<div class="border-b border-base-300 pb-3">
+								<div class="label">
+									<span class="label-text flex items-center gap-2">
+										<CashMultiple class="w-4 h-4 text-success" />
+										{$t('adventures.min_price_tier')}
+									</span>
+								</div>
+								<div class="flex flex-col gap-2 mt-1">
+									<!-- Interactive price tier selector -->
+									<div
+										class="flex items-center justify-center gap-1"
+										on:mouseleave={() => priceTierHover = null}
+										role="group"
+										aria-label="Price tier filter"
+									>
+										{#each [1, 2, 3, 4] as tier}
+											{@const isActive = minPriceTier > 0 && tier <= minPriceTier}
+											{@const isHovered = priceTierHover !== null && tier <= priceTierHover}
+											<button
+												type="button"
+												class="btn btn-ghost btn-xs p-1 min-h-0 h-auto transition-transform hover:scale-110"
+												on:click={() => {
+													if (minPriceTier === tier) {
+														minPriceTier = 0;
+													} else {
+														minPriceTier = tier;
+													}
+												}}
+												on:mouseenter={() => priceTierHover = tier}
+												aria-label="Filter by {tier}+ price tier"
+											>
+												<span
+													class="text-lg transition-all duration-150"
+													style="opacity: {isActive || isHovered ? '1' : '0.3'};"
+												>💰</span>
+											</button>
+										{/each}
+									</div>
+									<!-- Current filter display -->
+									<div class="text-center">
+										{#if minPriceTier > 0}
+											<span class="badge badge-success badge-sm gap-1">
+												{'💰'.repeat(minPriceTier)}+
+												<button
+													type="button"
+													class="btn btn-ghost btn-xs p-0 min-h-0 h-auto ml-1"
+													on:click={() => minPriceTier = 0}
+													aria-label="Clear price tier filter"
 												>
 													✕
 												</button>

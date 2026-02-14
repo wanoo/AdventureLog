@@ -13,6 +13,7 @@ export interface LodgingPin {
 	type: string;
 	is_owned: boolean;
 	average_rating: number | null;
+	price_tier: number | null;
 }
 
 export interface TransportationPin {
@@ -28,6 +29,7 @@ export interface TransportationPin {
 	from_location: string | null;
 	to_location: string | null;
 	average_rating: number | null;
+	price_tier: number | null;
 }
 
 export const load = (async (event) => {

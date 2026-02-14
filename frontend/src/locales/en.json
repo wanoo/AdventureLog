@@ -160,6 +160,7 @@
 		"stars": "stars",
 		"average_rating": "Average Rating",
 		"min_rating": "Minimum Rating",
+		"min_price_tier": "Minimum Price Tier",
 		"total_cost": "Total Cost",
 		"number_of_people": "Number of People",
 		"people": "people",

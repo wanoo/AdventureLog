@@ -901,11 +901,12 @@ class MapPinSerializer(VisitStatusMixin, serializers.ModelSerializer):
     is_visited = serializers.SerializerMethodField()
     is_owned = serializers.SerializerMethodField()
     category = CategorySerializer(read_only=True, required=False)
+    price_tier = serializers.SerializerMethodField()
 
     class Meta:
         model = Location
-        fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'category', 'is_owned', 'average_rating']
-        read_only_fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'category', 'is_owned', 'average_rating']
+        fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'category', 'is_owned', 'average_rating', 'price_tier']
+        read_only_fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'category', 'is_owned', 'average_rating', 'price_tier']
 
     # get_is_visited is inherited from VisitStatusMixin
 
@@ -914,17 +915,22 @@ class MapPinSerializer(VisitStatusMixin, serializers.ModelSerializer):
         if request and hasattr(request, 'user') and request.user.is_authenticated:
             return obj.user == request.user
         return False
+
+    def get_price_tier(self, obj):
+        tier_data = _calculate_price_tier(obj, 'location')
+        return tier_data.get('tier') if tier_data else None
 
 
 class LodgingMapPinSerializer(VisitStatusMixin, serializers.ModelSerializer):
     """Lightweight serializer for lodging pins on the map. Inherits get_is_visited from VisitStatusMixin."""
     is_visited = serializers.SerializerMethodField()
     is_owned = serializers.SerializerMethodField()
+    price_tier = serializers.SerializerMethodField()
 
     class Meta:
         model = Lodging
-        fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'type', 'is_owned', 'average_rating']
-        read_only_fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'type', 'is_owned', 'average_rating']
+        fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'type', 'is_owned', 'average_rating', 'price_tier']
+        read_only_fields = ['id', 'name', 'latitude', 'longitude', 'is_visited', 'type', 'is_owned', 'average_rating', 'price_tier']
 
     # get_is_visited is inherited from VisitStatusMixin
 
@@ -934,11 +940,16 @@ class LodgingMapPinSerializer(VisitStatusMixin, serializers.ModelSerializer):
             return obj.user == request.user
         return False
 
+    def get_price_tier(self, obj):
+        tier_data = _calculate_price_tier(obj, 'lodging')
+        return tier_data.get('tier') if tier_data else None
+
 
 class TransportationMapPinSerializer(VisitStatusMixin, serializers.ModelSerializer):
     """Lightweight serializer for transportation pins on the map. Inherits get_is_visited from VisitStatusMixin."""
     is_visited = serializers.SerializerMethodField()
     is_owned = serializers.SerializerMethodField()
+    price_tier = serializers.SerializerMethodField()
 
     class Meta:
         model = Transportation
@@ -946,9 +957,9 @@ class TransportationMapPinSerializer(VisitStatusMixin, serializers.ModelSerializ
             'id', 'name', 'type', 'is_visited', 'is_owned',
             'origin_latitude', 'origin_longitude',
             'destination_latitude', 'destination_longitude',
-            'from_location', 'to_location', 'average_rating'
+            'from_location', 'to_location', 'average_rating', 'price_tier'
         ]
-        read_only_fields = fields + ['average_rating']
+        read_only_fields = fields + ['average_rating', 'price_tier']
 
     # get_is_visited is inherited from VisitStatusMixin
 
@@ -957,6 +968,10 @@ class TransportationMapPinSerializer(VisitStatusMixin, serializers.ModelSerializ
         if request and hasattr(request, 'user') and request.user.is_authenticated:
             return obj.user == request.user
         return False
+
+    def get_price_tier(self, obj):
+        tier_data = _calculate_price_tier(obj, 'transportation')
+        return tier_data.get('tier') if tier_data else None
 
 
 class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):

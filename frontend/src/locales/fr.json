@@ -64,6 +64,7 @@
 		"stars": "étoiles",
 		"average_rating": "Note moyenne",
 		"min_rating": "Note minimum",
+		"min_price_tier": "Niveau de prix minimum",
 		"total_cost": "Coût total",
 		"number_of_people": "Nombre de personnes",
 		"people": "personnes",
