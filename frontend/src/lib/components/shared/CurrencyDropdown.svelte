@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import { tick, onMount } from 'svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { CURRENCY_LABELS, CURRENCY_OPTIONS } from '$lib/money';
+	import { availableCurrencies, fetchExchangeRates, ratesLoaded } from '$lib/stores/exchangeRates';
 	import { t } from 'svelte-i18n';
 
 	type CurrencyOption = { code: string; label?: string };
@@ -15,7 +16,7 @@
 	};
 
 	export let value: Props['value'] = null;
-	export let options: string[] = CURRENCY_OPTIONS;
+	export let options: string[] | undefined = undefined; // If provided, use these; otherwise use API
 	export let placeholder = '';
 	export let disabled = false;
 	export let id: string | undefined;
@@ -28,9 +29,17 @@
 	let searchInput: HTMLInputElement | null = null;
 	let normalizedOptions: CurrencyOption[] = [];
 
-	$: normalizedOptions = options.map((code) => ({
+	// Fetch exchange rates on mount to populate currency list
+	onMount(() => {
+		fetchExchangeRates();
+	});
+
+	// Use provided options, or API currencies, or fallback to hardcoded list
+	$: effectiveOptions = options ?? ($ratesLoaded && $availableCurrencies.length > 0 ? $availableCurrencies : CURRENCY_OPTIONS);
+
+	$: normalizedOptions = effectiveOptions.map((code) => ({
 		code,
-		label: $t(`currencies.${code}`) || CURRENCY_LABELS[code]
+		label: $t(`currencies.${code}`) || CURRENCY_LABELS[code] || code
 	}));
 
 	$: filteredOptions = normalizedOptions.filter((option) => {

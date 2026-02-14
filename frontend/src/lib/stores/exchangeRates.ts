@@ -1,9 +1,14 @@
-import { writable, get } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 
 // Exchange rates with USD as base currency
 export const exchangeRates = writable<Record<string, number>>({});
 export const ratesLoading = writable(false);
 export const ratesLoaded = writable(false);
+
+// Derived store: list of available currency codes (sorted)
+export const availableCurrencies = derived(exchangeRates, ($rates) => {
+	return Object.keys($rates).sort();
+});
 
 /**
  * Fetch all exchange rates from the API
