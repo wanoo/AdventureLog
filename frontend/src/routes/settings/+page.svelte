@@ -78,6 +78,7 @@
 	let mcpToken: { token: string; created: string; mcp_endpoint: string } | null = null;
 	let mcpTokenLoading: boolean = false;
 	let mcpTokenError: string | null = null;
+	let mcpTokenFetched: boolean = false;
 
 	let isMFAModalOpen: boolean = false;
 
@@ -118,7 +119,7 @@
 	}
 
 	// Fetch MCP token when integrations tab becomes active
-	$: if (browser && activeSection === 'integrations' && mcpToken === null && !mcpTokenLoading) {
+	$: if (browser && activeSection === 'integrations' && !mcpTokenFetched && !mcpTokenLoading) {
 		fetchMcpToken();
 	}
 
@@ -428,6 +429,7 @@
 			mcpTokenError = 'Network error';
 		}
 		mcpTokenLoading = false;
+		mcpTokenFetched = true;
 	}
 
 	async function createMcpToken() {
