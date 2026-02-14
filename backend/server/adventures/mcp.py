@@ -4,10 +4,19 @@ MCP Tools for AdventureLog.
 Provides AI agents with tools to interact with AdventureLog:
 - search_items: Search locations, transportations, and lodging
 - get_item: Get full details of a single item
+- list_items: List user's items by type
 - create_location: Create a new location
+- create_transportation: Create a new transportation
+- create_lodging: Create a new lodging
+- create_collection: Create a new trip collection
 - create_visit: Add a visit to an entity
+- edit_location: Edit an existing location
+- edit_transportation: Edit an existing transportation
+- edit_lodging: Edit an existing lodging
+- edit_collection: Edit an existing collection
 - list_collections: List user's trip collections
 - add_to_collection: Add an item to a collection
+- reverse_geocode: Get address info from coordinates
 """
 
 from typing import Optional
@@ -208,6 +217,247 @@ class AdventureLogTools(MCPToolset):
             "success": True,
             "message": f"Created location: {name}",
             "location": serializer.data
+        }
+
+    def create_transportation(
+        self,
+        name: str,
+        type: str = "other",
+        description: str = "",
+        from_location: str = "",
+        to_location: str = "",
+        origin_latitude: Optional[float] = None,
+        origin_longitude: Optional[float] = None,
+        destination_latitude: Optional[float] = None,
+        destination_longitude: Optional[float] = None,
+        flight_number: str = "",
+        is_public: bool = False,
+        tags: Optional[list] = None
+    ) -> dict:
+        """
+        Create a new transportation.
+
+        Args:
+            name: Name of the transportation (required)
+            type: Type of transportation. Options: "car", "plane", "train", "bus", "boat", "bike", "walking", "cab", "vtc", "other" (default "other")
+            description: Description of the transportation
+            from_location: Departure location name
+            to_location: Arrival location name
+            origin_latitude: Latitude of departure point
+            origin_longitude: Longitude of departure point
+            destination_latitude: Latitude of arrival point
+            destination_longitude: Longitude of arrival point
+            flight_number: Flight number (for air travel)
+            is_public: Whether the transportation should be public (default False)
+            tags: List of tags for categorization
+
+        Returns:
+            The created transportation details
+        """
+        from adventures.models import Transportation
+        from adventures.serializers import TransportationSerializer
+
+        user = self.request.user
+
+        valid_types = ["car", "plane", "train", "bus", "boat", "bike", "walking", "cab", "vtc", "other"]
+        if type not in valid_types:
+            return {"error": f"Invalid type: {type}. Must be one of: {', '.join(valid_types)}"}
+
+        transportation = Transportation.objects.create(
+            user=user,
+            name=name,
+            type=type,
+            description=description or None,
+            from_location=from_location or None,
+            to_location=to_location or None,
+            origin_latitude=origin_latitude,
+            origin_longitude=origin_longitude,
+            destination_latitude=destination_latitude,
+            destination_longitude=destination_longitude,
+            flight_number=flight_number or None,
+            is_public=is_public,
+            tags=tags or [],
+        )
+
+        serializer = TransportationSerializer(transportation, context={'request': self.request})
+        return {
+            "success": True,
+            "message": f"Created transportation: {name}",
+            "transportation": serializer.data
+        }
+
+    def create_lodging(
+        self,
+        name: str,
+        type: str = "other",
+        description: str = "",
+        location: str = "",
+        latitude: Optional[float] = None,
+        longitude: Optional[float] = None,
+        reservation_number: str = "",
+        is_public: bool = False,
+        tags: Optional[list] = None
+    ) -> dict:
+        """
+        Create a new lodging.
+
+        Args:
+            name: Name of the lodging (required)
+            type: Type of lodging. Options: "hotel", "hostel", "resort", "bnb", "campground", "cabin", "apartment", "house", "villa", "motel", "other" (default "other")
+            description: Description of the lodging
+            location: Address or place name
+            latitude: Latitude coordinate
+            longitude: Longitude coordinate
+            reservation_number: Reservation or confirmation number
+            is_public: Whether the lodging should be public (default False)
+            tags: List of tags for categorization
+
+        Returns:
+            The created lodging details
+        """
+        from adventures.models import Lodging
+        from adventures.serializers import LodgingSerializer
+
+        user = self.request.user
+
+        valid_types = ["hotel", "hostel", "resort", "bnb", "campground", "cabin", "apartment", "house", "villa", "motel", "other"]
+        if type not in valid_types:
+            return {"error": f"Invalid type: {type}. Must be one of: {', '.join(valid_types)}"}
+
+        lodging = Lodging.objects.create(
+            user=user,
+            name=name,
+            type=type,
+            description=description or None,
+            location=location or None,
+            latitude=latitude,
+            longitude=longitude,
+            reservation_number=reservation_number or None,
+            is_public=is_public,
+            tags=tags or [],
+        )
+
+        serializer = LodgingSerializer(lodging, context={'request': self.request})
+        return {
+            "success": True,
+            "message": f"Created lodging: {name}",
+            "lodging": serializer.data
+        }
+
+    def list_items(
+        self,
+        item_type: str,
+        limit: int = 20
+    ) -> list:
+        """
+        List user's locations, transportations, or lodging.
+
+        Args:
+            item_type: Type of items to list. Options: "location", "transportation", "lodging"
+            limit: Maximum number of results to return (default 20, max 50)
+
+        Returns:
+            List of items with basic info ordered by most recently updated
+        """
+        from adventures.models import Location, Transportation, Lodging
+
+        user = self.request.user
+        limit = min(limit, 50)
+        results = []
+
+        if item_type == "location":
+            items = Location.objects.filter(user=user).order_by('-updated_at')[:limit]
+            for item in items:
+                results.append({
+                    "type": "location",
+                    "id": str(item.id),
+                    "name": item.name,
+                    "location": item.location,
+                    "is_public": item.is_public,
+                    "updated_at": item.updated_at.isoformat(),
+                })
+
+        elif item_type == "transportation":
+            items = Transportation.objects.filter(user=user).order_by('-updated_at')[:limit]
+            for item in items:
+                results.append({
+                    "type": "transportation",
+                    "id": str(item.id),
+                    "name": item.name,
+                    "transportation_type": item.type,
+                    "from_location": item.from_location,
+                    "to_location": item.to_location,
+                    "is_public": item.is_public,
+                    "updated_at": item.updated_at.isoformat(),
+                })
+
+        elif item_type == "lodging":
+            items = Lodging.objects.filter(user=user).order_by('-updated_at')[:limit]
+            for item in items:
+                results.append({
+                    "type": "lodging",
+                    "id": str(item.id),
+                    "name": item.name,
+                    "lodging_type": item.type,
+                    "location": item.location,
+                    "is_public": item.is_public,
+                    "updated_at": item.updated_at.isoformat(),
+                })
+
+        else:
+            return [{"error": f"Invalid item_type: {item_type}. Must be 'location', 'transportation', or 'lodging'"}]
+
+        return results
+
+    def create_collection(
+        self,
+        name: str,
+        description: str = "",
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        is_public: bool = False
+    ) -> dict:
+        """
+        Create a new trip collection.
+
+        Args:
+            name: Name of the collection (required)
+            description: Description of the collection
+            start_date: Start date in YYYY-MM-DD format (optional)
+            end_date: End date in YYYY-MM-DD format (optional)
+            is_public: Whether the collection should be public (default False)
+
+        Returns:
+            The created collection details
+        """
+        from adventures.models import Collection
+        from adventures.serializers import CollectionSerializer
+        from django.utils.dateparse import parse_date
+
+        user = self.request.user
+
+        parsed_start = parse_date(start_date) if start_date else None
+        parsed_end = parse_date(end_date) if end_date else None
+
+        if start_date and not parsed_start:
+            return {"error": f"Invalid start_date format: {start_date}. Use YYYY-MM-DD."}
+        if end_date and not parsed_end:
+            return {"error": f"Invalid end_date format: {end_date}. Use YYYY-MM-DD."}
+
+        collection = Collection.objects.create(
+            user=user,
+            name=name,
+            description=description or None,
+            start_date=parsed_start,
+            end_date=parsed_end,
+            is_public=is_public,
+        )
+
+        serializer = CollectionSerializer(collection, context={'request': self.request})
+        return {
+            "success": True,
+            "message": f"Created collection: {name}",
+            "collection": serializer.data
         }
 
     def create_visit(
@@ -412,3 +662,271 @@ class AdventureLogTools(MCPToolset):
 
         else:
             return {"error": f"Invalid item_type: {item_type}. Must be 'location', 'transportation', or 'lodging'"}
+
+    def edit_location(
+        self,
+        item_id: str,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        location: Optional[str] = None,
+        latitude: Optional[float] = None,
+        longitude: Optional[float] = None,
+        is_public: Optional[bool] = None,
+        tags: Optional[list] = None
+    ) -> dict:
+        """
+        Edit an existing location. Only the owner can edit.
+
+        Args:
+            item_id: UUID of the location to edit (required)
+            name: New name for the location
+            description: New description
+            location: New address or place name
+            latitude: New latitude coordinate
+            longitude: New longitude coordinate
+            is_public: Whether the location should be public
+            tags: New list of tags
+
+        Returns:
+            The updated location details
+        """
+        from adventures.models import Location
+        from adventures.serializers import LocationSerializer
+
+        user = self.request.user
+
+        try:
+            loc = Location.objects.get(id=item_id, user=user)
+        except Location.DoesNotExist:
+            return {"error": f"Location {item_id} not found or you don't have permission to edit it"}
+
+        fields = {
+            'name': name, 'description': description, 'location': location,
+            'latitude': latitude, 'longitude': longitude, 'is_public': is_public,
+            'tags': tags,
+        }
+        for field, value in fields.items():
+            if value is not None:
+                setattr(loc, field, value)
+        loc.save()
+
+        serializer = LocationSerializer(loc, context={'request': self.request})
+        return {
+            "success": True,
+            "message": f"Updated location: {loc.name}",
+            "location": serializer.data
+        }
+
+    def edit_transportation(
+        self,
+        item_id: str,
+        name: Optional[str] = None,
+        type: Optional[str] = None,
+        description: Optional[str] = None,
+        from_location: Optional[str] = None,
+        to_location: Optional[str] = None,
+        origin_latitude: Optional[float] = None,
+        origin_longitude: Optional[float] = None,
+        destination_latitude: Optional[float] = None,
+        destination_longitude: Optional[float] = None,
+        flight_number: Optional[str] = None,
+        is_public: Optional[bool] = None,
+        tags: Optional[list] = None
+    ) -> dict:
+        """
+        Edit an existing transportation. Only the owner can edit.
+
+        Args:
+            item_id: UUID of the transportation to edit (required)
+            name: New name
+            type: New type. Options: "car", "plane", "train", "bus", "boat", "bike", "walking", "cab", "vtc", "other"
+            description: New description
+            from_location: New departure location name
+            to_location: New arrival location name
+            origin_latitude: New latitude of departure point
+            origin_longitude: New longitude of departure point
+            destination_latitude: New latitude of arrival point
+            destination_longitude: New longitude of arrival point
+            flight_number: New flight number
+            is_public: Whether the transportation should be public
+            tags: New list of tags
+
+        Returns:
+            The updated transportation details
+        """
+        from adventures.models import Transportation
+        from adventures.serializers import TransportationSerializer
+
+        user = self.request.user
+
+        try:
+            transport = Transportation.objects.get(id=item_id, user=user)
+        except Transportation.DoesNotExist:
+            return {"error": f"Transportation {item_id} not found or you don't have permission to edit it"}
+
+        if type is not None:
+            valid_types = ["car", "plane", "train", "bus", "boat", "bike", "walking", "cab", "vtc", "other"]
+            if type not in valid_types:
+                return {"error": f"Invalid type: {type}. Must be one of: {', '.join(valid_types)}"}
+
+        fields = {
+            'name': name, 'type': type, 'description': description,
+            'from_location': from_location, 'to_location': to_location,
+            'origin_latitude': origin_latitude, 'origin_longitude': origin_longitude,
+            'destination_latitude': destination_latitude, 'destination_longitude': destination_longitude,
+            'flight_number': flight_number, 'is_public': is_public, 'tags': tags,
+        }
+        for field, value in fields.items():
+            if value is not None:
+                setattr(transport, field, value)
+        transport.save()
+
+        serializer = TransportationSerializer(transport, context={'request': self.request})
+        return {
+            "success": True,
+            "message": f"Updated transportation: {transport.name}",
+            "transportation": serializer.data
+        }
+
+    def edit_lodging(
+        self,
+        item_id: str,
+        name: Optional[str] = None,
+        type: Optional[str] = None,
+        description: Optional[str] = None,
+        location: Optional[str] = None,
+        latitude: Optional[float] = None,
+        longitude: Optional[float] = None,
+        reservation_number: Optional[str] = None,
+        is_public: Optional[bool] = None,
+        tags: Optional[list] = None
+    ) -> dict:
+        """
+        Edit an existing lodging. Only the owner can edit.
+
+        Args:
+            item_id: UUID of the lodging to edit (required)
+            name: New name
+            type: New type. Options: "hotel", "hostel", "resort", "bnb", "campground", "cabin", "apartment", "house", "villa", "motel", "other"
+            description: New description
+            location: New address or place name
+            latitude: New latitude coordinate
+            longitude: New longitude coordinate
+            reservation_number: New reservation number
+            is_public: Whether the lodging should be public
+            tags: New list of tags
+
+        Returns:
+            The updated lodging details
+        """
+        from adventures.models import Lodging
+        from adventures.serializers import LodgingSerializer
+
+        user = self.request.user
+
+        try:
+            lodging = Lodging.objects.get(id=item_id, user=user)
+        except Lodging.DoesNotExist:
+            return {"error": f"Lodging {item_id} not found or you don't have permission to edit it"}
+
+        if type is not None:
+            valid_types = ["hotel", "hostel", "resort", "bnb", "campground", "cabin", "apartment", "house", "villa", "motel", "other"]
+            if type not in valid_types:
+                return {"error": f"Invalid type: {type}. Must be one of: {', '.join(valid_types)}"}
+
+        fields = {
+            'name': name, 'type': type, 'description': description,
+            'location': location, 'latitude': latitude, 'longitude': longitude,
+            'reservation_number': reservation_number, 'is_public': is_public, 'tags': tags,
+        }
+        for field, value in fields.items():
+            if value is not None:
+                setattr(lodging, field, value)
+        lodging.save()
+
+        serializer = LodgingSerializer(lodging, context={'request': self.request})
+        return {
+            "success": True,
+            "message": f"Updated lodging: {lodging.name}",
+            "lodging": serializer.data
+        }
+
+    def edit_collection(
+        self,
+        collection_id: str,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        is_public: Optional[bool] = None
+    ) -> dict:
+        """
+        Edit an existing collection. Only the owner can edit.
+
+        Args:
+            collection_id: UUID of the collection to edit (required)
+            name: New name for the collection
+            description: New description
+            start_date: New start date in YYYY-MM-DD format
+            end_date: New end date in YYYY-MM-DD format
+            is_public: Whether the collection should be public
+
+        Returns:
+            The updated collection details
+        """
+        from adventures.models import Collection
+        from adventures.serializers import CollectionSerializer
+        from django.utils.dateparse import parse_date
+
+        user = self.request.user
+
+        try:
+            collection = Collection.objects.get(id=collection_id, user=user)
+        except Collection.DoesNotExist:
+            return {"error": f"Collection {collection_id} not found or you don't have permission to edit it"}
+
+        if start_date is not None:
+            parsed = parse_date(start_date)
+            if not parsed:
+                return {"error": f"Invalid start_date format: {start_date}. Use YYYY-MM-DD."}
+            collection.start_date = parsed
+
+        if end_date is not None:
+            parsed = parse_date(end_date)
+            if not parsed:
+                return {"error": f"Invalid end_date format: {end_date}. Use YYYY-MM-DD."}
+            collection.end_date = parsed
+
+        fields = {'name': name, 'description': description, 'is_public': is_public}
+        for field, value in fields.items():
+            if value is not None:
+                setattr(collection, field, value)
+        collection.save()
+
+        serializer = CollectionSerializer(collection, context={'request': self.request})
+        return {
+            "success": True,
+            "message": f"Updated collection: {collection.name}",
+            "collection": serializer.data
+        }
+
+    def reverse_geocode(
+        self,
+        latitude: float,
+        longitude: float
+    ) -> dict:
+        """
+        Get address information from coordinates using reverse geocoding.
+
+        Args:
+            latitude: Latitude coordinate (required)
+            longitude: Longitude coordinate (required)
+
+        Returns:
+            Address details including display_name, country, region, city, etc.
+        """
+        from adventures.geocoding import reverse_geocode as do_reverse_geocode
+
+        user = self.request.user
+        result = do_reverse_geocode(latitude, longitude, user)
+        return result
