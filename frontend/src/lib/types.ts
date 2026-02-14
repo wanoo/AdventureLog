@@ -114,6 +114,8 @@ export type Country = {
 	num_visits: number;
 	longitude: number | null;
 	latitude: number | null;
+	currency_code: string | null;
+	currency_name: string | null;
 };
 
 export type Region = {
