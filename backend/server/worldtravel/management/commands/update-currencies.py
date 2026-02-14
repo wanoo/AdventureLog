@@ -284,15 +284,41 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f'Updated {updated} countries with currency data'))
 
     def update_exchange_rates(self):
-        """Update exchange rates from free API"""
+        """Update exchange rates from free API for all country currencies"""
         self.stdout.write('Fetching exchange rates...')
 
-        # Try multiple free API sources
-        rates = self._fetch_rates_from_api()
+        # Get all unique currency codes from countries
+        country_currencies = set(
+            Country.objects.exclude(currency_code__isnull=True)
+            .exclude(currency_code='')
+            .values_list('currency_code', flat=True)
+            .distinct()
+        )
+        self.stdout.write(f'Found {len(country_currencies)} unique currencies in countries')
 
-        if not rates:
-            self.stdout.write(self.style.WARNING('Could not fetch rates from API, using fallback rates'))
-            rates = self._get_fallback_rates()
+        # Try multiple free API sources
+        api_rates = self._fetch_rates_from_api()
+        fallback_rates = self._get_fallback_rates()
+
+        # Merge: API rates take priority, fallback fills gaps
+        rates = {}
+        missing_currencies = []
+
+        for currency_code in country_currencies:
+            if api_rates and currency_code in api_rates:
+                rates[currency_code] = api_rates[currency_code]
+            elif currency_code in fallback_rates:
+                rates[currency_code] = fallback_rates[currency_code]
+            else:
+                missing_currencies.append(currency_code)
+
+        # Always include USD
+        rates['USD'] = 1.0
+
+        if missing_currencies:
+            self.stdout.write(self.style.WARNING(
+                f'No rates for: {", ".join(sorted(missing_currencies))}'
+            ))
 
         # Update database
         updated = 0
@@ -351,51 +377,165 @@ class Command(BaseCommand):
     def _get_fallback_rates(self):
         """Return fallback rates if API is unavailable"""
         # These are approximate rates as of early 2024
+        # Covers all major currencies used by countries worldwide
         return {
+            # Base
             'USD': 1.0,
+            # Major currencies
             'EUR': 0.92,
             'GBP': 0.79,
             'JPY': 149.50,
-            'AUD': 1.53,
-            'CAD': 1.35,
             'CHF': 0.88,
-            'CNY': 7.24,
-            'HKD': 7.82,
-            'SGD': 1.34,
-            'SEK': 10.42,
-            'NOK': 10.65,
-            'DKK': 6.88,
-            'NZD': 1.64,
-            'INR': 83.12,
+            # Americas
+            'CAD': 1.35,
             'MXN': 17.15,
             'BRL': 4.97,
-            'ZAR': 18.63,
-            'AED': 3.67,
-            'TRY': 30.25,
-            'KRW': 1328.50,
-            'THB': 35.50,
-            'PLN': 4.02,
-            'PHP': 56.20,
-            'IDR': 15650.00,
-            'MYR': 4.72,
-            'VND': 24500.00,
-            'CZK': 23.15,
-            'HUF': 356.00,
-            'ILS': 3.65,
+            'ARS': 825.00,
             'CLP': 935.00,
             'COP': 3950.00,
             'PEN': 3.72,
-            'ARS': 825.00,
-            'EGP': 30.90,
+            'UYU': 39.50,
+            'PYG': 7300.00,
+            'BOB': 6.91,
+            'VES': 36.50,
+            'CRC': 520.00,
+            'PAB': 1.0,
+            'DOP': 56.50,
+            'GTQ': 7.82,
+            'HNL': 24.70,
+            'NIO': 36.70,
+            'JMD': 155.50,
+            'TTD': 6.78,
+            'BBD': 2.0,
+            'BSD': 1.0,
+            'BZD': 2.0,
+            'GYD': 209.00,
+            'SRD': 37.50,
+            'HTG': 132.00,
+            'AWG': 1.79,
+            'ANG': 1.79,
+            'XCD': 2.70,
+            'KYD': 0.83,
+            'BMD': 1.0,
+            'FKP': 0.79,
+            # Asia-Pacific
+            'CNY': 7.24,
+            'HKD': 7.82,
+            'SGD': 1.34,
+            'AUD': 1.53,
+            'NZD': 1.64,
+            'INR': 83.12,
+            'KRW': 1328.50,
+            'THB': 35.50,
+            'IDR': 15650.00,
+            'MYR': 4.72,
+            'PHP': 56.20,
+            'VND': 24500.00,
+            'TWD': 31.50,
             'PKR': 278.50,
-            'NGN': 900.00,
             'BDT': 110.00,
-            'UAH': 37.50,
+            'LKR': 325.00,
+            'NPR': 133.00,
+            'MMK': 2100.00,
+            'KHR': 4100.00,
+            'LAK': 20800.00,
+            'MNT': 3450.00,
+            'KZT': 450.00,
+            'UZS': 12500.00,
+            'KGS': 89.50,
+            'TJS': 10.95,
+            'TMT': 3.50,
+            'AFN': 73.00,
+            'BND': 1.34,
+            'MOP': 8.05,
+            'FJD': 2.25,
+            'PGK': 3.75,
+            'SBD': 8.45,
+            'VUV': 120.00,
+            'WST': 2.75,
+            'TOP': 2.38,
+            'XPF': 110.00,
+            'MVR': 15.40,
+            'BTN': 83.12,
+            # Europe
+            'SEK': 10.42,
+            'NOK': 10.65,
+            'DKK': 6.88,
+            'PLN': 4.02,
+            'CZK': 23.15,
+            'HUF': 356.00,
             'RON': 4.58,
+            'BGN': 1.80,
+            'HRK': 6.95,
+            'RSD': 108.00,
+            'ISK': 138.00,
+            'TRY': 30.25,
             'RUB': 90.00,
+            'UAH': 37.50,
+            'BYN': 3.27,
+            'MDL': 17.80,
+            'ALL': 96.00,
+            'MKD': 56.50,
+            'BAM': 1.80,
+            'GEL': 2.70,
+            'AMD': 405.00,
+            'AZN': 1.70,
+            # Middle East
+            'AED': 3.67,
             'SAR': 3.75,
+            'ILS': 3.65,
             'QAR': 3.64,
             'KWD': 0.31,
             'BHD': 0.377,
             'OMR': 0.385,
+            'JOD': 0.71,
+            'LBP': 15000.00,
+            'SYP': 13000.00,
+            'IQD': 1310.00,
+            'IRR': 42000.00,
+            'YER': 250.00,
+            # Africa
+            'ZAR': 18.63,
+            'EGP': 30.90,
+            'NGN': 900.00,
+            'MAD': 10.05,
+            'DZD': 135.00,
+            'TND': 3.12,
+            'LYD': 4.85,
+            'KES': 155.00,
+            'UGX': 3800.00,
+            'TZS': 2520.00,
+            'RWF': 1260.00,
+            'BIF': 2850.00,
+            'ETB': 56.50,
+            'GHS': 12.50,
+            'XOF': 605.00,
+            'XAF': 605.00,
+            'CDF': 2750.00,
+            'AOA': 830.00,
+            'ZMW': 26.50,
+            'MZN': 63.50,
+            'BWP': 13.65,
+            'NAD': 18.63,
+            'SZL': 18.63,
+            'LSL': 18.63,
+            'MWK': 1700.00,
+            'ZWL': 13500.00,
+            'MUR': 45.50,
+            'SCR': 13.50,
+            'MGA': 4550.00,
+            'KMF': 455.00,
+            'DJF': 178.00,
+            'ERN': 15.00,
+            'SOS': 570.00,
+            'SDG': 600.00,
+            'SSP': 950.00,
+            'GMD': 67.00,
+            'GNF': 8600.00,
+            'SLL': 22500.00,
+            'LRD': 188.00,
+            'CVE': 101.50,
+            'STN': 22.50,
+            'SHP': 0.79,
+            'MRU': 39.50,
         }
