@@ -471,7 +471,10 @@ class AdventureLogTools(MCPToolset):
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
         notes: str = "",
-        rating: Optional[float] = None
+        rating: Optional[float] = None,
+        total_price: Optional[float] = None,
+        total_price_currency: str = "USD",
+        number_of_people: Optional[int] = None
     ) -> dict:
         """
         Record a visit to a location, transportation, or lodging.
@@ -483,9 +486,12 @@ class AdventureLogTools(MCPToolset):
             end_date: End date in ISO format (YYYY-MM-DDTHH:MM:SS) or None for undated
             notes: Notes about the visit
             rating: Rating from 0-5 (optional)
+            total_price: Total price for this visit (optional)
+            total_price_currency: Currency code, e.g. "USD", "EUR", "GBP" (default "USD")
+            number_of_people: Number of people this price covers (optional)
 
         Returns:
-            The created visit details
+            The created visit details including any linked activities
         """
         from adventures.models import Location, Transportation, Lodging, Visit
         from adventures.serializers import VisitSerializer
@@ -532,6 +538,14 @@ class AdventureLogTools(MCPToolset):
         else:
             return {"error": f"Invalid item_type: {item_type}"}
 
+        # Build price kwargs
+        price_kwargs = {}
+        if total_price is not None:
+            price_kwargs['total_price'] = total_price
+            price_kwargs['total_price_currency'] = total_price_currency
+        if number_of_people is not None:
+            price_kwargs['number_of_people'] = number_of_people
+
         # Create the visit
         visit = Visit.objects.create(
             user=user,
@@ -539,7 +553,8 @@ class AdventureLogTools(MCPToolset):
             end_date=parsed_end,
             notes=notes,
             rating=rating,
-            **parent_kwargs
+            **parent_kwargs,
+            **price_kwargs
         )
 
         serializer = VisitSerializer(visit, context={'request': self.request})
@@ -941,7 +956,10 @@ class AdventureLogTools(MCPToolset):
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
         notes: Optional[str] = None,
-        rating: Optional[float] = None
+        rating: Optional[float] = None,
+        total_price: Optional[float] = None,
+        total_price_currency: Optional[str] = None,
+        number_of_people: Optional[int] = None
     ) -> dict:
         """
         Edit an existing visit. Only the creator can edit.
@@ -952,9 +970,12 @@ class AdventureLogTools(MCPToolset):
             end_date: New end date in ISO format (YYYY-MM-DDTHH:MM:SS)
             notes: New notes
             rating: New rating from 0-5
+            total_price: New total price for this visit
+            total_price_currency: Currency code, e.g. "USD", "EUR", "GBP"
+            number_of_people: Number of people this price covers
 
         Returns:
-            The updated visit details
+            The updated visit details including any linked activities
         """
         from adventures.models import Visit
         from adventures.serializers import VisitSerializer
@@ -986,6 +1007,12 @@ class AdventureLogTools(MCPToolset):
             visit.notes = notes
         if rating is not None:
             visit.rating = rating
+        if total_price is not None:
+            visit.total_price = total_price
+            if total_price_currency:
+                visit.total_price_currency = total_price_currency
+        if number_of_people is not None:
+            visit.number_of_people = number_of_people
         visit.save()
 
         serializer = VisitSerializer(visit, context={'request': self.request})
@@ -1075,6 +1102,10 @@ class AdventureLogTools(MCPToolset):
                 "end_date": v.end_date.isoformat() if v.end_date else None,
                 "notes": (v.notes or "")[:200],
                 "rating": v.rating,
+                "total_price": float(v.total_price.amount) if v.total_price else None,
+                "total_price_currency": str(v.total_price_currency) if v.total_price else None,
+                "number_of_people": v.number_of_people,
+                "activity_count": v.activities.count(),
             })
 
         return results
