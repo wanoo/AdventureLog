@@ -27,7 +27,6 @@
 	import FileIcon from '~icons/mdi/file';
 	import CloseIcon from '~icons/mdi/close';
 	import FolderIcon from '~icons/mdi/folder-outline';
-	import CurrencyIcon from '~icons/mdi/currency-usd';
 	import UsersIcon from '~icons/mdi/account-group';
 	import StarRating from '../../StarRating.svelte';
 	import StravaActivityCard from '../../StravaActivityCard.svelte';
@@ -885,48 +884,50 @@
 					></textarea>
 				</div>
 
-				<!-- Rating -->
-				<div class="mt-2">
-					<label class="label-text text-xs font-medium">{$t('adventures.rating')}</label>
-					<div class="flex items-center gap-2 mt-0.5">
-						<StarRating rating={visitRating} size="lg" readonly={false} on:change={(e) => visitRating = e.detail} />
-						{#if visitRating}
-							<button
-								type="button"
-								class="btn btn-ghost btn-xs px-1"
-								on:click={() => visitRating = null}
-							>
-								<CloseIcon class="w-3 h-3" />
-							</button>
-						{/if}
+				<!-- Rating + Price + Currency + People - single row -->
+				<div class="flex flex-wrap items-end gap-3 mt-2">
+					<!-- Rating -->
+					<div>
+						<label class="label-text text-xs font-medium">{$t('adventures.rating')}</label>
+						<div class="flex items-center gap-1 mt-0.5">
+							<StarRating rating={visitRating} size="lg" readonly={false} on:change={(e) => visitRating = e.detail} />
+							{#if visitRating}
+								<button
+									type="button"
+									class="btn btn-ghost btn-xs px-1"
+									on:click={() => visitRating = null}
+								>
+									<CloseIcon class="w-3 h-3" />
+								</button>
+							{/if}
+						</div>
 					</div>
-				</div>
 
-				<!-- Price + People -->
-				<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
-					<div class="md:col-span-2">
+					<!-- Price + Currency -->
+					<div class="flex-1 min-w-[180px]">
 						<label class="label-text text-xs font-medium flex items-center gap-1" for="visit-price">
-							<CurrencyIcon class="w-3 h-3" />
-							{$t('adventures.total_cost')}
+							💰 {$t('adventures.total_cost')}
 						</label>
 						<div class="mt-0.5">
 							<MoneyInput
 								bind:value={visitPrice}
 								placeholder="0.00"
 								{priorityCurrencies}
+								showClear={false}
+								compact
 							/>
 						</div>
 					</div>
 
-					<div>
+					<!-- People count -->
+					<div class="w-20">
 						<label class="label-text text-xs font-medium flex items-center gap-1" for="visit-people">
 							<UsersIcon class="w-3 h-3" />
-							{$t('adventures.number_of_people')}
 						</label>
 						<input
 							id="visit-people"
 							type="number"
-							class="input input-bordered w-full mt-0.5"
+							class="input input-bordered input-sm w-full mt-0.5"
 							min="1"
 							placeholder="1"
 							bind:value={visitPeopleCount}

@@ -67,6 +67,43 @@ def _convert_to_usd(amount, currency_code):
     return float(amount)
 
 
+def _convert_from_usd(amount_usd, target_currency_code):
+    """
+    Convert an amount from USD to a target currency.
+    ExchangeRate.rate stores "1 USD = X currency", so target = amount_usd * rate.
+    """
+    if not amount_usd or not target_currency_code:
+        return float(amount_usd) if amount_usd else 0.0
+
+    target_currency_code = str(target_currency_code).upper()
+    if target_currency_code == 'USD':
+        return float(amount_usd)
+
+    from worldtravel.models import ExchangeRate
+    try:
+        rate = ExchangeRate.objects.get(currency_code=target_currency_code)
+        if rate.rate and rate.rate > 0:
+            return float(amount_usd) * float(rate.rate)
+    except ExchangeRate.DoesNotExist:
+        pass
+
+    # Fallback: return USD amount
+    return float(amount_usd)
+
+
+def _get_entity_currency(entity, entity_type):
+    """Get the country currency code for an entity, fallback to USD."""
+    country = None
+    if entity_type == 'transportation':
+        country = getattr(entity, 'origin_country', None)
+    else:
+        country = getattr(entity, 'country', None)
+
+    if country and getattr(country, 'currency_code', None):
+        return country.currency_code
+    return 'USD'
+
+
 def _calculate_price_tier(entity, entity_type='location'):
     """
     Calculate price tier (1-4) based on local comparison within same country.
@@ -584,9 +621,9 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
 
     def get_average_price_per_user(self, obj):
         """
-        Calculate average price per user from visit-level costs, converted to USD.
-        Formula: SUM(visit_total_price_in_usd) / SUM(visit_people_count)
-        Returns dict with amount in USD, currency='USD', and count of visits with pricing data.
+        Calculate average price per user from visit-level costs.
+        All prices are converted to USD for computation, then converted
+        to the entity's country currency for display.
         """
         visits_with_price = obj.visits.filter(total_price__isnull=False)
 
@@ -605,9 +642,13 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
         if total_people == 0:
             return None
 
+        avg_usd = total_price_usd / total_people
+        display_currency = _get_entity_currency(obj, 'location')
+        display_amount = _convert_from_usd(avg_usd, display_currency)
+
         return {
-            'amount': round(total_price_usd / total_people, 2),
-            'currency': 'USD',
+            'amount': round(display_amount, 2),
+            'currency': display_currency,
             'visit_count': count
         }
 
@@ -1069,9 +1110,13 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
         if total_people == 0:
             return None
 
+        avg_usd = total_price_usd / total_people
+        display_currency = _get_entity_currency(obj, 'transportation')
+        display_amount = _convert_from_usd(avg_usd, display_currency)
+
         return {
-            'amount': round(total_price_usd / total_people, 2),
-            'currency': 'USD',
+            'amount': round(display_amount, 2),
+            'currency': display_currency,
             'visit_count': count
         }
 
@@ -1244,9 +1289,13 @@ class LodgingSerializer(VisitStatusMixin, CustomModelSerializer):
         if total_person_nights == 0:
             return None
 
+        avg_usd = total_price_usd / total_person_nights
+        display_currency = _get_entity_currency(obj, 'lodging')
+        display_amount = _convert_from_usd(avg_usd, display_currency)
+
         return {
-            'amount': round(total_price_usd / total_person_nights, 2),
-            'currency': 'USD',
+            'amount': round(display_amount, 2),
+            'currency': display_currency,
             'visit_count': count
         }
 

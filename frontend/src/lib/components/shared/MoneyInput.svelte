@@ -20,6 +20,8 @@
 	export let placeholder = '0.00';
 	export let min: number | undefined = 0;
 	export let step: number | undefined = 0.01;
+	export let showClear: boolean = true;
+	export let compact: boolean = false;
 
 	const dispatch = createEventDispatcher<{ change: MoneyValue }>();
 	const currencyId = `money-currency-${Math.random().toString(36).slice(2, 8)}`;
@@ -54,11 +56,11 @@
 			<span class="label-text font-medium">{label}</span>
 		</label>
 	{/if}
-	<div class="flex gap-3 flex-col sm:flex-row">
+	<div class="flex gap-2 {compact ? 'flex-row items-center' : 'flex-col sm:flex-row gap-3'}">
 		<input
 			id="money-input"
 			type="number"
-			class="input input-bordered bg-base-100/80 focus:bg-base-100 flex-1"
+			class="input input-bordered bg-base-100/80 focus:bg-base-100 {compact ? 'input-sm flex-1 min-w-0' : 'flex-1'}"
 			{placeholder}
 			bind:value={value.amount}
 			{min}
@@ -72,6 +74,8 @@
 			{priorityCurrencies}
 			on:change={updateCurrency}
 		/>
-		<button type="button" class="btn btn-neutral-200" on:click={clearValue}> Clear </button>
+		{#if showClear}
+			<button type="button" class="btn btn-neutral-200 {compact ? 'btn-sm' : ''}" on:click={clearValue}> Clear </button>
+		{/if}
 	</div>
 </div>
