@@ -756,239 +756,256 @@
 </script>
 
 <div class="min-h-screen bg-gradient-to-br from-base-200/30 via-base-100 to-primary/5 p-6">
-	<div class="max-w-full mx-auto space-y-6">
+	<div class="max-w-full mx-auto space-y-4">
+		<!-- Visit Form Card -->
 		<div class="card bg-base-100 border border-base-300 shadow-lg">
-			<div class="card-body p-6">
-				<!-- Header -->
-				<div class="flex items-center justify-between mb-6">
-					<div class="flex items-center gap-3">
-						<div class="p-2 bg-primary/10 rounded-lg">
-							<CalendarIcon class="w-5 h-5 text-primary" />
+			<div class="card-body p-4">
+				<!-- Header with settings dropdown -->
+				<div class="flex items-center justify-between">
+					<div class="flex items-center gap-2">
+						<div class="p-1.5 bg-primary/10 rounded-lg">
+							<CalendarIcon class="w-4 h-4 text-primary" />
 						</div>
-						<h2 class="text-xl font-bold">{$t('adventures.date_information')}</h2>
+						<h2 class="text-lg font-bold">
+							{visitIdEditing ? $t('adventures.edit_visit') : $t('adventures.add_visit')}
+						</h2>
 					</div>
-				</div>
-
-				<!-- Settings Section -->
-				<div class="bg-base-50 p-4 rounded-lg border border-base-200 mb-6">
-					<div class="flex items-center gap-2 mb-4">
-						<SettingsIcon class="w-4 h-4 text-base-content/70" />
-						<h3 class="font-medium text-base-content/80">{$t('navbar.settings')}</h3>
-					</div>
-
-					<div class="space-y-4">
-						<!-- Timezone Selection -->
-						<div>
-							<label class="label-text text-sm font-medium" for="timezone-selector"
-								>{$t('adventures.timezone')}</label
-							>
-							<div class="mt-1">
-								<TimezoneSelector bind:selectedTimezone={selectedStartTimezone} />
-							</div>
-						</div>
-
-						<!-- Toggles -->
-						<div class="flex flex-wrap gap-6">
-							<div class="flex items-center gap-3">
-								<ClockIcon class="w-4 h-4 text-base-content/70" />
-								<label class="label-text text-sm font-medium" for="all-day-toggle"
-									>{$t('adventures.all_day')}</label
-								>
-								<input
-									id="all-day-toggle"
-									type="checkbox"
-									class="toggle toggle-primary toggle-sm"
-									bind:checked={allDay}
-									on:change={handleAllDayToggle}
-								/>
-							</div>
-
-							{#if collection?.start_date && collection?.end_date}
-								<div class="flex items-center gap-3">
-									<CalendarIcon class="w-4 h-4 text-base-content/70" />
-									<label class="label-text text-sm font-medium" for="constrain-dates"
-										>{$t('adventures.date_constrain')}</label
-									>
-									<input
-										id="constrain-dates"
-										type="checkbox"
-										class="toggle toggle-primary toggle-sm"
-										bind:checked={constrainDates}
-									/>
+					<div class="dropdown dropdown-end">
+						<button tabindex="0" class="btn btn-ghost btn-sm btn-square">
+							<SettingsIcon class="w-4 h-4" />
+						</button>
+						<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+						<div tabindex="0" class="dropdown-content z-10 bg-base-200 rounded-box shadow-lg p-3 w-72 mt-1">
+							<div class="space-y-3">
+								<div>
+									<label class="label-text text-xs font-medium" for="timezone-selector">{$t('adventures.timezone')}</label>
+									<div class="mt-1">
+										<TimezoneSelector bind:selectedTimezone={selectedStartTimezone} />
+									</div>
 								</div>
-							{/if}
+							</div>
 						</div>
 					</div>
 				</div>
 
-				<!-- Date Selection Section -->
-				<div class="bg-base-50 p-4 rounded-lg border border-base-200 mb-6">
-					<h3 class="font-medium text-base-content/80 mb-4">{$t('adventures.date_selection')}</h3>
+				<!-- Date row + inline toggles -->
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+					<!-- Start Date -->
+					<div>
+						<label class="label-text text-xs font-medium" for="start-date-input">
+							{$t('adventures.start_date')}
+						</label>
+						{#if allDay}
+							<input
+								id="start-date-input"
+								type="date"
+								class="input input-bordered input-sm w-full mt-0.5"
+								bind:value={localStartDate}
+								on:change={handleLocalDateChange}
+								min={constrainDates ? constraintStartDate : ''}
+								max={constrainDates ? constraintEndDate : ''}
+							/>
+						{:else}
+							<input
+								id="start-date-input"
+								type="datetime-local"
+								class="input input-bordered input-sm w-full mt-0.5"
+								bind:value={localStartDate}
+								on:change={handleLocalDateChange}
+								min={constrainDates ? constraintStartDate : ''}
+								max={constrainDates ? constraintEndDate : ''}
+							/>
+						{/if}
+					</div>
 
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<!-- Start Date -->
+					<!-- End Date -->
+					{#if localStartDate}
 						<div>
-							<label class="label-text text-sm font-medium" for="start-date-input">
-								{$t('adventures.start_date')}
+							<label class="label-text text-xs font-medium" for="end-date-input">
+								{$t('adventures.end_date')}
 							</label>
 							{#if allDay}
 								<input
-									id="start-date-input"
+									id="end-date-input"
 									type="date"
-									class="input input-bordered w-full mt-1"
-									bind:value={localStartDate}
+									class="input input-bordered input-sm w-full mt-0.5"
+									bind:value={localEndDate}
 									on:change={handleLocalDateChange}
-									min={constrainDates ? constraintStartDate : ''}
+									min={constrainDates ? localStartDate : ''}
 									max={constrainDates ? constraintEndDate : ''}
 								/>
 							{:else}
 								<input
-									id="start-date-input"
+									id="end-date-input"
 									type="datetime-local"
-									class="input input-bordered w-full mt-1"
-									bind:value={localStartDate}
+									class="input input-bordered input-sm w-full mt-0.5"
+									bind:value={localEndDate}
 									on:change={handleLocalDateChange}
-									min={constrainDates ? constraintStartDate : ''}
+									min={constrainDates ? localStartDate : ''}
 									max={constrainDates ? constraintEndDate : ''}
 								/>
 							{/if}
 						</div>
+					{/if}
+				</div>
 
-						<!-- End Date -->
-						{#if localStartDate}
-							<div>
-								<label class="label-text text-sm font-medium" for="end-date-input">
-									{$t('adventures.end_date')}
-								</label>
-								{#if allDay}
-									<input
-										id="end-date-input"
-										type="date"
-										class="input input-bordered w-full mt-1"
-										bind:value={localEndDate}
-										on:change={handleLocalDateChange}
-										min={constrainDates ? localStartDate : ''}
-										max={constrainDates ? constraintEndDate : ''}
-									/>
-								{:else}
-									<input
-										id="end-date-input"
-										type="datetime-local"
-										class="input input-bordered w-full mt-1"
-										bind:value={localEndDate}
-										on:change={handleLocalDateChange}
-										min={constrainDates ? localStartDate : ''}
-										max={constrainDates ? constraintEndDate : ''}
-									/>
-								{/if}
-							</div>
-						{/if}
-					</div>
+				<!-- Inline toggles -->
+				<div class="flex flex-wrap items-center gap-4 mt-2">
+					<label class="flex items-center gap-1.5 cursor-pointer" for="all-day-toggle">
+						<input
+							id="all-day-toggle"
+							type="checkbox"
+							class="checkbox checkbox-primary checkbox-xs"
+							bind:checked={allDay}
+							on:change={handleAllDayToggle}
+						/>
+						<span class="label-text text-xs">{$t('adventures.all_day')}</span>
+					</label>
 
-					<!-- Notes -->
-					<div class="mt-4">
-						<label class="label-text text-sm font-medium" for="visit-notes"
-							>{$t('adventures.notes')}</label
-						>
-						<textarea
-							id="visit-notes"
-							class="textarea textarea-bordered w-full mt-1"
-							rows="3"
-							placeholder={$t('adventures.notes_placeholder') + '...'}
-							bind:value={note}
-						></textarea>
-					</div>
+					{#if collection?.start_date && collection?.end_date}
+						<label class="flex items-center gap-1.5 cursor-pointer" for="constrain-dates">
+							<input
+								id="constrain-dates"
+								type="checkbox"
+								class="checkbox checkbox-primary checkbox-xs"
+								bind:checked={constrainDates}
+							/>
+							<span class="label-text text-xs">{$t('adventures.date_constrain')}</span>
+						</label>
+					{/if}
+				</div>
 
+				<!-- Notes (compact) -->
+				<div class="mt-2">
+					<label class="label-text text-xs font-medium" for="visit-notes">{$t('adventures.notes')}</label>
+					<textarea
+						id="visit-notes"
+						class="textarea textarea-bordered textarea-sm w-full mt-0.5"
+						rows="2"
+						placeholder={$t('adventures.notes_placeholder') + '...'}
+						bind:value={note}
+					></textarea>
+				</div>
+
+				<!-- Rating + Price + People - single row -->
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
 					<!-- Rating -->
-					<div class="mt-4">
-						<label class="label-text text-sm font-medium">{$t('adventures.rating')}</label>
-						<div class="flex items-center gap-2 mt-1">
-							<StarRating rating={visitRating} size="lg" readonly={false} on:change={(e) => visitRating = e.detail} />
+					<div>
+						<label class="label-text text-xs font-medium">{$t('adventures.rating')}</label>
+						<div class="flex items-center gap-1 mt-0.5">
+							<StarRating rating={visitRating} size="md" readonly={false} on:change={(e) => visitRating = e.detail} />
 							{#if visitRating}
 								<button
 									type="button"
-									class="btn btn-ghost btn-xs"
+									class="btn btn-ghost btn-xs px-1"
 									on:click={() => visitRating = null}
 								>
-									{$t('adventures.clear')}
+									<CloseIcon class="w-3 h-3" />
 								</button>
 							{/if}
 						</div>
 					</div>
 
-					<!-- Price Tracking -->
-					<div class="mt-4 space-y-4">
-						<div>
-							<label class="label-text text-sm font-medium flex items-center gap-2" for="visit-price">
-								<CurrencyIcon class="w-4 h-4" />
-								{$t('adventures.total_cost')}
-							</label>
-							<div class="mt-1">
-								<MoneyInput
-									bind:value={visitPrice}
-									placeholder="0.00"
-									{priorityCurrencies}
-								/>
-							</div>
-						</div>
-						<div class="max-w-xs">
-							<label class="label-text text-sm font-medium flex items-center gap-2" for="visit-people">
-								<UsersIcon class="w-4 h-4" />
-								{$t('adventures.number_of_people')}
-							</label>
-							<input
-								id="visit-people"
-								type="number"
-								class="input input-bordered w-full mt-1"
-								min="1"
-								placeholder="1"
-								bind:value={visitPeopleCount}
+					<!-- Price -->
+					<div>
+						<label class="label-text text-xs font-medium flex items-center gap-1" for="visit-price">
+							<CurrencyIcon class="w-3 h-3" />
+							{$t('adventures.total_cost')}
+						</label>
+						<div class="mt-0.5">
+							<MoneyInput
+								bind:value={visitPrice}
+								placeholder="0.00"
+								{priorityCurrencies}
 							/>
 						</div>
 					</div>
 
-					<!-- Add Visit Button -->
-					<div class="flex justify-end mt-4">
-						<button
-							class="btn btn-primary btn-sm gap-2"
-							type="button"
-							disabled={!localStartDate || !isDateValid}
-							on:click={() => addVisit(false)}
-						>
-							<PlusIcon class="w-4 h-4" />
-							{visitIdEditing ? $t('adventures.update_visit') : $t('adventures.add_visit')}
-						</button>
+					<!-- People count -->
+					<div>
+						<label class="label-text text-xs font-medium flex items-center gap-1" for="visit-people">
+							<UsersIcon class="w-3 h-3" />
+							{$t('adventures.number_of_people')}
+						</label>
+						<input
+							id="visit-people"
+							type="number"
+							class="input input-bordered input-sm w-full mt-0.5"
+							min="1"
+							placeholder="1"
+							bind:value={visitPeopleCount}
+						/>
 					</div>
 				</div>
 
-				<!-- Validation Error -->
+				<!-- Validation error (inline) -->
 				{#if !isDateValid}
-					<div class="alert alert-error mb-6">
-						<AlertIcon class="w-5 h-5" />
-						<span class="text-sm">{$t('adventures.invalid_date_range')}</span>
+					<div class="text-error text-xs flex items-center gap-1 mt-2">
+						<AlertIcon class="w-3.5 h-3.5" />
+						{$t('adventures.invalid_date_range')}
 					</div>
 				{/if}
 
-				<!-- Visits List -->
-				<div class="bg-base-50 p-4 rounded-lg border border-base-200">
-					<h3 class="font-medium text-base-content/80 mb-4">
-						{$t('adventures.visits')} ({visits?.length || 0})
-					</h3>
+				<!-- Action buttons - right aligned -->
+				<div class="flex justify-end gap-2 mt-3">
+					{#if visitIdEditing}
+						<button
+							class="btn btn-ghost btn-sm"
+							type="button"
+							on:click={() => {
+								visitIdEditing = null;
+								note = '';
+								visitRating = null;
+								visitPrice = { amount: null, currency: defaultCurrency };
+								visitPeopleCount = null;
+								localStartDate = '';
+								localEndDate = '';
+								utcStartDate = null;
+								utcEndDate = null;
+							}}
+						>
+							{$t('adventures.cancel')}
+						</button>
+					{/if}
+					<button
+						class="btn btn-primary btn-sm gap-1.5"
+						type="button"
+						disabled={!localStartDate || !isDateValid}
+						on:click={() => addVisit(false)}
+					>
+						{#if visitIdEditing}
+							<CheckIcon class="w-4 h-4" />
+							{$t('adventures.update_visit')}
+						{:else}
+							<PlusIcon class="w-4 h-4" />
+							{$t('adventures.add_visit')}
+						{/if}
+					</button>
+				</div>
+			</div>
+		</div>
 
-					{#if !visits || visits.length === 0}
-						<div class="text-center py-8 text-base-content/60">
-							<CalendarIcon class="w-8 h-8 mx-auto mb-2 opacity-50" />
-							<p class="text-sm">{$t('adventures.no_visits')}</p>
-							<p class="text-xs text-base-content/40 mt-1">
-								{$t('adventures.no_visits_description')}
-							</p>
-						</div>
-					{:else}
-						<div class="space-y-3">
-							{#each visits as visit (visit.id)}
-								<div
-									class="bg-base-100 p-4 rounded-lg border border-base-300 hover:border-base-400 transition-colors"
-								>
+		<!-- Visits History Card (separate) -->
+		<div class="card bg-base-100 border border-base-300 shadow-lg">
+			<div class="card-body p-4">
+				<h3 class="font-medium text-base-content/80 mb-3">
+					{$t('adventures.visits')} ({visits?.length || 0})
+				</h3>
+
+				{#if !visits || visits.length === 0}
+					<div class="text-center py-6 text-base-content/60">
+						<CalendarIcon class="w-6 h-6 mx-auto mb-2 opacity-50" />
+						<p class="text-sm">{$t('adventures.no_visits')}</p>
+						<p class="text-xs text-base-content/40 mt-1">
+							{$t('adventures.no_visits_description')}
+						</p>
+					</div>
+				{:else}
+					<div class="space-y-2">
+						{#each visits as visit (visit.id)}
+							<div
+								class="bg-base-200/30 p-3 rounded-lg border border-base-300 hover:border-base-400 transition-colors"
+							>
 									<div class="flex items-start justify-between">
 										<div class="flex-1 min-w-0">
 											{#if visit.user_username}
@@ -1473,22 +1490,21 @@
 							{/each}
 						</div>
 					{/if}
-				</div>
 			</div>
 		</div>
 
 		<!-- Dates not saved warning -->
 		{#if localStartDate || localEndDate}
-			<div class="alert alert-neutral">
-				<InfoIcon class="w-5 h-5" />
+			<div class="alert alert-neutral alert-sm">
+				<InfoIcon class="w-4 h-4" />
 				<div>
-					<div class="font-medium text-sm">{$t('adventures.dates_not_saved')}</div>
+					<div class="font-medium text-xs">{$t('adventures.dates_not_saved')}</div>
 					<div class="text-xs opacity-75">{$t('adventures.dates_not_saved_description')}</div>
 				</div>
 			</div>
 		{/if}
 
-		<div class="flex gap-3 justify-end pt-4">
+		<div class="flex gap-3 justify-end pt-2">
 			<button class="btn btn-neutral-200 gap-2" on:click={handleBack}>
 				<ArrowLeftIcon class="w-5 h-5" />
 				{$t('adventures.back')}
