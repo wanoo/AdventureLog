@@ -326,6 +326,20 @@
 		};
 	}
 
+	// Build unified search URL - station modes (airport/train/bus) skip internal entity search
+	function buildUnifiedSearchUrl(query: string): string {
+		const params = new URLSearchParams({
+			query,
+			search_mode: searchMode
+		});
+		if (isStationMode) {
+			params.set('include_locations', 'false');
+			params.set('include_lodging', 'false');
+			params.set('include_transportation', 'false');
+		}
+		return `/api/reverse-geocode/unified_search/?${params.toString()}`;
+	}
+
 	async function searchLocations(query: string) {
 		if (!query.trim() || query.length < 3) {
 			searchResults = [];
@@ -337,9 +351,7 @@
 		try {
 			if (unifiedSearch) {
 				// Use unified search endpoint - pass raw query + search_mode (suffix applied server-side to geocoding only)
-				const response = await fetch(
-					`/api/reverse-geocode/unified_search/?query=${encodeURIComponent(query)}&search_mode=${searchMode}`
-				);
+				const response = await fetch(buildUnifiedSearchUrl(query));
 				const data = await response.json();
 				unifiedResults = {
 					addresses: data.addresses || [],
@@ -396,9 +408,7 @@
 		try {
 			if (unifiedSearch) {
 				// Use unified search endpoint - pass raw query + search_mode (suffix applied server-side to geocoding only)
-				const response = await fetch(
-					`/api/reverse-geocode/unified_search/?query=${encodeURIComponent(query)}&search_mode=${searchMode}`
-				);
+				const response = await fetch(buildUnifiedSearchUrl(query));
 				const data = await response.json();
 				startUnifiedResults = {
 					addresses: data.addresses || [],
@@ -454,9 +464,7 @@
 		try {
 			if (unifiedSearch) {
 				// Use unified search endpoint - pass raw query + search_mode (suffix applied server-side to geocoding only)
-				const response = await fetch(
-					`/api/reverse-geocode/unified_search/?query=${encodeURIComponent(query)}&search_mode=${searchMode}`
-				);
+				const response = await fetch(buildUnifiedSearchUrl(query));
 				const data = await response.json();
 				endUnifiedResults = {
 					addresses: data.addresses || [],
