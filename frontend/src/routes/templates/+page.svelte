@@ -247,7 +247,7 @@
 										? $t('adventures.public') || 'Public'
 										: $t('adventures.private') || 'Private'}
 								>
-									<div class="badge badge-sm {template.is_public ? 'badge-secondary' : 'badge-ghost'}">
+									<div class="badge badge-sm {template.is_public ? 'badge-info' : 'badge-ghost'}">
 										{#if template.is_public}
 											<Eye class="w-3 h-3" />
 										{:else}
@@ -320,7 +320,7 @@
 								{#if template.user === data.user?.uuid}
 									<button
 										class="btn btn-ghost btn-sm btn-square"
-										class:text-secondary={template.is_public}
+										class:text-info={template.is_public}
 										on:click={() => togglePublic(template)}
 										disabled={isTogglingPublic === template.id}
 										title={template.is_public

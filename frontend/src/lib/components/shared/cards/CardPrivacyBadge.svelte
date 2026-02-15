@@ -15,7 +15,7 @@
 		data-tip={isPublic ? $t('adventures.public') : $t('adventures.private')}
 	>
 		<div
-			class="badge badge-sm p-1 rounded-full text-base-content shadow-sm"
+			class="badge badge-sm p-1 rounded-full shadow-sm {isPublic ? 'badge-info' : 'badge-ghost'}"
 			role="img"
 			aria-label={isPublic ? $t('adventures.public') : $t('adventures.private')}
 		>

@@ -219,7 +219,7 @@
 			>
 				<div
 					class="badge badge-sm {collection.is_public
-						? 'badge-secondary'
+						? 'badge-info'
 						: 'badge-ghost'} shadow-lg"
 					aria-label={collection.is_public ? $t('adventures.public') : $t('adventures.private')}
 				>
