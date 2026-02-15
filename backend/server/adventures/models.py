@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
 from django_resized import ResizedImageField
 from djmoney.models.fields import MoneyField
-from worldtravel.models import City, Country, Region, VisitedCity, VisitedRegion
+from worldtravel.models import City, Country, Region
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from adventures.utils.timezones import TIMEZONES
@@ -18,121 +18,9 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericRelation
+from adventures.utils.model_mixins import MediaDeletionMixin, SoftDeletableMixin
 
-def background_geocode_and_assign(location_id: str):
-    print(f"[Location Geocode Thread] Starting geocode for location {location_id}")
-    try:
-        location = Location.objects.get(id=location_id)
-        if not (location.latitude and location.longitude):
-            return
-
-        from adventures.geocoding import reverse_geocode  # or wherever you defined it
-        is_visited = location.is_visited_status()
-        result = reverse_geocode(location.latitude, location.longitude, location.user)
-
-        if 'region_id' in result:
-            region = Region.objects.filter(id=result['region_id']).first()
-            if region:
-                location.region = region
-                if is_visited:
-                    VisitedRegion.objects.get_or_create(user=location.user, region=region)
-
-        if 'city_id' in result:
-            city = City.objects.filter(id=result['city_id']).first()
-            if city:
-                location.city = city
-                if is_visited:
-                    VisitedCity.objects.get_or_create(user=location.user, city=city)
-
-        if 'country_id' in result:
-            country = Country.objects.filter(country_code=result['country_id']).first()
-            if country:
-                location.country = country
-
-        # Save updated location info
-        # Save updated location info, skip geocode threading
-        location.save(update_fields=["region", "city", "country"], _skip_geocode=True)
-
-    except Exception as e:
-        # Optional: log or print the error
-        print(f"[Location Geocode Thread] Error processing {location_id}: {e}")
-
-
-def background_geocode_lodging(lodging_id: str):
-    """Geocode lodging to populate country, region, city fields"""
-    print(f"[Lodging Geocode Thread] Starting geocode for lodging {lodging_id}")
-    try:
-        lodging = Lodging.objects.get(id=lodging_id)
-        if not (lodging.latitude and lodging.longitude):
-            return
-
-        from adventures.geocoding import reverse_geocode
-        result = reverse_geocode(lodging.latitude, lodging.longitude, lodging.user)
-
-        if 'region_id' in result:
-            region = Region.objects.filter(id=result['region_id']).first()
-            if region:
-                lodging.region = region
-
-        if 'city_id' in result:
-            city = City.objects.filter(id=result['city_id']).first()
-            if city:
-                lodging.city = city
-
-        if 'country_id' in result:
-            country = Country.objects.filter(country_code=result['country_id']).first()
-            if country:
-                lodging.country = country
-
-        # Update price_currency from country if still the default 'USD'
-        update_fields = ["region", "city", "country"]
-        if lodging.country and str(lodging.price_currency) == 'USD':
-            currency_code = getattr(lodging.country, 'currency_code', None)
-            if currency_code and str(currency_code).strip():
-                lodging.price_currency = str(currency_code).strip()
-                update_fields.append("price_currency")
-
-        lodging.save(update_fields=update_fields, _skip_geocode=True)
-
-    except Exception as e:
-        print(f"[Lodging Geocode Thread] Error processing {lodging_id}: {e}")
-
-
-def background_geocode_transportation(transportation_id: str):
-    """Geocode transportation to populate origin_country and destination_country fields"""
-    print(f"[Transportation Geocode Thread] Starting geocode for transportation {transportation_id}")
-    try:
-        transportation = Transportation.objects.get(id=transportation_id)
-        from adventures.geocoding import reverse_geocode
-
-        # Geocode origin
-        if transportation.origin_latitude and transportation.origin_longitude:
-            result = reverse_geocode(transportation.origin_latitude, transportation.origin_longitude, transportation.user)
-            if 'country_id' in result:
-                country = Country.objects.filter(country_code=result['country_id']).first()
-                if country:
-                    transportation.origin_country = country
-
-        # Geocode destination
-        if transportation.destination_latitude and transportation.destination_longitude:
-            result = reverse_geocode(transportation.destination_latitude, transportation.destination_longitude, transportation.user)
-            if 'country_id' in result:
-                country = Country.objects.filter(country_code=result['country_id']).first()
-                if country:
-                    transportation.destination_country = country
-
-        # Update price_currency from origin country if still the default 'USD'
-        update_fields = ["origin_country", "destination_country"]
-        if transportation.origin_country and str(transportation.price_currency) == 'USD':
-            currency_code = getattr(transportation.origin_country, 'currency_code', None)
-            if currency_code and str(currency_code).strip():
-                transportation.price_currency = str(currency_code).strip()
-                update_fields.append("price_currency")
-
-        transportation.save(update_fields=update_fields, _skip_geocode=True)
-
-    except Exception as e:
-        print(f"[Transportation Geocode Thread] Error processing {transportation_id}: {e}")
+from adventures.utils.geocoding_tasks import background_geocode
 
 def validate_file_extension(value):
     import os
@@ -269,7 +157,7 @@ class ActivityType(models.Model):
     def __str__(self):
         return f"{self.icon} {self.name}"
 
-class Visit(models.Model):
+class Visit(MediaDeletionMixin, models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     # A visit must be associated with exactly one of: Location, Transportation, or Lodging
     location = models.ForeignKey('Location', on_delete=models.CASCADE, related_name='visits', null=True, blank=True)
@@ -306,14 +194,6 @@ class Visit(models.Model):
         if self.start_date and self.end_date and self.start_date > self.end_date:
             raise ValidationError('The start date must be before or equal to the end date.')
 
-    def delete(self, *args, **kwargs):
-        # Delete all associated images and attachments
-        for image in self.images.all():
-            image.delete()
-        for attachment in self.attachments.all():
-            attachment.delete()
-        super().delete(*args, **kwargs)
-
     def __str__(self):
         try:
             if self.location_id and self.location:
@@ -328,7 +208,7 @@ class Visit(models.Model):
             parent_name = "Deleted"
         return f"{parent_name} - {self.start_date} to {self.end_date}"
 
-class Location(models.Model):
+class Location(MediaDeletionMixin, models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=default_user)
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, blank=True, null=True)
@@ -426,23 +306,15 @@ class Location(models.Model):
             return result
 
         if self.latitude and self.longitude:
-            thread = threading.Thread(target=background_geocode_and_assign, args=(str(self.id),))
-            thread.daemon = True  # Allows the thread to exit when the main program ends
+            thread = threading.Thread(target=background_geocode, args=(Location, str(self.id)))
+            thread.daemon = True
             thread.start()
 
         return result
 
-    def delete(self, *args, **kwargs):
-        # Delete all associated images and attachments (handled by GenericRelation)
-        for image in self.images.all():
-            image.delete()
-        for attachment in self.attachments.all():
-            attachment.delete()
-        super().delete(*args, **kwargs)
-
     def __str__(self):
         return self.name
-    
+
 class CollectionInvite(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     collection = models.ForeignKey('Collection', on_delete=models.CASCADE, related_name='invites')
@@ -506,7 +378,7 @@ class Collection(models.Model):
     def __str__(self):
         return self.name
     
-class Transportation(models.Model):
+class Transportation(MediaDeletionMixin, models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=default_user)
     type = models.CharField(max_length=100, choices=TRANSPORTATION_TYPES)
@@ -550,24 +422,16 @@ class Transportation(models.Model):
 
         # Trigger geocoding if origin or destination coordinates are set
         if (self.origin_latitude and self.origin_longitude) or (self.destination_latitude and self.destination_longitude):
-            thread = threading.Thread(target=background_geocode_transportation, args=(str(self.id),))
+            thread = threading.Thread(target=background_geocode, args=(Transportation, str(self.id)))
             thread.daemon = True
             thread.start()
 
         return result
 
-    def delete(self, *args, **kwargs):
-        # Delete all associated images and attachments
-        for image in self.images.all():
-            image.delete()
-        for attachment in self.attachments.all():
-            attachment.delete()
-        super().delete(*args, **kwargs)
-
     def __str__(self):
         return self.name
 
-class Note(models.Model):
+class Note(MediaDeletionMixin, models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=default_user)
     name = models.CharField(max_length=200)
@@ -590,17 +454,9 @@ class Note(models.Model):
             if self.user != self.collection.user:
                 raise ValidationError('Notes must be associated with collections owned by the same user. Collection owner: ' + self.collection.user.username + ' Note owner: ' + self.user.username)
 
-    def delete(self, *args, **kwargs):
-        # Delete all associated images and attachments
-        for image in self.images.all():
-            image.delete()
-        for attachment in self.attachments.all():
-            attachment.delete()
-        super().delete(*args, **kwargs)
-
     def __str__(self):
         return self.name
-    
+
 class Checklist(models.Model):
     # id = models.AutoField(primary_key=True)
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
@@ -654,7 +510,7 @@ class PathAndRename:
         filename = f"{uuid.uuid4()}.{ext}"
         return os.path.join(self.path, filename)
 
-class ContentImage(models.Model):
+class ContentImage(SoftDeletableMixin, models.Model):
     """Generic image model that can be attached to any content type"""
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=default_user)
@@ -708,41 +564,14 @@ class ContentImage(models.Model):
         self.full_clean()
         super().save(*args, **kwargs)
 
-    def delete(self, *args, **kwargs):
-        from django.conf import settings
-        from django.utils import timezone
-
-        # In collaborative mode, soft-delete instead of hard delete
-        if getattr(settings, 'COLLABORATIVE_MODE', False):
-            self.is_deleted = True
-            self.deleted_at = timezone.now()
-            # deleted_by is set by the view
-            self.save(update_fields=['is_deleted', 'deleted_at', 'deleted_by'])
-            return
-
-        # Hard delete: remove file from disk
-        if self.image and os.path.isfile(self.image.path):
-            os.remove(self.image.path)
-        super().delete(*args, **kwargs)
-
-    def hard_delete(self, *args, **kwargs):
-        """Permanently delete the image and its file."""
-        if self.image and os.path.isfile(self.image.path):
-            os.remove(self.image.path)
-        super().delete(*args, **kwargs)
-
-    def restore(self):
-        """Restore a soft-deleted image."""
-        self.is_deleted = False
-        self.deleted_at = None
-        self.deleted_by = None
-        self.save(update_fields=['is_deleted', 'deleted_at', 'deleted_by'])
+    def _get_file_field(self):
+        return self.image
 
     def __str__(self):
         content_name = getattr(self.content_object, 'name', 'Unknown')
         return f"Image for {self.content_type.model}: {content_name}"
 
-class ContentAttachment(models.Model):
+class ContentAttachment(SoftDeletableMixin, models.Model):
     """Generic attachment model that can be attached to any content type"""
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=default_user)
@@ -769,35 +598,8 @@ class ContentAttachment(models.Model):
             models.Index(fields=["content_type", "object_id"]),
         ]
 
-    def delete(self, *args, **kwargs):
-        from django.conf import settings
-        from django.utils import timezone
-
-        # In collaborative mode, soft-delete instead of hard delete
-        if getattr(settings, 'COLLABORATIVE_MODE', False):
-            self.is_deleted = True
-            self.deleted_at = timezone.now()
-            # deleted_by is set by the view
-            self.save(update_fields=['is_deleted', 'deleted_at', 'deleted_by'])
-            return
-
-        # Hard delete: remove file from disk
-        if self.file and os.path.isfile(self.file.path):
-            os.remove(self.file.path)
-        super().delete(*args, **kwargs)
-
-    def hard_delete(self, *args, **kwargs):
-        """Permanently delete the attachment and its file."""
-        if self.file and os.path.isfile(self.file.path):
-            os.remove(self.file.path)
-        super().delete(*args, **kwargs)
-
-    def restore(self):
-        """Restore a soft-deleted attachment."""
-        self.is_deleted = False
-        self.deleted_at = None
-        self.deleted_by = None
-        self.save(update_fields=['is_deleted', 'deleted_at', 'deleted_by'])
+    def _get_file_field(self):
+        return self.file
 
     def __str__(self):
         content_name = getattr(self.content_object, 'name', 'Unknown')
@@ -825,7 +627,7 @@ class Category(models.Model):
     def __str__(self):
         return self.name + ' - ' + self.display_name + ' - ' + self.icon
     
-class Lodging(models.Model):
+class Lodging(MediaDeletionMixin, models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=default_user)
     name = models.CharField(max_length=200)
@@ -864,19 +666,11 @@ class Lodging(models.Model):
             return result
 
         if self.latitude and self.longitude:
-            thread = threading.Thread(target=background_geocode_lodging, args=(str(self.id),))
+            thread = threading.Thread(target=background_geocode, args=(Lodging, str(self.id)))
             thread.daemon = True
             thread.start()
 
         return result
-
-    def delete(self, *args, **kwargs):
-        # Delete all associated images and attachments
-        for image in self.images.all():
-            image.delete()
-        for attachment in self.attachments.all():
-            attachment.delete()
-        super().delete(*args, **kwargs)
 
     def __str__(self):
         return self.name

@@ -7,10 +7,7 @@
 	import { addToast } from '$lib/toasts';
 	import { t } from 'svelte-i18n';
 	import DeleteWarning from '../DeleteWarning.svelte';
-	import { LODGING_TYPES_ICONS } from '$lib';
-	import { formatDateInTimezone } from '$lib/dateUtils';
-	import { formatAllDayDate } from '$lib/dateUtils';
-	import { isAllDay } from '$lib';
+	import { formatVisitDate } from '$lib/dateUtils';
 	import CardCarousel from '../CardCarousel.svelte';
 	import MapMarker from '~icons/mdi/map-marker';
 	import CalendarRemove from '~icons/mdi/calendar-remove';
@@ -20,33 +17,11 @@
 	import Calendar from '~icons/mdi/calendar';
 	import type { CollectionItineraryItem } from '$lib/types';
 	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, PriceBadge, AvgPriceBadge, PriceTierBadge, VisitCountBadge, TagsDisplay, getVisitSummary } from '../shared/cards';
-	import { getLodgingIcon as getLodgingIconFromStore } from '$lib/stores/entityTypes';
+	import { getLodgingIcon } from '$lib/stores/entityTypes';
 
 	let actionsMenu: { close: () => void };
 
 	const dispatch = createEventDispatcher();
-
-	function getLodgingIcon(type: string) {
-		// First try to get from the store (admin-managed types)
-		const storeIcon = getLodgingIconFromStore(type);
-		if (storeIcon !== '🏨') {
-			return storeIcon;
-		}
-		// Fallback to hardcoded icons
-		if (type in LODGING_TYPES_ICONS) {
-			return LODGING_TYPES_ICONS[type as keyof typeof LODGING_TYPES_ICONS];
-		}
-		return '🏨';
-	}
-
-	// Format date for inline display (works for both all-day and timed)
-	function formatVisitDate(date: string | null, timezone: string | null): string {
-		if (!date) return '';
-		if (isAllDay(date)) {
-			return formatAllDayDate(date);
-		}
-		return formatDateInTimezone(date, timezone);
-	}
 
 	// Use LAST visit's dates for display (sorted by start_date desc)
 	$: visitSummary = getVisitSummary(lodging?.visits);

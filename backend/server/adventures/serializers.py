@@ -10,6 +10,7 @@ from geopy.distance import geodesic
 from integrations.models import ImmichIntegration
 from adventures.utils.geojson import gpx_to_geojson
 from adventures.utils.visit_status import VisitStatusMixin
+from adventures.utils.serializer_mixins import OwnershipSerializerMixin, MediaSerializerMixin, RatingCountMixin
 import gpxpy
 import logging
 
@@ -259,7 +260,7 @@ class ActivityTypeSerializer(serializers.ModelSerializer):
         fields = ['id', 'key', 'name', 'icon', 'color', 'display_order']
 
 
-class ContentImageSerializer(CustomModelSerializer):
+class ContentImageSerializer(OwnershipSerializerMixin, CustomModelSerializer):
     user_username = serializers.CharField(source='user.username', read_only=True, default=None)
     is_owner = serializers.SerializerMethodField()
 
@@ -267,13 +268,6 @@ class ContentImageSerializer(CustomModelSerializer):
         model = ContentImage
         fields = ['id', 'image', 'is_primary', 'user', 'immich_id', 'user_username', 'is_owner']
         read_only_fields = ['id', 'user', 'user_username', 'is_owner']
-
-    def get_is_owner(self, obj):
-        """Check if the current user owns this image (can delete it)."""
-        request = self.context.get('request')
-        if request and hasattr(request, 'user') and request.user.is_authenticated:
-            return obj.user == request.user
-        return False
 
     def to_representation(self, instance):
         # If immich_id is set, check for user integration once
@@ -298,7 +292,7 @@ class ContentImageSerializer(CustomModelSerializer):
 
         return representation
     
-class AttachmentSerializer(CustomModelSerializer):
+class AttachmentSerializer(OwnershipSerializerMixin, CustomModelSerializer):
     extension = serializers.SerializerMethodField()
     geojson = serializers.SerializerMethodField()
     user_username = serializers.CharField(source='user.username', read_only=True, default=None)
@@ -308,13 +302,6 @@ class AttachmentSerializer(CustomModelSerializer):
         model = ContentAttachment
         fields = ['id', 'file', 'extension', 'name', 'user', 'geojson', 'user_username', 'is_owner']
         read_only_fields = ['id', 'user', 'user_username', 'is_owner']
-
-    def get_is_owner(self, obj):
-        """Check if the current user owns this attachment (can delete it)."""
-        request = self.context.get('request')
-        if request and hasattr(request, 'user') and request.user.is_authenticated:
-            return obj.user == request.user
-        return False
 
     def get_extension(self, obj):
         return obj.file.name.split('.')[-1]
@@ -334,7 +321,7 @@ class AttachmentSerializer(CustomModelSerializer):
             return gpx_to_geojson(obj.file)
         return None
     
-class CategorySerializer(serializers.ModelSerializer):
+class CategorySerializer(OwnershipSerializerMixin, serializers.ModelSerializer):
     num_locations = serializers.SerializerMethodField()
     is_public = serializers.BooleanField(source='is_global', default=True)
     is_owned = serializers.SerializerMethodField()
@@ -375,11 +362,6 @@ class CategorySerializer(serializers.ModelSerializer):
             return Location.objects.filter(category=obj, user=obj.user).count()
         return 0
 
-    def get_is_owned(self, obj):
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return obj.user == request.user
-        return False
 
 
 class AuditLogSerializer(serializers.ModelSerializer):
@@ -600,7 +582,7 @@ class CalendarLocationSerializer(serializers.ModelSerializer):
         }
 
                                    
-class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
+class LocationSerializer(OwnershipSerializerMixin, MediaSerializerMixin, RatingCountMixin, VisitStatusMixin, CustomModelSerializer):
     """
     Serializer for Location objects.
 
@@ -639,10 +621,6 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'is_owned', 'contributors', 'last_modified_by', 'average_rating', 'rating_count', 'average_price_per_user', 'price_tier']
 
-    def get_rating_count(self, obj):
-        """Return the count of visits with a rating."""
-        return obj.visits.filter(rating__isnull=False).count()
-
     def get_average_price_per_user(self, obj):
         """
         Calculate average price per user from visit-level costs.
@@ -679,12 +657,6 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
     def get_price_tier(self, obj):
         """Calculate local price tier (1-4) based on country comparison."""
         return _calculate_price_tier(obj, entity_type='location')
-
-    def get_is_owned(self, obj):
-        request = self.context.get('request')
-        if request and hasattr(request, 'user') and request.user.is_authenticated:
-            return obj.user == request.user
-        return False
 
     def get_contributors(self, obj):
         """
@@ -791,12 +763,6 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
                     representation.pop(field, None)
 
         return representation
-
-
-    def get_images(self, obj):
-        serializer = ContentImageSerializer(obj.images.filter(is_deleted=False), many=True, context=self.context)
-        # Filter out None values from the serialized data
-        return [image for image in serializer.data if image is not None]
 
     def validate_collections(self, collections):
         """Validate that collections are compatible with the location being created/updated"""
@@ -979,7 +945,7 @@ class LocationSerializer(VisitStatusMixin, CustomModelSerializer):
 
         return instance
     
-class MapPinSerializer(VisitStatusMixin, serializers.ModelSerializer):
+class MapPinSerializer(OwnershipSerializerMixin, VisitStatusMixin, serializers.ModelSerializer):
     """Lightweight serializer for location pins on the map. Inherits get_is_visited from VisitStatusMixin."""
     is_visited = serializers.SerializerMethodField()
     is_owned = serializers.SerializerMethodField()
@@ -993,18 +959,12 @@ class MapPinSerializer(VisitStatusMixin, serializers.ModelSerializer):
 
     # get_is_visited is inherited from VisitStatusMixin
 
-    def get_is_owned(self, obj):
-        request = self.context.get('request')
-        if request and hasattr(request, 'user') and request.user.is_authenticated:
-            return obj.user == request.user
-        return False
-
     def get_price_tier(self, obj):
         tier_data = _calculate_price_tier(obj, 'location')
         return tier_data.get('tier') if tier_data else None
 
 
-class LodgingMapPinSerializer(VisitStatusMixin, serializers.ModelSerializer):
+class LodgingMapPinSerializer(OwnershipSerializerMixin, VisitStatusMixin, serializers.ModelSerializer):
     """Lightweight serializer for lodging pins on the map. Inherits get_is_visited from VisitStatusMixin."""
     is_visited = serializers.SerializerMethodField()
     is_owned = serializers.SerializerMethodField()
@@ -1017,18 +977,12 @@ class LodgingMapPinSerializer(VisitStatusMixin, serializers.ModelSerializer):
 
     # get_is_visited is inherited from VisitStatusMixin
 
-    def get_is_owned(self, obj):
-        request = self.context.get('request')
-        if request and hasattr(request, 'user') and request.user.is_authenticated:
-            return obj.user == request.user
-        return False
-
     def get_price_tier(self, obj):
         tier_data = _calculate_price_tier(obj, 'lodging')
         return tier_data.get('tier') if tier_data else None
 
 
-class TransportationMapPinSerializer(VisitStatusMixin, serializers.ModelSerializer):
+class TransportationMapPinSerializer(OwnershipSerializerMixin, VisitStatusMixin, serializers.ModelSerializer):
     """Lightweight serializer for transportation pins on the map. Inherits get_is_visited from VisitStatusMixin."""
     is_visited = serializers.SerializerMethodField()
     is_owned = serializers.SerializerMethodField()
@@ -1045,12 +999,6 @@ class TransportationMapPinSerializer(VisitStatusMixin, serializers.ModelSerializ
         read_only_fields = fields + ['average_rating', 'price_tier']
 
     # get_is_visited is inherited from VisitStatusMixin
-
-    def get_is_owned(self, obj):
-        request = self.context.get('request')
-        if request and hasattr(request, 'user') and request.user.is_authenticated:
-            return obj.user == request.user
-        return False
 
     def get_price_tier(self, obj):
         """Return average price per user for transportation (no tier comparison)."""
@@ -1077,7 +1025,7 @@ class TransportationMapPinSerializer(VisitStatusMixin, serializers.ModelSerializ
         }
 
 
-class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
+class TransportationSerializer(MediaSerializerMixin, RatingCountMixin, VisitStatusMixin, CustomModelSerializer):
     distance = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
     attachments = serializers.SerializerMethodField()
@@ -1107,10 +1055,6 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
             'travel_duration_minutes', 'visits', 'is_visited', 'average_price_per_user', 'price_tier'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'distance', 'travel_duration_minutes', 'is_visited', 'average_rating', 'rating_count', 'average_price_per_user', 'price_tier', 'origin_country']
-
-    def get_rating_count(self, obj):
-        """Return the count of visits with a rating."""
-        return obj.visits.filter(rating__isnull=False).count()
 
     def get_average_price_per_user(self, obj):
         """
@@ -1153,16 +1097,6 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
             'average_price': avg['amount'],
             'currency': avg['currency']
         }
-
-    def get_images(self, obj):
-        serializer = ContentImageSerializer(obj.images.filter(is_deleted=False), many=True, context=self.context)
-        # Filter out None values from the serialized data
-        return [image for image in serializer.data if image is not None]
-
-    def get_attachments(self, obj):
-        serializer = AttachmentSerializer(obj.attachments.filter(is_deleted=False), many=True, context=self.context)
-        # Filter out None values from the serialized data
-        return [attachment for attachment in serializer.data if attachment is not None]
 
     def get_distance(self, obj):
         gpx_distance = self._get_gpx_distance_km(obj)
@@ -1252,7 +1186,7 @@ class TransportationSerializer(VisitStatusMixin, CustomModelSerializer):
     # get_is_visited inherited from VisitStatusMixin
 
 
-class LodgingSerializer(VisitStatusMixin, CustomModelSerializer):
+class LodgingSerializer(MediaSerializerMixin, RatingCountMixin, VisitStatusMixin, CustomModelSerializer):
     images = serializers.SerializerMethodField()
     attachments = serializers.SerializerMethodField()
     visits = VisitSerializer(many=True, read_only=True)
@@ -1278,10 +1212,6 @@ class LodgingSerializer(VisitStatusMixin, CustomModelSerializer):
             'average_price_per_user_per_night', 'price_tier'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'is_visited', 'average_rating', 'rating_count', 'average_price_per_user_per_night', 'price_tier', 'country']
-
-    def get_rating_count(self, obj):
-        """Return the count of visits with a rating."""
-        return obj.visits.filter(rating__isnull=False).count()
 
     def get_average_price_per_user_per_night(self, obj):
         """
@@ -1326,16 +1256,6 @@ class LodgingSerializer(VisitStatusMixin, CustomModelSerializer):
     def get_price_tier(self, obj):
         """Calculate local price tier (1-4) based on country comparison."""
         return _calculate_price_tier(obj, entity_type='lodging')
-
-    def get_images(self, obj):
-        serializer = ContentImageSerializer(obj.images.filter(is_deleted=False), many=True, context=self.context)
-        # Filter out None values from the serialized data
-        return [image for image in serializer.data if image is not None]
-
-    def get_attachments(self, obj):
-        serializer = AttachmentSerializer(obj.attachments.filter(is_deleted=False), many=True, context=self.context)
-        # Filter out None values from the serialized data
-        return [attachment for attachment in serializer.data if attachment is not None]
 
     # get_is_visited inherited from VisitStatusMixin
 
@@ -1655,7 +1575,7 @@ class CollectionInviteSerializer(serializers.ModelSerializer):
         fields = ['id', 'collection', 'created_at', 'name', 'collection_owner_username', 'collection_user_first_name', 'collection_user_last_name']
         read_only_fields = ['id', 'created_at']
 
-class UltraSlimCollectionSerializer(serializers.ModelSerializer):
+class UltraSlimCollectionSerializer(OwnershipSerializerMixin, serializers.ModelSerializer):
     location_images = serializers.SerializerMethodField()
     location_count = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
@@ -1674,12 +1594,6 @@ class UltraSlimCollectionSerializer(serializers.ModelSerializer):
             'adventure_type'
         ]
         read_only_fields = fields  # All fields are read-only for listing
-
-    def get_is_owned(self, obj):
-        request = self.context.get('request')
-        if request and hasattr(request, 'user') and request.user.is_authenticated:
-            return obj.user == request.user
-        return False
 
     def get_collaborators(self, obj):
         request = self.context.get('request')

@@ -1,4 +1,5 @@
 import { writable, derived, get } from 'svelte/store';
+import { TRANSPORTATION_TYPES_ICONS, LODGING_TYPES_ICONS } from '$lib';
 
 export interface EntityType {
 	id: number;
@@ -100,18 +101,28 @@ export async function fetchEntityTypes(): Promise<void> {
 	}
 }
 
-// Helper to get icon for a transportation type
+// Helper to get icon for a transportation type (store first, then hardcoded fallback)
 export function getTransportationIcon(typeKey: string | null | undefined): string {
+	if (!typeKey) return '🚗';
 	const types = get(transportationTypes);
 	const type = types.find((t) => t.key === typeKey);
-	return type?.icon || '🚗';
+	if (type?.icon) return type.icon;
+	if (typeKey in TRANSPORTATION_TYPES_ICONS) {
+		return TRANSPORTATION_TYPES_ICONS[typeKey as keyof typeof TRANSPORTATION_TYPES_ICONS];
+	}
+	return '🚗';
 }
 
-// Helper to get icon for a lodging type
+// Helper to get icon for a lodging type (store first, then hardcoded fallback)
 export function getLodgingIcon(typeKey: string | null | undefined): string {
+	if (!typeKey) return '🏨';
 	const types = get(lodgingTypes);
 	const type = types.find((t) => t.key === typeKey);
-	return type?.icon || '🏨';
+	if (type?.icon) return type.icon;
+	if (typeKey in LODGING_TYPES_ICONS) {
+		return LODGING_TYPES_ICONS[typeKey as keyof typeof LODGING_TYPES_ICONS];
+	}
+	return '🏨';
 }
 
 // Helper to get icon for an adventure type (collection category)

@@ -10,7 +10,8 @@
 
 	import ImageDisplayModal from '$lib/components/ImageDisplayModal.svelte';
 	import AttachmentCard from '$lib/components/cards/AttachmentCard.svelte';
-	import { getBasemapUrl, isAllDay, TRANSPORTATION_TYPES_ICONS } from '$lib';
+	import { getBasemapUrl, isAllDay } from '$lib';
+	import { getTransportationIcon } from '$lib/stores/entityTypes';
 	import Star from '~icons/mdi/star';
 	import StarOutline from '~icons/mdi/star-outline';
 	import MapMarker from '~icons/mdi/map-marker';
@@ -39,7 +40,8 @@ import { fetchExchangeRates, formatConvertedPrice, ratesLoaded } from '$lib/stor
 		sortVisitsChronologically,
 		getTotalActivities,
 		getTotalDistance,
-		getTotalElevationGain
+		getTotalElevationGain,
+		renderStars
 	} from '$lib/components/shared/detail';
 
 	export let data: PageData;
@@ -133,21 +135,6 @@ import { fetchExchangeRates, formatConvertedPrice, ratesLoaded } from '$lib/stor
 		}
 
 		return badges;
-	}
-
-	function getTransportationIcon(type: string) {
-		if (type in TRANSPORTATION_TYPES_ICONS) {
-			return TRANSPORTATION_TYPES_ICONS[type as keyof typeof TRANSPORTATION_TYPES_ICONS];
-		}
-		return '🚗';
-	}
-
-	function renderStars(rating: number) {
-		const stars = [];
-		for (let i = 1; i <= 5; i++) {
-			stars.push(i <= rating);
-		}
-		return stars;
 	}
 
 	const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'UTC';

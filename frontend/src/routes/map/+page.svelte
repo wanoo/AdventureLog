@@ -6,7 +6,8 @@
 	import type { LodgingPin, TransportationPin } from './+page.server';
 	import type { ClusterOptions } from 'svelte-maplibre';
 	import { goto } from '$app/navigation';
-	import { getActivityColor, LODGING_TYPES_ICONS, TRANSPORTATION_TYPES_ICONS } from '$lib';
+	import { getActivityColor } from '$lib';
+	import { getTransportationIcon, getLodgingIcon } from '$lib/stores/entityTypes';
 	import { page } from '$app/stores';
 
 	// Icons
@@ -473,17 +474,6 @@
 	function markerLabelResolver(props: { categoryIcon?: string } | null): string {
 		if (!props) return '📍';
 		return props.categoryIcon || '📍';
-	}
-
-	// Helper functions to safely get icons with type checking
-	function getLodgingIcon(type: string | null | undefined): string {
-		if (!type) return '🏨';
-		return (LODGING_TYPES_ICONS as Record<string, string>)[type] || '🏨';
-	}
-
-	function getTransportationIcon(type: string | null | undefined): string {
-		if (!type) return '🚗';
-		return (TRANSPORTATION_TYPES_ICONS as Record<string, string>)[type] || '🚗';
 	}
 
 	// Get URL for a grouped item based on its type

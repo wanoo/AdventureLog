@@ -7,9 +7,7 @@
 	import { addToast } from '$lib/toasts';
 	import { t } from 'svelte-i18n';
 	import DeleteWarning from '../DeleteWarning.svelte';
-	import { TRANSPORTATION_TYPES_ICONS } from '$lib';
-	import { formatAllDayDate, formatDateInTimezone } from '$lib/dateUtils';
-	import { isAllDay } from '$lib';
+	import { formatVisitDate } from '$lib/dateUtils';
 	import CardCarousel from '../CardCarousel.svelte';
 	import TransportationRoutePreview from './TransportationRoutePreview.svelte';
 	import Calendar from '~icons/mdi/calendar';
@@ -19,33 +17,11 @@
 	import { goto } from '$app/navigation';
 	import type { CollectionItineraryItem } from '$lib/types';
 	import { CardActionsMenu, CardStatusBadge, CardPrivacyBadge, RatingDisplay, AvgPriceBadge, VisitCountBadge, TagsDisplay, getVisitSummary } from '../shared/cards';
-	import { getTransportationIcon as getTransportationIconFromStore } from '$lib/stores/entityTypes';
+	import { getTransportationIcon } from '$lib/stores/entityTypes';
 
 	let actionsMenu: { close: () => void };
 
-	function getTransportationIcon(type: string) {
-		// First try to get from the store (admin-managed types)
-		const storeIcon = getTransportationIconFromStore(type);
-		if (storeIcon !== '🚗') {
-			return storeIcon;
-		}
-		// Fallback to hardcoded icons
-		if (type in TRANSPORTATION_TYPES_ICONS) {
-			return TRANSPORTATION_TYPES_ICONS[type as keyof typeof TRANSPORTATION_TYPES_ICONS];
-		}
-		return '🚗';
-	}
-
 	const dispatch = createEventDispatcher();
-
-	// Format date for inline display (works for both all-day and timed)
-	function formatVisitDate(date: string | null, timezone: string | null): string {
-		if (!date) return '';
-		if (isAllDay(date)) {
-			return formatAllDayDate(date);
-		}
-		return formatDateInTimezone(date, timezone);
-	}
 
 	export let transportation: Transportation;
 	export let user: User | null = null;

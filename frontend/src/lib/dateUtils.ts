@@ -113,6 +113,14 @@ export function formatUTCDate(utcDate: string | null): string {
 	return dateTime.toISO()?.slice(0, 16).replace('T', ' ') || '';
 }
 
+export function formatVisitDate(date: string | null, timezone: string | null): string {
+	if (!date) return '';
+	if (isAllDay(date)) {
+		return formatAllDayDate(date);
+	}
+	return formatDateInTimezone(date, timezone);
+}
+
 export function formatAllDayDate(dateString: string): string {
 	if (!dateString) return '';
 	const datePart = dateString.split('T')[0];
