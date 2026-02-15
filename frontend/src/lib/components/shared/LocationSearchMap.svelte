@@ -11,6 +11,7 @@
 		lon: number;
 		type?: string;
 		category?: string;
+		code?: string | null;
 		source: 'address' | 'location' | 'lodging' | 'departure' | 'arrival';
 	};
 </script>
@@ -312,7 +313,7 @@
 	}
 
 	// Helper to convert unified search result to GeoSelection
-	function unifiedToGeoSelection(result: UnifiedSearchResult): GeoSelection & { source?: string } {
+	function unifiedToGeoSelection(result: UnifiedSearchResult): GeoSelection & { source?: string; code?: string | null } {
 		return {
 			name: result.name,
 			lat: result.lat,
@@ -320,7 +321,8 @@
 			location: result.display_name,
 			type: result.type,
 			category: result.category,
-			source: result.source
+			source: result.source,
+			code: result.code
 		};
 	}
 
@@ -334,10 +336,9 @@
 		isSearching = true;
 		try {
 			if (unifiedSearch) {
-				// Use unified search endpoint
-				const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
+				// Use unified search endpoint - pass raw query + search_mode (suffix applied server-side to geocoding only)
 				const response = await fetch(
-					`/api/reverse-geocode/unified_search/?query=${encodeURIComponent(searchTerm)}`
+					`/api/reverse-geocode/unified_search/?query=${encodeURIComponent(query)}&search_mode=${searchMode}`
 				);
 				const data = await response.json();
 				unifiedResults = {
@@ -356,7 +357,7 @@
 					...unifiedResults.addresses.map(unifiedToGeoSelection)
 				];
 			} else {
-				// Original geocode-only search
+				// Original geocode-only search (suffix still useful for pure geocoding)
 				const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
 				const response = await fetch(
 					`/api/reverse-geocode/search/?query=${encodeURIComponent(searchTerm)}`
@@ -394,10 +395,9 @@
 		isSearchingStart = true;
 		try {
 			if (unifiedSearch) {
-				// Use unified search endpoint
-				const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
+				// Use unified search endpoint - pass raw query + search_mode (suffix applied server-side to geocoding only)
 				const response = await fetch(
-					`/api/reverse-geocode/unified_search/?query=${encodeURIComponent(searchTerm)}`
+					`/api/reverse-geocode/unified_search/?query=${encodeURIComponent(query)}&search_mode=${searchMode}`
 				);
 				const data = await response.json();
 				startUnifiedResults = {
@@ -453,10 +453,9 @@
 		isSearchingEnd = true;
 		try {
 			if (unifiedSearch) {
-				// Use unified search endpoint
-				const searchTerm = `${query}${SEARCH_MODE_CONFIG[searchMode].suffix}`;
+				// Use unified search endpoint - pass raw query + search_mode (suffix applied server-side to geocoding only)
 				const response = await fetch(
-					`/api/reverse-geocode/unified_search/?query=${encodeURIComponent(searchTerm)}`
+					`/api/reverse-geocode/unified_search/?query=${encodeURIComponent(query)}&search_mode=${searchMode}`
 				);
 				const data = await response.json();
 				endUnifiedResults = {
@@ -595,19 +594,21 @@
 		await performDetailedReverseGeocode(searchResult.lat, searchResult.lng);
 	}
 
-	async function selectStartSearchResult(searchResult: GeoSelection) {
+	async function selectStartSearchResult(searchResult: GeoSelection & { code?: string | null }) {
 		selectedStartLocation = searchResult;
 		startMarker = { lng: searchResult.lng, lat: searchResult.lat };
 		startSearchResults = [];
 
 		const typedQuery = startSearchQuery;
+		// Prefer backend-provided code (from departure/arrival entities)
+		const backendCode = searchResult.code || null;
 
 		// Handle codes based on mode
 		if (isAirportMode) {
 			// Airport mode: derive IATA codes
 			const airportCodeMatch = searchResult.name.match(/\(([A-Z]{3})\)/);
 			startSearchQuery = airportCodeMatch ? airportCodeMatch[1] : searchResult.name;
-			startCode = resolveCode(searchResult, typedQuery);
+			startCode = backendCode || resolveCode(searchResult, typedQuery);
 			if (!startCode) {
 				startCode =
 					deriveCode(searchResult.name, startSearchQuery) || deriveCode(searchResult.location);
@@ -616,9 +617,9 @@
 				startSearchQuery = startCode;
 			}
 		} else if (isStationMode) {
-			// Train/bus mode: will use city name after reverse geocode
+			// Train/bus mode: prefer backend code, then city name after reverse geocode
 			startSearchQuery = searchResult.location || searchResult.name;
-			startCode = null; // Will be set after reverse geocode
+			startCode = backendCode; // Will be set after reverse geocode if still null
 		} else {
 			// Address/cab/vtc mode: no codes
 			startSearchQuery = searchResult.location || searchResult.name;
@@ -627,27 +628,29 @@
 
 		await performDetailedReverseGeocode(searchResult.lat, searchResult.lng, 'start');
 
-		// For train/bus, set code to city name after reverse geocode
-		if (isStationMode && !isAirportMode && startLocationData?.city?.name) {
+		// For train/bus, set code to city name after reverse geocode (only if not already set)
+		if (isStationMode && !isAirportMode && !startCode && startLocationData?.city?.name) {
 			startCode = startLocationData.city.name;
 		}
 		updateMapBounds();
 		emitTransportationUpdate();
 	}
 
-	async function selectEndSearchResult(searchResult: GeoSelection) {
+	async function selectEndSearchResult(searchResult: GeoSelection & { code?: string | null }) {
 		selectedEndLocation = searchResult;
 		endMarker = { lng: searchResult.lng, lat: searchResult.lat };
 		endSearchResults = [];
 
 		const typedQuery = endSearchQuery;
+		// Prefer backend-provided code (from departure/arrival entities)
+		const backendCode = searchResult.code || null;
 
 		// Handle codes based on mode
 		if (isAirportMode) {
 			// Airport mode: derive IATA codes
 			const airportCodeMatch = searchResult.name.match(/\(([A-Z]{3})\)/);
 			endSearchQuery = airportCodeMatch ? airportCodeMatch[1] : searchResult.name;
-			endCode = resolveCode(searchResult, typedQuery);
+			endCode = backendCode || resolveCode(searchResult, typedQuery);
 			if (!endCode) {
 				endCode =
 					deriveCode(searchResult.name, endSearchQuery) || deriveCode(searchResult.location);
@@ -656,9 +659,9 @@
 				endSearchQuery = endCode;
 			}
 		} else if (isStationMode) {
-			// Train/bus mode: will use city name after reverse geocode
+			// Train/bus mode: prefer backend code, then city name after reverse geocode
 			endSearchQuery = searchResult.location || searchResult.name;
-			endCode = null; // Will be set after reverse geocode
+			endCode = backendCode; // Will be set after reverse geocode if still null
 		} else {
 			// Address/cab/vtc mode: no codes
 			endSearchQuery = searchResult.location || searchResult.name;
@@ -667,8 +670,8 @@
 
 		await performDetailedReverseGeocode(searchResult.lat, searchResult.lng, 'end');
 
-		// For train/bus, set code to city name after reverse geocode
-		if (isStationMode && !isAirportMode && endLocationData?.city?.name) {
+		// For train/bus, set code to city name after reverse geocode (only if not already set)
+		if (isStationMode && !isAirportMode && !endCode && endLocationData?.city?.name) {
 			endCode = endLocationData.city.name;
 		}
 		updateMapBounds();
@@ -1020,6 +1023,10 @@
 					<span class="loading loading-spinner loading-sm"></span>
 					<span class="ml-2 text-sm text-base-content/60">{$t('adventures.searching')}...</span>
 				</div>
+			{:else if startSearchQuery.length >= 3 && startSearchResults.length === 0 && !selectedStartLocation}
+				<div class="text-center py-3 text-sm text-base-content/50">
+					{$t('adventures.no_results')}
+				</div>
 			{:else if startSearchResults.length > 0}
 				<div class="space-y-2">
 					<div class="max-h-48 overflow-y-auto space-y-1">
@@ -1203,6 +1210,10 @@
 				<div class="flex items-center justify-center py-4">
 					<span class="loading loading-spinner loading-sm"></span>
 					<span class="ml-2 text-sm text-base-content/60">{$t('adventures.searching')}...</span>
+				</div>
+			{:else if endSearchQuery.length >= 3 && endSearchResults.length === 0 && !selectedEndLocation}
+				<div class="text-center py-3 text-sm text-base-content/50">
+					{$t('adventures.no_results')}
 				</div>
 			{:else if endSearchResults.length > 0}
 				<div class="space-y-2">
