@@ -29,7 +29,7 @@
 		start_date: collectionToEdit?.start_date || null,
 		end_date: collectionToEdit?.end_date || null,
 		user: collectionToEdit?.user || '',
-		is_public: collectionToEdit?.is_public || false,
+		is_public: collectionToEdit?.is_public ?? true,
 		locations: collectionToEdit?.locations || [],
 		link: collectionToEdit?.link || '',
 		shared_with: collectionToEdit?.shared_with || [],

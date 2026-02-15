@@ -32,7 +32,7 @@
 	} = {
 		name: '',
 		category: null,
-		is_public: false,
+		is_public: true,
 		link: '',
 		description: '',
 		latitude: null,
@@ -137,7 +137,7 @@
 			if (!location.name) location.name = initialLocation.name || '';
 			if (!location.link) location.link = initialLocation.link || '';
 			if (!location.description) location.description = initialLocation.description || '';
-			if (location.is_public === false) location.is_public = initialLocation.is_public || false;
+			if (location.is_public === false) location.is_public = initialLocation.is_public ?? true;
 
 			if (!location.category || !location.category.id) {
 				if (initialLocation.category && initialLocation.category.id) {

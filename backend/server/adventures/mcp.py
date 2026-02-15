@@ -289,7 +289,7 @@ class AdventureLogTools(MCPToolset):
         longitude: Optional[float] = None,
         description: str = "",
         location: str = "",
-        is_public: bool = False,
+        is_public: bool = True,
         tags: Optional[list] = None
     ) -> dict:
         """
@@ -349,7 +349,7 @@ class AdventureLogTools(MCPToolset):
         destination_latitude: Optional[float] = None,
         destination_longitude: Optional[float] = None,
         flight_number: str = "",
-        is_public: bool = False,
+        is_public: bool = True,
         tags: Optional[list] = None
     ) -> dict:
         """
@@ -413,7 +413,7 @@ class AdventureLogTools(MCPToolset):
         latitude: Optional[float] = None,
         longitude: Optional[float] = None,
         reservation_number: str = "",
-        is_public: bool = False,
+        is_public: bool = True,
         tags: Optional[list] = None
     ) -> dict:
         """
@@ -1000,7 +1000,7 @@ class AdventureLogTools(MCPToolset):
         description: str = "",
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
-        is_public: bool = False
+        is_public: bool = True
     ) -> dict:
         """
         Create a new trip collection.
@@ -1329,7 +1329,7 @@ class AdventureLogTools(MCPToolset):
         collection_id: Optional[str] = None,
         date: Optional[str] = None,
         links: Optional[list] = None,
-        is_public: bool = False
+        is_public: bool = True
     ) -> dict:
         """
         Create a new note, optionally linked to a collection.
@@ -1489,7 +1489,7 @@ class AdventureLogTools(MCPToolset):
         items: Optional[list] = None,
         collection_id: Optional[str] = None,
         date: Optional[str] = None,
-        is_public: bool = False
+        is_public: bool = True
     ) -> dict:
         """
         Create a new checklist with optional items.
