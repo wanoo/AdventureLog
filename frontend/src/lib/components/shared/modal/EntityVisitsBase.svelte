@@ -788,7 +788,7 @@
 					</div>
 				</div>
 
-				<!-- Date row + inline toggles -->
+				<!-- Date row -->
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
 					<!-- Start Date -->
 					<div>
@@ -819,34 +819,32 @@
 					</div>
 
 					<!-- End Date -->
-					{#if localStartDate}
-						<div>
-							<label class="label-text text-xs font-medium" for="end-date-input">
-								{$t('adventures.end_date')}
-							</label>
-							{#if allDay}
-								<input
-									id="end-date-input"
-									type="date"
-									class="input input-bordered input-sm w-full mt-0.5"
-									bind:value={localEndDate}
-									on:change={handleLocalDateChange}
-									min={constrainDates ? localStartDate : ''}
-									max={constrainDates ? constraintEndDate : ''}
-								/>
-							{:else}
-								<input
-									id="end-date-input"
-									type="datetime-local"
-									class="input input-bordered input-sm w-full mt-0.5"
-									bind:value={localEndDate}
-									on:change={handleLocalDateChange}
-									min={constrainDates ? localStartDate : ''}
-									max={constrainDates ? constraintEndDate : ''}
-								/>
-							{/if}
-						</div>
-					{/if}
+					<div>
+						<label class="label-text text-xs font-medium" for="end-date-input">
+							{$t('adventures.end_date')}
+						</label>
+						{#if allDay}
+							<input
+								id="end-date-input"
+								type="date"
+								class="input input-bordered input-sm w-full mt-0.5"
+								bind:value={localEndDate}
+								on:change={handleLocalDateChange}
+								min={constrainDates ? localStartDate : ''}
+								max={constrainDates ? constraintEndDate : ''}
+							/>
+						{:else}
+							<input
+								id="end-date-input"
+								type="datetime-local"
+								class="input input-bordered input-sm w-full mt-0.5"
+								bind:value={localEndDate}
+								on:change={handleLocalDateChange}
+								min={constrainDates ? localStartDate : ''}
+								max={constrainDates ? constraintEndDate : ''}
+							/>
+						{/if}
+					</div>
 				</div>
 
 				<!-- Inline toggles -->
@@ -887,27 +885,26 @@
 					></textarea>
 				</div>
 
-				<!-- Rating + Price + People - single row -->
-				<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
-					<!-- Rating -->
-					<div>
-						<label class="label-text text-xs font-medium">{$t('adventures.rating')}</label>
-						<div class="flex items-center gap-1 mt-0.5">
-							<StarRating rating={visitRating} size="md" readonly={false} on:change={(e) => visitRating = e.detail} />
-							{#if visitRating}
-								<button
-									type="button"
-									class="btn btn-ghost btn-xs px-1"
-									on:click={() => visitRating = null}
-								>
-									<CloseIcon class="w-3 h-3" />
-								</button>
-							{/if}
-						</div>
+				<!-- Rating -->
+				<div class="mt-2">
+					<label class="label-text text-xs font-medium">{$t('adventures.rating')}</label>
+					<div class="flex items-center gap-2 mt-0.5">
+						<StarRating rating={visitRating} size="lg" readonly={false} on:change={(e) => visitRating = e.detail} />
+						{#if visitRating}
+							<button
+								type="button"
+								class="btn btn-ghost btn-xs px-1"
+								on:click={() => visitRating = null}
+							>
+								<CloseIcon class="w-3 h-3" />
+							</button>
+						{/if}
 					</div>
+				</div>
 
-					<!-- Price -->
-					<div>
+				<!-- Price + People -->
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
+					<div class="md:col-span-2">
 						<label class="label-text text-xs font-medium flex items-center gap-1" for="visit-price">
 							<CurrencyIcon class="w-3 h-3" />
 							{$t('adventures.total_cost')}
@@ -921,7 +918,6 @@
 						</div>
 					</div>
 
-					<!-- People count -->
 					<div>
 						<label class="label-text text-xs font-medium flex items-center gap-1" for="visit-people">
 							<UsersIcon class="w-3 h-3" />
@@ -930,7 +926,7 @@
 						<input
 							id="visit-people"
 							type="number"
-							class="input input-bordered input-sm w-full mt-0.5"
+							class="input input-bordered w-full mt-0.5"
 							min="1"
 							placeholder="1"
 							bind:value={visitPeopleCount}
@@ -1064,9 +1060,9 @@
 
 											<!-- Price info -->
 											{#if visit.total_price !== null && visit.total_price !== undefined}
-												<div class="flex items-center gap-2 mt-2">
-													<CurrencyIcon class="w-3 h-3 text-warning" />
-													<span class="text-xs text-warning font-medium">
+												<div class="flex items-center gap-1.5 mt-2">
+													<span class="text-sm">💰</span>
+													<span class="text-xs text-success font-medium">
 														{formatMoney(toMoneyValue(visit.total_price, visit.total_price_currency))}
 														{#if visit.number_of_people && visit.number_of_people > 1}
 															<span class="text-base-content/60">
