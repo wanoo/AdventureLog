@@ -92,10 +92,13 @@ def _convert_from_usd(amount_usd, target_currency_code):
 
 
 def _get_entity_currency(entity, entity_type):
-    """Get the country currency code for an entity, fallback to USD."""
+    """
+    Get the display currency for an entity.
+    Priority: country currency > most common visit currency > USD.
+    """
+    # 1. Try country currency
     candidates = []
     if entity_type == 'transportation':
-        # Try origin first, then destination
         candidates = [
             getattr(entity, 'origin_country', None),
             getattr(entity, 'destination_country', None),
@@ -108,6 +111,20 @@ def _get_entity_currency(entity, entity_type):
             code = getattr(country, 'currency_code', None)
             if code and str(code).strip():
                 return str(code).strip()
+
+    # 2. Fallback: most common currency across visits
+    visits_rel = getattr(entity, 'visits', None)
+    if visits_rel:
+        visits_with_price = visits_rel.filter(total_price__isnull=False)
+        if visits_with_price.exists():
+            from collections import Counter
+            currencies = Counter(
+                str(v.total_price_currency) for v in visits_with_price
+                if v.total_price_currency and str(v.total_price_currency) != 'USD'
+            )
+            if currencies:
+                return currencies.most_common(1)[0][0]
+
     return 'USD'
 
 
