@@ -92,10 +92,10 @@
 
 	<!-- Action Buttons -->
 	<div class="flex gap-3 pt-4">
-		<button class="btn btn-neutral-200 flex-1" on:click={() => dispatch('cancel')}>
+		<button type="button" class="btn btn-neutral-200 flex-1" on:click={() => dispatch('cancel')}>
 			{$t('adventures.cancel') || 'Cancel'}
 		</button>
-		<button class="btn btn-primary flex-1" on:click={continueWithLocations}>
+		<button type="button" class="btn btn-primary flex-1" on:click={continueWithLocations}>
 			{#if isReverseGeocoding}
 				<span class="loading loading-spinner loading-xs"></span>
 			{:else}

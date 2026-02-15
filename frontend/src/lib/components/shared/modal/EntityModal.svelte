@@ -40,6 +40,7 @@
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Escape') {
+			event.preventDefault(); // Prevent native dialog close (we handle it ourselves)
 			close();
 		}
 	}
@@ -51,7 +52,7 @@
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-<dialog bind:this={modal} id={modalId} class="modal backdrop-blur-sm">
+<dialog bind:this={modal} id={modalId} class="modal backdrop-blur-sm" on:cancel|preventDefault>
 	<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div
