@@ -29,7 +29,6 @@
 		"clear": "Leegmaken",
 		"collection": "Collectie",
 		"create_new": "Maak nieuw...",
-		"date": "Datum",
 		"delete": "Verwijderen",
 		"delete_collection": "Collectie verwijderen",
 		"delete_collection_success": "Collectie succesvol verwijderd!",
@@ -447,7 +446,49 @@
 		"export_zip": "ZIP exporteren",
 		"import_failed": "Importeren mislukt",
 		"import_from_file": "Importeren uit bestand",
-		"import_success": "Succes importeren"
+		"import_success": "Succes importeren",
+		"last_visited": "Laatst bezocht",
+		"last_stay": "Laatste verblijf",
+		"last_trip": "Laatste reis",
+		"import_existing": "Bestaand importeren",
+		"last_visit": "Laatste bezoek",
+		"created_at": "Aangemaakt",
+		"ratings": "beoordelingen",
+		"stars": "sterren",
+		"average_rating": "Gemiddelde beoordeling",
+		"min_rating": "Minimale beoordeling",
+		"min_price_tier": "Minimum prijsniveau",
+		"total_cost": "Totale kosten",
+		"number_of_people": "Aantal personen",
+		"people": "personen",
+		"avg_per_user": "Gem. per persoon",
+		"avg_per_user_per_night": "Gem. per persoon/nacht",
+		"avg_price": "Gemiddelde prijs",
+		"price_tier_budget": "Budget",
+		"price_tier_moderate": "Gemiddeld",
+		"price_tier_expensive": "Duur",
+		"price_tier_premium": "Premium",
+		"based_on_visits": "gebaseerd op {count} bezoek(en)",
+		"all_locations": "Alle locaties",
+		"public_locations": "Openbare locaties",
+		"departure_station": "Vertrekstation",
+		"departure_stop": "Vertrekhalte",
+		"arrival_station": "Aankomststation",
+		"arrival_stop": "Aankomsthalte",
+		"airport": "Luchthaven",
+		"train": "Trein",
+		"bus": "Bus",
+		"station_name_examples": "Stationnaam (bijv. Amsterdam Centraal)",
+		"bus_stop_examples": "Naam bushalte",
+		"cab": "Taxi",
+		"vtc": "Privéchauffeur",
+		"pickup_location": "Ophaallocatie",
+		"dropoff_location": "Afzetlocatie",
+		"address_examples": "Adres, plaats...",
+		"address": "Adres",
+		"addresses": "Adressen",
+		"departures": "Vertrekken ↗",
+		"arrivals": "Aankomsten ↙"
 	},
 	"home": {
 		"desc_1": "Ontdek, plan en verken met gemak",
@@ -496,7 +537,10 @@
 		"calendar": "Kalender",
 		"admin_panel": "Admin -paneel",
 		"navigation": "Navigatie",
-		"worldtravel": "Wereldreizen"
+		"worldtravel": "Wereldreizen",
+		"locations": "Locaties",
+		"lodging": "Accommodatie",
+		"transportation": "Vervoer"
 	},
 	"auth": {
 		"confirm_password": "Bevestig wachtwoord",
@@ -737,7 +781,22 @@
 		"activities": "Activiteiten",
 		"trails": "Paden",
 		"use_imperial": "Gebruik imperiale eenheden",
-		"use_imperial_desc": "Gebruik imperiale eenheden (voeten, inches, ponden) in plaats van metrische eenheden"
+		"use_imperial_desc": "Gebruik imperiale eenheden (voeten, inches, ponden) in plaats van metrische eenheden",
+		"mcp_title": "AI-assistent (MCP)",
+		"mcp_desc": "Verbind Claude of andere AI-assistenten om je avonturen te beheren",
+		"mcp_endpoint": "MCP-eindpunt",
+		"api_token": "API-token",
+		"no_mcp_token": "Geen API-token aanwezig. Maak er een aan om AI-assistenten te verbinden.",
+		"mcp_help": "Gebruik dit token om Claude Desktop of Claude Code te verbinden met AdventureLog.",
+		"mcp_instructions": "Voeg de MCP-eindpunt-URL toe en gebruik het token voor authenticatie.",
+		"mcp_token_created": "API-token aangemaakt",
+		"mcp_token_deleted": "API-token verwijderd",
+		"mcp_token_error": "Fout bij beheren van API-token",
+		"copied_to_clipboard": "Gekopieerd naar klembord",
+		"token_created": "Aangemaakt",
+		"regenerate_token": "Token opnieuw genereren",
+		"revoke_token": "Token intrekken",
+		"create_token": "API-token aanmaken"
 	},
 	"checklist": {
 		"checklist_delete_error": "Fout bij het verwijderen van de checklist",
@@ -798,7 +857,12 @@
 		"duplicated_success": "Collection duplicated successfully",
 		"duplicate_error": "Error duplicating collection",
 		"save_as_template": "Save as Template",
-		"template_saved_success": "Template saved successfully"
+		"template_saved_success": "Template saved successfully",
+		"adventure_type": "Type",
+		"no_type": "-- Geen type --",
+		"public_collections": "Openbare collecties",
+		"no_public_collections": "Geen openbare collecties gevonden.",
+		"no_public_collections_desc": "Openbare collecties van andere gebruikers verschijnen hier."
 	},
 	"notes": {
 		"content": "Inhoud",
@@ -820,7 +884,6 @@
 	"transportation": {
 		"edit": "Bewerk",
 		"edit_transportation": "Vervoer bewerken",
-		"flight_number": "Vluchtnummer",
 		"from_location": "Vertreklocatie",
 		"modes": {
 			"bike": "Fiets",
@@ -830,7 +893,9 @@
 			"car": "Auto",
 			"other": "Ander",
 			"plane": "Vliegtuig",
-			"walking": "Wandelen"
+			"walking": "Wandelen",
+			"cab": "Taxi",
+			"vtc": "Privéchauffeur"
 		},
 		"to_location": "Aankomstlocatie",
 		"type": "Type",
@@ -841,12 +906,11 @@
 		"transportation_delete_error": "Fout bij verwijderen vervoer",
 		"transportation_deleted": "Vervoer succesvol verwijderd!",
 		"create_new_transportation": "Nieuw transport",
-		"enter_flight_number": "Voer het vluchtnummer in",
 		"enter_from_location": "Voer vanaf de locatie in",
 		"enter_link": "Voer link in",
 		"enter_to_location": "Ga naar de locatie",
 		"enter_transportation_name": "Voer de transportnaam in",
-		"select_type": "Selecteer type",
+		"select_type": "Select a type",
 		"update_transportation_details": "Update transportdetails",
 		"arrival_code": "Aankomstcode",
 		"arrival_date": "Aankomstdatum",
@@ -859,8 +923,17 @@
 		"move_to_collection_confirm": "Dit vervoer zit al in een andere collectie. Naar deze collectie verplaatsen?",
 		"linked_success": "Vervoer succesvol gekoppeld",
 		"linked_error": "",
-		"type": "Type",
-		"select_type": "Select a type"
+		"transport_id": "Vervoer-ID",
+		"enter_transport_id": "bijv. AF765, TGV 8876, #4453536",
+		"departure": "Vertrek",
+		"arrival": "Aankomst",
+		"items": "items",
+		"from": "Van (Vertrek)",
+		"to": "Naar (Aankomst)",
+		"from_placeholder": "Voer vertreklocatie in...",
+		"to_placeholder": "Voer aankomstlocatie in...",
+		"click_map_hint": "Klik op de kaart om de vertrek- of aankomstlocatie in te stellen",
+		"airport_mode": "Luchthavenmodus"
 	},
 	"search": {
 		"cities": "Steden",
@@ -885,7 +958,8 @@
 		"locations_shown": "Getoonde locaties",
 		"place_marker_desc_location": "Klik op de kaart om een ​​marker te plaatsen.",
 		"show_visited_cities": "Bezochte steden",
-		"search_locations": "Locaties zoeken..."
+		"search_locations": "Locaties zoeken...",
+		"clear_filters": "Filters wissen"
 	},
 	"share": {
 		"no_users_shared": "Er zijn geen gebruikers gedeeld",
@@ -928,7 +1002,9 @@
 		"select_category": "Selecteer een categorie",
 		"add_new_category": "Voeg een nieuwe categorie toe",
 		"name_required": "Categorienaam is vereist",
-		"location_update_after_refresh": "De locatiekaarten worden bijgewerkt zodra u de pagina vernieuwt."
+		"location_update_after_refresh": "De locatiekaarten worden bijgewerkt zodra u de pagina vernieuwt.",
+		"make_public": "Openbaar",
+		"public_description": "Openbare categorieën zijn zichtbaar en bruikbaar voor alle gebruikers"
 	},
 	"dashboard": {
 		"countries_visited": "Bezochte landen",
@@ -944,7 +1020,10 @@
 		"welcome_text_2": "Avonturen tot nu toe",
 		"welcome_text_3": "Blijf je reizen verkennen en documenteren!",
 		"recent_travel_plans": "Je recente reisplannen",
-		"recent_accommodations": "Je recente accommodaties"
+		"recent_accommodations": "Je recente accommodaties",
+		"places_visited": "Bezochte plaatsen",
+		"total_transportation_km": "Totale afgelegde afstand",
+		"total_lodging_nights": "Overnachtingen"
 	},
 	"immich": {
 		"api_key": "Immich API-sleutel",
@@ -1038,7 +1117,9 @@
 		"linked_success": "Accommodatie succesvol gekoppeld",
 		"linked_error": "",
 		"type": "Type",
-		"select_type": "Select a type"
+		"select_type": "Select a type",
+		"search_placeholder": "Voer hotel, adres of stad in...",
+		"enter_link": "Voer link in"
 	},
 	"google_maps": {
 		"google_maps_integration_desc": "Sluit uw Google Maps-account aan om zoekresultaten en aanbevelingen van hoge kwaliteit te krijgen.",
@@ -1105,7 +1186,10 @@
 		"not_found": "Collectie niet gevonden",
 		"statistics": "Statistieken",
 		"times_shown_in": "Tijden weergegeven in",
-		"trip_costs": "Reiskosten"
+		"trip_costs": "Reiskosten",
+		"all_collections": "Alle collecties",
+		"my_collections_tab": "Mijn collecties",
+		"public_collections": "Openbare collecties"
 	},
 	"common": {
 		"show_less": "Details verbergen",
@@ -1167,7 +1251,13 @@
 		"trip_context": "Reiscontext",
 		"trip_context_info": "Reiscontextitems zijn van toepassing op de hele reis, bijvoorbeeld locaties die de bestemming zelf vormen, algemene opmerkingen of paklijsten die belangrijk zijn voor de hele reis.",
 		"unscheduled_items": "Niet-geplande items",
-		"unscheduled_items_desc": "Deze items zijn gekoppeld aan deze reis, maar nog niet toegevoegd aan een specifieke dag."
+		"unscheduled_items_desc": "Deze items zijn gekoppeld aan deze reis, maar nog niet toegevoegd aan een specifieke dag.",
+		"broken_item": "Ontbrekend item",
+		"broken_item_desc": "Het gekoppelde {type} bestaat niet meer of is verwijderd.",
+		"remove_broken_item": "Defecte vermelding verwijderen",
+		"remove_broken_item_confirm": "Deze defecte vermelding uit het reisschema verwijderen?",
+		"broken_item_removed": "Defecte vermelding verwijderd",
+		"broken_item_remove_error": "Kon defecte vermelding niet verwijderen"
 	},
 	"templates": {
 		"title": "Collection Templates",

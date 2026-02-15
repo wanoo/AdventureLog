@@ -54,7 +54,6 @@
 		"copy_failed": "복사 실패",
 		"copy_link": "링크 복사",
 		"create_new": "새로 만들기...",
-		"date": "일자",
 		"date_constrain": "컬렉션 일자로 제한",
 		"date_information": "일자 정보",
 		"dates": "일자",
@@ -447,7 +446,49 @@
 		"export_zip": "우편번호 내보내기",
 		"import_failed": "가져오기 실패",
 		"import_from_file": "파일에서 가져오기",
-		"import_success": "가져오기 성공"
+		"import_success": "가져오기 성공",
+		"last_visited": "최근 방문",
+		"last_stay": "최근 숙박",
+		"last_trip": "최근 이동",
+		"import_existing": "기존 가져오기",
+		"last_visit": "최근 방문",
+		"created_at": "생성일",
+		"ratings": "평가",
+		"stars": "별",
+		"average_rating": "평균 평점",
+		"min_rating": "최소 평점",
+		"min_price_tier": "최소 가격대",
+		"total_cost": "총 비용",
+		"number_of_people": "인원 수",
+		"people": "명",
+		"avg_per_user": "1인당 평균",
+		"avg_per_user_per_night": "1인1박 평균",
+		"avg_price": "평균 가격",
+		"price_tier_budget": "저렴한",
+		"price_tier_moderate": "보통",
+		"price_tier_expensive": "비싼",
+		"price_tier_premium": "프리미엄",
+		"based_on_visits": "{count}회 방문 기준",
+		"all_locations": "모든 장소",
+		"public_locations": "공개 장소",
+		"departure_station": "출발역",
+		"departure_stop": "출발 정류장",
+		"arrival_station": "도착역",
+		"arrival_stop": "도착 정류장",
+		"airport": "공항",
+		"train": "기차",
+		"bus": "버스",
+		"station_name_examples": "역 이름 (예: 서울역)",
+		"bus_stop_examples": "버스 정류장 이름",
+		"cab": "택시",
+		"vtc": "전용 차량",
+		"pickup_location": "탑승 장소",
+		"dropoff_location": "하차 장소",
+		"address_examples": "주소, 장소...",
+		"address": "주소",
+		"addresses": "주소 목록",
+		"departures": "출발 ↗",
+		"arrivals": "도착 ↙"
 	},
 	"auth": {
 		"confirm_password": "비밀번호 확인",
@@ -484,7 +525,9 @@
 		"select_category": "카테고리 선택",
 		"add_new_category": "새 카테고리를 추가하십시오",
 		"name_required": "카테고리 이름이 필요합니다",
-		"location_update_after_refresh": "페이지를 새로 고치면 위치 카드가 업데이트됩니다."
+		"location_update_after_refresh": "페이지를 새로 고치면 위치 카드가 업데이트됩니다.",
+		"make_public": "공개",
+		"public_description": "공개 카테고리는 모든 사용자가 볼 수 있고 사용할 수 있습니다"
 	},
 	"checklist": {
 		"checklist_delete_error": "체크리스트 삭제 오류",
@@ -545,7 +588,12 @@
 		"duplicated_success": "Collection duplicated successfully",
 		"duplicate_error": "Error duplicating collection",
 		"save_as_template": "Save as Template",
-		"template_saved_success": "Template saved successfully"
+		"template_saved_success": "Template saved successfully",
+		"adventure_type": "유형",
+		"no_type": "-- 유형 없음 --",
+		"public_collections": "공개 컬렉션",
+		"no_public_collections": "공개 컬렉션을 찾을 수 없습니다.",
+		"no_public_collections_desc": "다른 사용자의 공개 컬렉션이 여기에 표시됩니다."
 	},
 	"dashboard": {
 		"countries_visited": "방문한 국가",
@@ -561,7 +609,10 @@
 		"welcome_text_2": "지금까지 모험",
 		"welcome_text_3": "여행을 계속 탐색하고 문서화하십시오!",
 		"recent_travel_plans": "최근 여행 계획",
-		"recent_accommodations": "최근 숙소"
+		"recent_accommodations": "최근 숙소",
+		"places_visited": "방문한 장소",
+		"total_transportation_km": "총 이동 거리",
+		"total_lodging_nights": "숙박 일수"
 	},
 	"home": {
 		"desc_1": "쉽고 편리하게 발견하고, 계획하고, 탐험하세요",
@@ -632,7 +683,8 @@
 		"locations_shown": "표시된 위치",
 		"place_marker_desc_location": "지도를 클릭하여 마커를 배치하십시오.",
 		"show_visited_cities": "도시를 방문했습니다",
-		"search_locations": "위치 검색..."
+		"search_locations": "위치 검색...",
+		"clear_filters": "필터 초기화"
 	},
 	"navbar": {
 		"about": "Adventurelog 소개",
@@ -663,7 +715,10 @@
 		"users": "사용자",
 		"admin_panel": "관리자 패널",
 		"navigation": "항해",
-		"worldtravel": "세계여행"
+		"worldtravel": "세계여행",
+		"locations": "장소",
+		"lodging": "숙소",
+		"transportation": "교통"
 	},
 	"notes": {
 		"content": "콘텐츠",
@@ -876,7 +931,22 @@
 		"activities": "활동",
 		"trails": "트레일",
 		"use_imperial": "제국 유닛을 사용하십시오",
-		"use_imperial_desc": "메트릭 단위 대신 황실 단위 (피트, 인치, 파운드)를 사용하십시오."
+		"use_imperial_desc": "메트릭 단위 대신 황실 단위 (피트, 인치, 파운드)를 사용하십시오.",
+		"mcp_title": "AI 어시스턴트 (MCP)",
+		"mcp_desc": "Claude 또는 다른 AI 어시스턴트를 연결하여 모험을 관리하세요",
+		"mcp_endpoint": "MCP 엔드포인트",
+		"api_token": "API 토큰",
+		"no_mcp_token": "API 토큰이 없습니다. AI 어시스턴트를 연결하려면 생성하세요.",
+		"mcp_help": "이 토큰을 사용하여 Claude Desktop 또는 Claude Code를 AdventureLog에 연결하세요.",
+		"mcp_instructions": "MCP 엔드포인트 URL을 추가하고 토큰으로 인증하세요.",
+		"mcp_token_created": "API 토큰 생성됨",
+		"mcp_token_deleted": "API 토큰 삭제됨",
+		"mcp_token_error": "API 토큰 관리 실패",
+		"copied_to_clipboard": "클립보드에 복사됨",
+		"token_created": "생성됨",
+		"regenerate_token": "토큰 재생성",
+		"revoke_token": "토큰 철회",
+		"create_token": "API 토큰 생성"
 	},
 	"share": {
 		"no_users_shared": "공유한 사용자가 없습니다",
@@ -899,7 +969,6 @@
 	"transportation": {
 		"edit": "편집",
 		"edit_transportation": "교통수단 편집",
-		"flight_number": "항공편 번호",
 		"from_location": "출발지",
 		"modes": {
 			"bike": "자전거",
@@ -909,7 +978,9 @@
 			"other": "기타",
 			"plane": "비행기",
 			"train": "기차",
-			"walking": "도보"
+			"walking": "도보",
+			"cab": "택시",
+			"vtc": "전용 차량"
 		},
 		"new_transportation": "새 교통수단",
 		"my_transportations": "내 교통수단",
@@ -918,14 +989,13 @@
 		"to_location": "도착지",
 		"transportation_delete_error": "교통수단 삭제 오류",
 		"transportation_deleted": "교통수단이 성공적으로 삭제되었습니다!",
-		"type": "유형",
+		"type": "Type",
 		"create_new_transportation": "새로운 교통",
-		"enter_flight_number": "비행 번호를 입력하십시오",
 		"enter_from_location": "위치에서 입력하십시오",
 		"enter_link": "링크를 입력하십시오",
 		"enter_to_location": "위치에 입력하십시오",
 		"enter_transportation_name": "운송 이름을 입력하십시오",
-		"select_type": "유형을 선택하십시오",
+		"select_type": "Select a type",
 		"update_transportation_details": "전송 세부 사항을 업데이트하십시오",
 		"arrival_code": "도착 코드",
 		"arrival_date": "도착 날짜",
@@ -938,8 +1008,17 @@
 		"move_to_collection_confirm": "이 교통수단은 이미 다른 컬렉션에 있습니다. 이 컬렉션으로 이동하시겠습니까?",
 		"linked_success": "교통수단이 성공적으로 연결되었습니다",
 		"linked_error": "",
-		"type": "Type",
-		"select_type": "Select a type"
+		"transport_id": "교통편 ID",
+		"enter_transport_id": "예: AF765, TGV 8876, #4453536",
+		"departure": "출발",
+		"arrival": "도착",
+		"items": "항목",
+		"from": "출발지",
+		"to": "도착지",
+		"from_placeholder": "출발 장소 입력...",
+		"to_placeholder": "도착 장소 입력...",
+		"click_map_hint": "지도를 클릭하여 출발지 또는 도착지를 설정하세요",
+		"airport_mode": "공항 모드"
 	},
 	"users": {
 		"no_users_found": "공개 프로필인 사용자가 없습니다."
@@ -1038,7 +1117,9 @@
 		"linked_success": "숙박시설이 성공적으로 연결되었습니다",
 		"linked_error": "",
 		"type": "Type",
-		"select_type": "Select a type"
+		"select_type": "Select a type",
+		"search_placeholder": "호텔, 주소 또는 도시 입력...",
+		"enter_link": "링크 입력"
 	},
 	"google_maps": {
 		"google_maps_integration_desc": "Google지도 계정을 연결하여 고품질 위치 검색 결과 및 권장 사항을 얻으십시오.",
@@ -1105,7 +1186,10 @@
 		"not_found": "컬렉션을 찾을 수 없습니다",
 		"statistics": "통계",
 		"times_shown_in": "표시된 시간",
-		"trip_costs": "여행 비용"
+		"trip_costs": "여행 비용",
+		"all_collections": "모든 컬렉션",
+		"my_collections_tab": "내 컬렉션",
+		"public_collections": "공개 컬렉션"
 	},
 	"common": {
 		"show_less": "세부정보 숨기기",
@@ -1167,7 +1251,13 @@
 		"trip_context": "여행 상황",
 		"trip_context_info": "여행 컨텍스트 항목은 전체 여행에 적용됩니다. 예를 들어 목적지 자체인 위치, 일반 참고 사항, 전체 여행에 중요한 짐 목록 등이 있습니다.",
 		"unscheduled_items": "예정되지 않은 품목",
-		"unscheduled_items_desc": "이 항목은 이 여행에 연결되어 있지만 아직 특정 날짜에 추가되지 않았습니다."
+		"unscheduled_items_desc": "이 항목은 이 여행에 연결되어 있지만 아직 특정 날짜에 추가되지 않았습니다.",
+		"broken_item": "누락된 항목",
+		"broken_item_desc": "연결된 {type}이(가) 더 이상 존재하지 않거나 삭제되었습니다.",
+		"remove_broken_item": "손상된 항목 제거",
+		"remove_broken_item_confirm": "이 손상된 항목을 일정에서 제거하시겠습니까?",
+		"broken_item_removed": "손상된 항목 제거됨",
+		"broken_item_remove_error": "손상된 항목 제거 실패"
 	},
 	"templates": {
 		"title": "Collection Templates",

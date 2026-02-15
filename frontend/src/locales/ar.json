@@ -69,7 +69,6 @@
 		"copy_coordinates": "نسخ الإحداثيات",
 		"copy_failed": "فشل النسخة",
 		"create_new": "إنشاء جديد ...",
-		"date": "تاريخ",
 		"date_constrain": "تقييد تواريخ التجميع",
 		"date_information": "معلومات التاريخ",
 		"dates": "بلح",
@@ -447,7 +446,49 @@
 		"export_zip": "تصدير الرمز البريدي",
 		"import_failed": "فشل الاستيراد",
 		"import_from_file": "استيراد من ملف",
-		"import_success": "نجاح الاستيراد"
+		"import_success": "نجاح الاستيراد",
+		"last_visited": "آخر زيارة",
+		"last_stay": "آخر إقامة",
+		"last_trip": "آخر رحلة",
+		"import_existing": "استيراد موجود",
+		"last_visit": "آخر زيارة",
+		"created_at": "تاريخ الإنشاء",
+		"ratings": "تقييمات",
+		"stars": "نجوم",
+		"average_rating": "متوسط التقييم",
+		"min_rating": "الحد الأدنى للتقييم",
+		"min_price_tier": "الحد الأدنى لمستوى السعر",
+		"total_cost": "التكلفة الإجمالية",
+		"number_of_people": "عدد الأشخاص",
+		"people": "أشخاص",
+		"avg_per_user": "المتوسط لكل شخص",
+		"avg_per_user_per_night": "المتوسط لكل شخص/ليلة",
+		"avg_price": "متوسط السعر",
+		"price_tier_budget": "اقتصادي",
+		"price_tier_moderate": "متوسط",
+		"price_tier_expensive": "مكلف",
+		"price_tier_premium": "فاخر",
+		"based_on_visits": "بناءً على {count} زيارة/زيارات",
+		"all_locations": "جميع الأماكن",
+		"public_locations": "الأماكن العامة",
+		"departure_station": "محطة المغادرة",
+		"departure_stop": "موقف المغادرة",
+		"arrival_station": "محطة الوصول",
+		"arrival_stop": "موقف الوصول",
+		"airport": "مطار",
+		"train": "قطار",
+		"bus": "حافلة",
+		"station_name_examples": "اسم المحطة (مثال: محطة القاهرة)",
+		"bus_stop_examples": "اسم محطة الحافلات",
+		"cab": "سيارة أجرة",
+		"vtc": "سيارة مع سائق",
+		"pickup_location": "موقع الالتقاط",
+		"dropoff_location": "موقع الإنزال",
+		"address_examples": "عنوان، مكان...",
+		"address": "العنوان",
+		"addresses": "العناوين",
+		"departures": "المغادرات ↗",
+		"arrivals": "الوصول ↙"
 	},
 	"auth": {
 		"confirm_password": "تأكيد كلمة المرور",
@@ -497,7 +538,9 @@
 		"manage_categories": "إدارة الفئات",
 		"name_required": "اسم الفئة مطلوب",
 		"no_categories_found": "لم يتم العثور على فئات.",
-		"select_category": "حدد الفئة"
+		"select_category": "حدد الفئة",
+		"make_public": "عام",
+		"public_description": "الفئات العامة مرئية وقابلة للاستخدام من قبل جميع المستخدمين"
 	},
 	"checklist": {
 		"checklist_delete_error": "خطأ حذف قائمة المراجعة",
@@ -558,7 +601,12 @@
 		"duplicated_success": "Collection duplicated successfully",
 		"duplicate_error": "Error duplicating collection",
 		"save_as_template": "Save as Template",
-		"template_saved_success": "Template saved successfully"
+		"template_saved_success": "Template saved successfully",
+		"adventure_type": "النوع",
+		"no_type": "-- بدون نوع --",
+		"public_collections": "المجموعات العامة",
+		"no_public_collections": "لا توجد مجموعات عامة.",
+		"no_public_collections_desc": "ستظهر هنا المجموعات العامة من مستخدمين آخرين."
 	},
 	"dashboard": {
 		"countries_visited": "الدول التي تمت زيارتها",
@@ -574,7 +622,10 @@
 		"welcome_text_2": "مغامرات حتى الآن",
 		"welcome_text_3": "استمر في استكشاف وتوثيق رحلاتك!",
 		"recent_travel_plans": "خطط سفرك الأخيرة",
-		"recent_accommodations": "أماكن إقامتك الأخيرة"
+		"recent_accommodations": "أماكن إقامتك الأخيرة",
+		"places_visited": "الأماكن التي تمت زيارتها",
+		"total_transportation_km": "إجمالي المسافة المقطوعة",
+		"total_lodging_nights": "ليالي الإقامة"
 	},
 	"google_maps": {
 		"google_maps_integration_desc": "قم بتوصيل حساب خرائط Google الخاص بك للحصول على نتائج وتوصيات بحث عالية الجودة.",
@@ -682,7 +733,9 @@
 		"linked_success": "تم ربط الإقامة بنجاح",
 		"linked_error": "",
 		"type": "Type",
-		"select_type": "Select a type"
+		"select_type": "Select a type",
+		"search_placeholder": "أدخل فندق، عنوان أو مدينة...",
+		"enter_link": "أدخل الرابط"
 	},
 	"map": {
 		"add_location": "أضف موقعًا جديدًا",
@@ -699,7 +752,8 @@
 		"regions": "المناطق",
 		"view_details": "عرض التفاصيل",
 		"show_visited_cities": "زار المدن",
-		"search_locations": "مواقع البحث..."
+		"search_locations": "مواقع البحث...",
+		"clear_filters": "مسح الفلاتر"
 	},
 	"navbar": {
 		"about": "حول المغامرة",
@@ -730,7 +784,10 @@
 		},
 		"users": "المستخدمون",
 		"navigation": "ملاحة",
-		"worldtravel": "السفر العالمي"
+		"worldtravel": "السفر العالمي",
+		"locations": "الأماكن",
+		"lodging": "الإقامة",
+		"transportation": "النقل"
 	},
 	"notes": {
 		"content": "محتوى",
@@ -943,7 +1000,22 @@
 		"world_travel_visits": "زيارات السفر العالمية",
 		"mfa_desc": "أضف طبقة إضافية من الأمان إلى حسابك",
 		"mfa_disabled": "تعطيل المصادقة متعددة العوامل بنجاح!",
-		"mfa_is_enabled": "يتم تمكين MFA"
+		"mfa_is_enabled": "يتم تمكين MFA",
+		"mcp_title": "مساعد الذكاء الاصطناعي (MCP)",
+		"mcp_desc": "اربط Claude أو مساعدين ذكاء اصطناعي آخرين لإدارة مغامراتك",
+		"mcp_endpoint": "نقطة وصول MCP",
+		"api_token": "رمز API",
+		"no_mcp_token": "لا يوجد رمز API. أنشئ واحداً لربط مساعدي الذكاء الاصطناعي.",
+		"mcp_help": "استخدم هذا الرمز لربط Claude Desktop أو Claude Code بـ AdventureLog.",
+		"mcp_instructions": "أضف عنوان نقطة وصول MCP واستخدم الرمز للمصادقة.",
+		"mcp_token_created": "تم إنشاء رمز API",
+		"mcp_token_deleted": "تم حذف رمز API",
+		"mcp_token_error": "فشل في إدارة رمز API",
+		"copied_to_clipboard": "تم النسخ إلى الحافظة",
+		"token_created": "تم الإنشاء",
+		"regenerate_token": "إعادة إنشاء الرمز",
+		"revoke_token": "إلغاء الرمز",
+		"create_token": "إنشاء رمز API"
 	},
 	"settings_download_backup": "تنزيل النسخ الاحتياطي",
 	"share": {
@@ -977,7 +1049,6 @@
 	"transportation": {
 		"edit": "يحرر",
 		"edit_transportation": "تحرير النقل",
-		"flight_number": "رقم الرحلة",
 		"from_location": "من الموقع",
 		"modes": {
 			"bike": "دراجة",
@@ -987,7 +1058,9 @@
 			"other": "آخر",
 			"plane": "طائرة",
 			"train": "يدرب",
-			"walking": "المشي"
+			"walking": "المشي",
+			"cab": "سيارة أجرة",
+			"vtc": "سيارة مع سائق"
 		},
 		"new_transportation": "نقل جديد",
 		"my_transportations": "وسائل النقل الخاصة بي",
@@ -996,14 +1069,13 @@
 		"to_location": "إلى الموقع",
 		"transportation_delete_error": "خطأ حذف النقل",
 		"transportation_deleted": "تم حذف النقل بنجاح!",
-		"type": "يكتب",
+		"type": "Type",
 		"create_new_transportation": "نقل جديد",
-		"enter_flight_number": "أدخل رقم الرحلة",
 		"enter_from_location": "أدخل من الموقع",
 		"enter_link": "أدخل الرابط",
 		"enter_to_location": "أدخل إلى الموقع",
 		"enter_transportation_name": "أدخل اسم النقل",
-		"select_type": "حدد النوع",
+		"select_type": "Select a type",
 		"update_transportation_details": "تحديث تفاصيل النقل",
 		"arrival_code": "رمز الوصول",
 		"arrival_date": "تاريخ الوصول",
@@ -1016,8 +1088,17 @@
 		"move_to_collection_confirm": "هذا النقل موجود بالفعل في مجموعة أخرى. هل تريد نقله إلى هذه المجموعة؟",
 		"linked_success": "تم ربط النقل بنجاح",
 		"linked_error": "",
-		"type": "Type",
-		"select_type": "Select a type"
+		"transport_id": "معرّف النقل",
+		"enter_transport_id": "مثال: AF765, TGV 8876, #4453536",
+		"departure": "المغادرة",
+		"arrival": "الوصول",
+		"items": "عناصر",
+		"from": "من (المغادرة)",
+		"to": "إلى (الوصول)",
+		"from_placeholder": "أدخل موقع المغادرة...",
+		"to_placeholder": "أدخل موقع الوصول...",
+		"click_map_hint": "انقر على الخريطة لتحديد موقع المغادرة أو الوصول",
+		"airport_mode": "وضع المطار"
 	},
 	"users": {
 		"no_users_found": "لم يتم العثور على مستخدمين مع ملفات تعريف عامة."
@@ -1105,7 +1186,10 @@
 		"not_found": "لم يتم العثور على المجموعة",
 		"statistics": "إحصائيات",
 		"times_shown_in": "الأوقات المعروضة في",
-		"trip_costs": "تكاليف الرحلة"
+		"trip_costs": "تكاليف الرحلة",
+		"all_collections": "جميع المجموعات",
+		"my_collections_tab": "مجموعاتي",
+		"public_collections": "المجموعات العامة"
 	},
 	"common": {
 		"show_less": "إخفاء التفاصيل",
@@ -1167,7 +1251,13 @@
 		"trip_context": "سياق الرحلة",
 		"trip_context_info": "تنطبق عناصر سياق الرحلة على الرحلة بأكملها — على سبيل المثال المواقع التي تمثل الوجهة نفسها، أو الملاحظات العامة، أو قوائم التعبئة المهمة للرحلة بأكملها.",
 		"unscheduled_items": "العناصر غير المجدولة",
-		"unscheduled_items_desc": "ترتبط هذه العناصر بهذه الرحلة ولكن لم تتم إضافتها إلى يوم محدد بعد."
+		"unscheduled_items_desc": "ترتبط هذه العناصر بهذه الرحلة ولكن لم تتم إضافتها إلى يوم محدد بعد.",
+		"broken_item": "عنصر مفقود",
+		"broken_item_desc": "العنصر {type} المرتبط لم يعد موجوداً أو تم حذفه.",
+		"remove_broken_item": "إزالة العنصر المعطل",
+		"remove_broken_item_confirm": "هل تريد إزالة هذا العنصر المعطل من المخطط؟",
+		"broken_item_removed": "تمت إزالة العنصر المعطل",
+		"broken_item_remove_error": "فشل في إزالة العنصر المعطل"
 	},
 	"templates": {
 		"title": "Collection Templates",

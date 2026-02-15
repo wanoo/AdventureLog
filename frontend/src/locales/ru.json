@@ -28,7 +28,10 @@
 			"northernLights": "Северное сияние"
 		},
 		"navigation": "Навигация",
-		"worldtravel": "Путешествие по миру"
+		"worldtravel": "Путешествие по миру",
+		"locations": "Места",
+		"lodging": "Жильё",
+		"transportation": "Транспорт"
 	},
 	"about": {
 		"about": "О программе",
@@ -101,7 +104,6 @@
 		"descending": "По убыванию",
 		"updated": "Обновлено",
 		"name": "Название",
-		"date": "Дата",
 		"tags": "Теги",
 		"add_a_tag": "Добавить тег",
 		"date_constrain": "Ограничить датами коллекции",
@@ -496,7 +498,49 @@
 		"export_zip": "Экспортировать ZIP-файл",
 		"import_failed": "Импорт не выполнен",
 		"import_from_file": "Импорт из файла",
-		"import_success": "Импортировать успех"
+		"import_success": "Импортировать успех",
+		"last_visited": "Последнее посещение",
+		"last_stay": "Последнее проживание",
+		"last_trip": "Последняя поездка",
+		"import_existing": "Импорт существующего",
+		"last_visit": "Последний визит",
+		"created_at": "Создано",
+		"ratings": "оценок",
+		"stars": "звёзд",
+		"average_rating": "Средняя оценка",
+		"min_rating": "Минимальная оценка",
+		"min_price_tier": "Минимальный ценовой уровень",
+		"total_cost": "Общая стоимость",
+		"number_of_people": "Количество человек",
+		"people": "человек",
+		"avg_per_user": "Среднее на человека",
+		"avg_per_user_per_night": "Среднее на человека/ночь",
+		"avg_price": "Средняя цена",
+		"price_tier_budget": "Бюджетный",
+		"price_tier_moderate": "Средний",
+		"price_tier_expensive": "Дорогой",
+		"price_tier_premium": "Премиум",
+		"based_on_visits": "на основе {count} посещений",
+		"all_locations": "Все места",
+		"public_locations": "Публичные места",
+		"departure_station": "Станция отправления",
+		"departure_stop": "Остановка отправления",
+		"arrival_station": "Станция прибытия",
+		"arrival_stop": "Остановка прибытия",
+		"airport": "Аэропорт",
+		"train": "Поезд",
+		"bus": "Автобус",
+		"station_name_examples": "Название станции (напр. Москва Казанская)",
+		"bus_stop_examples": "Название автобусной остановки",
+		"cab": "Такси",
+		"vtc": "Частный водитель",
+		"pickup_location": "Место посадки",
+		"dropoff_location": "Место высадки",
+		"address_examples": "Адрес, место...",
+		"address": "Адрес",
+		"addresses": "Адреса",
+		"departures": "Отправления ↗",
+		"arrivals": "Прибытия ↙"
 	},
 	"worldtravel": {
 		"country_list": "Список стран",
@@ -737,7 +781,22 @@
 		"activities": "Активности",
 		"trails": "Маршруты",
 		"use_imperial": "Используйте имперские подразделения",
-		"use_imperial_desc": "Используйте имперские единицы (ноги, дюймы, фунты) вместо метрических единиц"
+		"use_imperial_desc": "Используйте имперские единицы (ноги, дюймы, фунты) вместо метрических единиц",
+		"mcp_title": "ИИ-ассистент (MCP)",
+		"mcp_desc": "Подключите Claude или других ИИ-ассистентов для управления приключениями",
+		"mcp_endpoint": "Точка доступа MCP",
+		"api_token": "API-токен",
+		"no_mcp_token": "API-токен отсутствует. Создайте его для подключения ИИ-ассистентов.",
+		"mcp_help": "Используйте этот токен для подключения Claude Desktop или Claude Code к AdventureLog.",
+		"mcp_instructions": "Добавьте URL точки доступа MCP и используйте токен для аутентификации.",
+		"mcp_token_created": "API-токен создан",
+		"mcp_token_deleted": "API-токен удалён",
+		"mcp_token_error": "Ошибка управления API-токеном",
+		"copied_to_clipboard": "Скопировано в буфер обмена",
+		"token_created": "Создан",
+		"regenerate_token": "Перегенерировать токен",
+		"revoke_token": "Отозвать токен",
+		"create_token": "Создать API-токен"
 	},
 	"collection": {
 		"collection_created": "Коллекция успешно создана!",
@@ -776,7 +835,12 @@
 		"duplicated_success": "Collection duplicated successfully",
 		"duplicate_error": "Error duplicating collection",
 		"save_as_template": "Save as Template",
-		"template_saved_success": "Template saved successfully"
+		"template_saved_success": "Template saved successfully",
+		"adventure_type": "Тип",
+		"no_type": "-- Без типа --",
+		"public_collections": "Публичные коллекции",
+		"no_public_collections": "Публичные коллекции не найдены.",
+		"no_public_collections_desc": "Публичные коллекции других пользователей будут отображаться здесь."
 	},
 	"notes": {
 		"note_deleted": "Заметка успешно удалена!",
@@ -820,12 +884,11 @@
 	"transportation": {
 		"transportation_deleted": "Транспорт успешно удален!",
 		"transportation_delete_error": "Ошибка удаления транспорта",
-		"type": "Тип",
+		"type": "Type",
 		"new_transportation": "Новый транспорт",
 		"my_transportations": "Мой Транспорт",
 		"no_transportations_found": "Транспорт не найден",
 		"create_transportation": "Создать Транспорт",
-		"flight_number": "Номер рейса",
 		"from_location": "Откуда",
 		"to_location": "Куда",
 		"edit": "Редактировать",
@@ -837,16 +900,17 @@
 			"boat": "Лодка",
 			"bike": "Велосипед",
 			"walking": "Пешком",
-			"other": "Другое"
+			"other": "Другое",
+			"cab": "Такси",
+			"vtc": "Частный водитель"
 		},
 		"edit_transportation": "Редактировать транспорт",
 		"create_new_transportation": "Новый транспорт",
-		"enter_flight_number": "Введите номер рейса",
 		"enter_from_location": "Укажите место отправления",
 		"enter_link": "Введите ссылку",
 		"enter_to_location": "Укажите место прибытия",
 		"enter_transportation_name": "Введите название транспорта",
-		"select_type": "Выберите тип",
+		"select_type": "Select a type",
 		"update_transportation_details": "Обновите детали транспорта",
 		"arrival_code": "Код прибытия",
 		"arrival_date": "Дата прибытия",
@@ -859,8 +923,17 @@
 		"move_to_collection_confirm": "Этот транспорт уже находится в другой коллекции. Переместить в эту коллекцию?",
 		"linked_success": "Транспорт успешно связан",
 		"linked_error": "",
-		"type": "Type",
-		"select_type": "Select a type"
+		"transport_id": "ID транспорта",
+		"enter_transport_id": "напр. AF765, TGV 8876, #4453536",
+		"departure": "Отправление",
+		"arrival": "Прибытие",
+		"items": "элементы",
+		"from": "Откуда (Отправление)",
+		"to": "Куда (Прибытие)",
+		"from_placeholder": "Введите место отправления...",
+		"to_placeholder": "Введите место прибытия...",
+		"click_map_hint": "Нажмите на карту, чтобы указать место отправления или прибытия",
+		"airport_mode": "Режим аэропорта"
 	},
 	"lodging": {
 		"new_lodging": "Новое жилье",
@@ -891,7 +964,9 @@
 		"linked_success": "Жильё успешно связано",
 		"linked_error": "",
 		"type": "Type",
-		"select_type": "Select a type"
+		"select_type": "Select a type",
+		"search_placeholder": "Введите отель, адрес или город...",
+		"enter_link": "Введите ссылку"
 	},
 	"search": {
 		"cities": "Города",
@@ -916,7 +991,8 @@
 		"locations_shown": "Места показаны",
 		"place_marker_desc_location": "Нажмите на карту, чтобы разместить маркер.",
 		"show_visited_cities": "Посещенные города",
-		"search_locations": "Поиск мест..."
+		"search_locations": "Поиск мест...",
+		"clear_filters": "Очистить фильтры"
 	},
 	"share": {
 		"shared": "Поделился",
@@ -959,7 +1035,9 @@
 		"category_name": "Название категории",
 		"add_new_category": "Добавить новую категорию",
 		"name_required": "Требуется название категории",
-		"location_update_after_refresh": "Карты местоположения будут обновлены после обновления страницы."
+		"location_update_after_refresh": "Карты местоположения будут обновлены после обновления страницы.",
+		"make_public": "Публичная",
+		"public_description": "Публичные категории видны и доступны всем пользователям"
 	},
 	"dashboard": {
 		"welcome_back": "Добро пожаловать обратно",
@@ -975,7 +1053,10 @@
 		"welcome_text_2": "Приключения пока",
 		"welcome_text_3": "Продолжайте исследовать и документировать ваши путешествия!",
 		"recent_travel_plans": "Ваши последние планы поездок",
-		"recent_accommodations": "Ваше последнее жилье"
+		"recent_accommodations": "Ваше последнее жилье",
+		"places_visited": "Посещённые места",
+		"total_transportation_km": "Общее расстояние",
+		"total_lodging_nights": "Ночей проживания"
 	},
 	"immich": {
 		"immich": "Immich",
@@ -1105,7 +1186,10 @@
 		"not_found": "Коллекция не найдена",
 		"statistics": "Статистика",
 		"times_shown_in": "Время показано в",
-		"trip_costs": "Стоимость поездки"
+		"trip_costs": "Стоимость поездки",
+		"all_collections": "Все коллекции",
+		"my_collections_tab": "Мои коллекции",
+		"public_collections": "Публичные коллекции"
 	},
 	"common": {
 		"show_less": "Скрыть детали",
@@ -1167,7 +1251,13 @@
 		"trip_context_info": "Элементы контекста поездки применяются ко всей поездке — например, места, которые являются пунктом назначения, общие заметки или упаковочные листы, важные для всей поездки.",
 		"unscheduled_items": "Незапланированные предметы",
 		"unscheduled_items_desc": "Эти элементы связаны с этой поездкой, но еще не добавлены к определенному дню.",
-		"link_existing_item": "Связать существующий элемент"
+		"link_existing_item": "Связать существующий элемент",
+		"broken_item": "Отсутствующий элемент",
+		"broken_item_desc": "Связанный {type} больше не существует или был удалён.",
+		"remove_broken_item": "Удалить повреждённую запись",
+		"remove_broken_item_confirm": "Удалить эту повреждённую запись из маршрута?",
+		"broken_item_removed": "Повреждённая запись удалена",
+		"broken_item_remove_error": "Не удалось удалить повреждённую запись"
 	},
 	"templates": {
 		"title": "Collection Templates",

@@ -29,7 +29,6 @@
 		"clear": "Rensa",
 		"collection": "Samling",
 		"create_new": "Skapa ny",
-		"date": "Datum",
 		"dates": "Datum",
 		"delete": "Radera",
 		"delete_collection": "Ta bort samling",
@@ -447,7 +446,49 @@
 		"export_zip": "Exportera ZIP",
 		"import_failed": "Importen misslyckades",
 		"import_from_file": "Importera från fil",
-		"import_success": "Importen lyckades"
+		"import_success": "Importen lyckades",
+		"last_visited": "Senast besökt",
+		"last_stay": "Senaste vistelse",
+		"last_trip": "Senaste resa",
+		"import_existing": "Importera befintlig",
+		"last_visit": "Senaste besök",
+		"created_at": "Skapad",
+		"ratings": "betyg",
+		"stars": "stjärnor",
+		"average_rating": "Genomsnittsbetyg",
+		"min_rating": "Minsta betyg",
+		"min_price_tier": "Lägsta prisnivå",
+		"total_cost": "Total kostnad",
+		"number_of_people": "Antal personer",
+		"people": "personer",
+		"avg_per_user": "Snitt per person",
+		"avg_per_user_per_night": "Snitt per person/natt",
+		"avg_price": "Genomsnittspris",
+		"price_tier_budget": "Budget",
+		"price_tier_moderate": "Måttlig",
+		"price_tier_expensive": "Dyr",
+		"price_tier_premium": "Premium",
+		"based_on_visits": "baserat på {count} besök",
+		"all_locations": "Alla platser",
+		"public_locations": "Offentliga platser",
+		"departure_station": "Avgångsstation",
+		"departure_stop": "Avgångshållplats",
+		"arrival_station": "Ankomststation",
+		"arrival_stop": "Ankomsthållplats",
+		"airport": "Flygplats",
+		"train": "Tåg",
+		"bus": "Buss",
+		"station_name_examples": "Stationsnamn (t.ex. Stockholm C)",
+		"bus_stop_examples": "Busshållplatsnamn",
+		"cab": "Taxi",
+		"vtc": "Privatförare",
+		"pickup_location": "Upphämtningsplats",
+		"dropoff_location": "Avlämningsplats",
+		"address_examples": "Adress, plats...",
+		"address": "Adress",
+		"addresses": "Adresser",
+		"departures": "Avgångar ↗",
+		"arrivals": "Ankomster ↙"
 	},
 	"home": {
 		"desc_1": "Upptäck, planera och utforska med lätthet",
@@ -496,7 +537,10 @@
 		"calendar": "Kalender",
 		"admin_panel": "Administratör",
 		"navigation": "Navigering",
-		"worldtravel": "Världsresor"
+		"worldtravel": "Världsresor",
+		"locations": "Platser",
+		"lodging": "Boende",
+		"transportation": "Transport"
 	},
 	"worldtravel": {
 		"country_list": "Lista över länder",
@@ -737,7 +781,22 @@
 		"activities": "Aktiviteter",
 		"trails": "Spår",
 		"use_imperial": "Använd imperialistiska enheter",
-		"use_imperial_desc": "Använd imperialistiska enheter (fötter, tum, pund) istället för metriska enheter"
+		"use_imperial_desc": "Använd imperialistiska enheter (fötter, tum, pund) istället för metriska enheter",
+		"mcp_title": "AI-assistent (MCP)",
+		"mcp_desc": "Anslut Claude eller andra AI-assistenter för att hantera dina äventyr",
+		"mcp_endpoint": "MCP-ändpunkt",
+		"api_token": "API-token",
+		"no_mcp_token": "Inget API-token finns. Skapa ett för att ansluta AI-assistenter.",
+		"mcp_help": "Använd detta token för att ansluta Claude Desktop eller Claude Code till AdventureLog.",
+		"mcp_instructions": "Lägg till MCP-ändpunkts-URL och använd token för autentisering.",
+		"mcp_token_created": "API-token skapat",
+		"mcp_token_deleted": "API-token raderat",
+		"mcp_token_error": "Fel vid hantering av API-token",
+		"copied_to_clipboard": "Kopierat till urklipp",
+		"token_created": "Skapat",
+		"regenerate_token": "Regenerera token",
+		"revoke_token": "Återkalla token",
+		"create_token": "Skapa API-token"
 	},
 	"checklist": {
 		"checklist_delete_error": "Ett fel uppstod vid borttagning av checklista",
@@ -793,7 +852,17 @@
 		"no_images_available": "Inga bilder tillgängliga från länkade platser ännu.",
 		"public_collection_description": "Tillåt alla med länken att se",
 		"set_cover": "Sätt lock",
-		"update_collection_details": "Uppdatera samlingsinformation"
+		"update_collection_details": "Uppdatera samlingsinformation",
+		"duplicate": "Duplicera",
+		"duplicated_success": "Samling duplicerad",
+		"duplicate_error": "Fel vid duplicering av samling",
+		"save_as_template": "Spara som mall",
+		"template_saved_success": "Mall sparad",
+		"adventure_type": "Typ",
+		"no_type": "-- Ingen typ --",
+		"public_collections": "Offentliga samlingar",
+		"no_public_collections": "Inga offentliga samlingar hittades.",
+		"no_public_collections_desc": "Offentliga samlingar från andra användare visas här."
 	},
 	"notes": {
 		"content": "Innehåll",
@@ -815,7 +884,6 @@
 	"transportation": {
 		"edit": "Redigera",
 		"edit_transportation": "Redigera transport",
-		"flight_number": "Flygnummer",
 		"from_location": "Från plats",
 		"modes": {
 			"bike": "Cykel",
@@ -825,7 +893,9 @@
 			"other": "Andra",
 			"plane": "Flygplan",
 			"train": "Tåg",
-			"walking": "Gående"
+			"walking": "Gående",
+			"cab": "Taxi",
+			"vtc": "Privatförare"
 		},
 		"new_transportation": "Nya transporter",
 		"my_transportations": "Mina Transporter",
@@ -834,14 +904,13 @@
 		"to_location": "Till Plats",
 		"transportation_delete_error": "Det gick inte att ta bort transport",
 		"transportation_deleted": "Transporten har raderats!",
-		"type": "Typ",
+		"type": "Type",
 		"create_new_transportation": "Ny transport",
-		"enter_flight_number": "Ange flygnummer",
 		"enter_from_location": "Ange från platsen",
 		"enter_link": "Ange länken",
 		"enter_to_location": "Ange till platsen",
 		"enter_transportation_name": "Ange transportnamn",
-		"select_type": "Välj typ",
+		"select_type": "Select a type",
 		"update_transportation_details": "Uppdatera transportdetaljer",
 		"arrival_code": "Ankomstkod",
 		"arrival_date": "Ankomstdatum",
@@ -854,8 +923,17 @@
 		"move_to_collection_confirm": "Denna transport finns redan i en annan samling. Flytta till denna samling?",
 		"linked_success": "Transport länkad framgångsrikt",
 		"linked_error": "",
-		"type": "Type",
-		"select_type": "Select a type"
+		"transport_id": "Transport-ID",
+		"enter_transport_id": "t.ex. AF765, TGV 8876, #4453536",
+		"departure": "Avgång",
+		"arrival": "Ankomst",
+		"items": "objekt",
+		"from": "Från (Avgång)",
+		"to": "Till (Ankomst)",
+		"from_placeholder": "Ange avgångsplats...",
+		"to_placeholder": "Ange ankomstplats...",
+		"click_map_hint": "Klicka på kartan för att ange avgångs- eller ankomstplats",
+		"airport_mode": "Flygplatsläge"
 	},
 	"search": {
 		"cities": "Städer",
@@ -880,7 +958,8 @@
 		"locations_shown": "Visas",
 		"place_marker_desc_location": "Klicka på kartan för att placera en markör.",
 		"show_visited_cities": "Besökta städer",
-		"search_locations": "Sök efter platser..."
+		"search_locations": "Sök efter platser...",
+		"clear_filters": "Rensa filter"
 	},
 	"share": {
 		"no_users_shared": "Inga användare delas med",
@@ -923,7 +1002,9 @@
 		"select_category": "Välj Kategori",
 		"add_new_category": "Lägg till en ny kategori",
 		"name_required": "Kategorinamn krävs",
-		"location_update_after_refresh": "Platskorten kommer att uppdateras när du uppdaterar sidan."
+		"location_update_after_refresh": "Platskorten kommer att uppdateras när du uppdaterar sidan.",
+		"make_public": "Offentlig",
+		"public_description": "Offentliga kategorier är synliga och användbara av alla användare"
 	},
 	"dashboard": {
 		"countries_visited": "Besökta länder",
@@ -939,7 +1020,10 @@
 		"welcome_text_2": "Äventyr hittills",
 		"welcome_text_3": "Fortsätt utforska och dokumentera dina resor!",
 		"recent_travel_plans": "Dina senaste reseplaner",
-		"recent_accommodations": "Dina senaste boenden"
+		"recent_accommodations": "Dina senaste boenden",
+		"places_visited": "Besökta platser",
+		"total_transportation_km": "Total resväg",
+		"total_lodging_nights": "Övernattningar"
 	},
 	"immich": {
 		"api_key": "Immich API-nyckel",
@@ -1033,7 +1117,9 @@
 		"linked_success": "Boende länkat framgångsrikt",
 		"linked_error": "",
 		"type": "Type",
-		"select_type": "Select a type"
+		"select_type": "Select a type",
+		"search_placeholder": "Ange hotell, adress eller stad...",
+		"enter_link": "Ange länk"
 	},
 	"google_maps": {
 		"google_maps_integration_desc": "Anslut ditt Google Maps-konto för att få sökresultat och rekommendationer av hög kvalitet.",
@@ -1100,7 +1186,10 @@
 		"not_found": "Samlingen hittades inte",
 		"statistics": "Statistik",
 		"times_shown_in": "Tider som visas i",
-		"trip_costs": "Resekostnader"
+		"trip_costs": "Resekostnader",
+		"all_collections": "Alla samlingar",
+		"my_collections_tab": "Mina samlingar",
+		"public_collections": "Offentliga samlingar"
 	},
 	"common": {
 		"show_less": "Dölj detaljer",
@@ -1162,7 +1251,13 @@
 		"trip_context": "Resans sammanhang",
 		"trip_context_info": "Resans kontextobjekt gäller för hela resan – till exempel platser som är själva destinationen, allmänna anteckningar eller packlistor som är viktiga för hela resan.",
 		"unscheduled_items": "Oschemalagda objekt",
-		"unscheduled_items_desc": "Dessa objekt är länkade till denna resa men har inte lagts till en specifik dag än."
+		"unscheduled_items_desc": "Dessa objekt är länkade till denna resa men har inte lagts till en specifik dag än.",
+		"broken_item": "Saknat objekt",
+		"broken_item_desc": "Den länkade {type} finns inte längre eller har raderats.",
+		"remove_broken_item": "Ta bort trasig post",
+		"remove_broken_item_confirm": "Ta bort denna trasiga post från resplanen?",
+		"broken_item_removed": "Trasig post borttagen",
+		"broken_item_remove_error": "Kunde inte ta bort trasig post"
 	},
 	"history": {
 		"title": "Historik",

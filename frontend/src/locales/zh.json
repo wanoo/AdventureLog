@@ -28,7 +28,10 @@
 		"calendar": "日历",
 		"admin_panel": "管理面板",
 		"navigation": "导航",
-		"worldtravel": "环球旅行"
+		"worldtravel": "环球旅行",
+		"locations": "地点",
+		"lodging": "住宿",
+		"transportation": "交通"
 	},
 	"about": {
 		"about": "关于",
@@ -95,7 +98,6 @@
 		"descending": "降序",
 		"updated": "更新",
 		"name": "名称",
-		"date": "日期",
 		"tags": "标签",
 		"add_a_tag": "添加标签",
 		"date_constrain": "限制在合集日期内",
@@ -496,7 +498,49 @@
 		"export_zip": "导出邮政编码",
 		"import_failed": "导入失败",
 		"import_from_file": "从文件导入",
-		"import_success": "导入成功"
+		"import_success": "导入成功",
+		"last_visited": "上次访问",
+		"last_stay": "上次住宿",
+		"last_trip": "上次行程",
+		"import_existing": "导入已有",
+		"last_visit": "上次访问",
+		"created_at": "创建日期",
+		"ratings": "条评价",
+		"stars": "星",
+		"average_rating": "平均评分",
+		"min_rating": "最低评分",
+		"min_price_tier": "最低价格等级",
+		"total_cost": "总费用",
+		"number_of_people": "人数",
+		"people": "人",
+		"avg_per_user": "人均",
+		"avg_per_user_per_night": "人均每晚",
+		"avg_price": "平均价格",
+		"price_tier_budget": "经济型",
+		"price_tier_moderate": "中等",
+		"price_tier_expensive": "昂贵",
+		"price_tier_premium": "豪华",
+		"based_on_visits": "基于 {count} 次访问",
+		"all_locations": "所有地点",
+		"public_locations": "公开地点",
+		"departure_station": "出发站",
+		"departure_stop": "出发站点",
+		"arrival_station": "到达站",
+		"arrival_stop": "到达站点",
+		"airport": "机场",
+		"train": "火车",
+		"bus": "公交",
+		"station_name_examples": "车站名称（如：北京站）",
+		"bus_stop_examples": "公交站名",
+		"cab": "出租车",
+		"vtc": "专车",
+		"pickup_location": "上车地点",
+		"dropoff_location": "下车地点",
+		"address_examples": "地址、地点...",
+		"address": "地址",
+		"addresses": "地址列表",
+		"departures": "出发 ↗",
+		"arrivals": "到达 ↙"
 	},
 	"auth": {
 		"forgot_password": "忘记密码？",
@@ -737,7 +781,22 @@
 		"activities": "活动",
 		"trails": "路径",
 		"use_imperial": "使用英制单位",
-		"use_imperial_desc": "使用英制单位（英尺、英寸、磅）代替公制单位"
+		"use_imperial_desc": "使用英制单位（英尺、英寸、磅）代替公制单位",
+		"mcp_title": "AI 助手 (MCP)",
+		"mcp_desc": "连接 Claude 或其他 AI 助手来管理您的冒险",
+		"mcp_endpoint": "MCP 端点",
+		"api_token": "API 令牌",
+		"no_mcp_token": "没有 API 令牌。请创建一个以连接 AI 助手。",
+		"mcp_help": "使用此令牌将 Claude Desktop 或 Claude Code 连接到 AdventureLog。",
+		"mcp_instructions": "添加 MCP 端点 URL 并使用令牌进行身份验证。",
+		"mcp_token_created": "API 令牌已创建",
+		"mcp_token_deleted": "API 令牌已删除",
+		"mcp_token_error": "管理 API 令牌失败",
+		"copied_to_clipboard": "已复制到剪贴板",
+		"token_created": "已创建",
+		"regenerate_token": "重新生成令牌",
+		"revoke_token": "撤销令牌",
+		"create_token": "创建 API 令牌"
 	},
 	"checklist": {
 		"checklist_delete_error": "删除清单时出错",
@@ -798,7 +857,12 @@
 		"duplicated_success": "Collection duplicated successfully",
 		"duplicate_error": "Error duplicating collection",
 		"save_as_template": "Save as Template",
-		"template_saved_success": "Template saved successfully"
+		"template_saved_success": "Template saved successfully",
+		"adventure_type": "类型",
+		"no_type": "-- 无类型 --",
+		"public_collections": "公开收藏",
+		"no_public_collections": "未找到公开收藏。",
+		"no_public_collections_desc": "其他用户的公开收藏将在此显示。"
 	},
 	"notes": {
 		"content": "内容",
@@ -820,7 +884,6 @@
 	"transportation": {
 		"edit": "编辑",
 		"edit_transportation": "编辑交通信息",
-		"flight_number": "航班号",
 		"from_location": "出发地",
 		"modes": {
 			"bike": "自行车",
@@ -830,7 +893,9 @@
 			"other": "其他",
 			"plane": "飞机",
 			"train": "火车/动车/高铁",
-			"walking": "步行"
+			"walking": "步行",
+			"cab": "出租车",
+			"vtc": "专车"
 		},
 		"new_transportation": "新交通信息",
 		"my_transportations": "我的交通",
@@ -839,14 +904,13 @@
 		"to_location": "目的地",
 		"transportation_delete_error": "删除交通信息时出错",
 		"transportation_deleted": "交通信息删除成功！",
-		"type": "类型",
+		"type": "Type",
 		"create_new_transportation": "新建交通信息",
-		"enter_flight_number": "输入航班号",
 		"enter_from_location": "从地点输入",
 		"enter_link": "输入链接",
 		"enter_to_location": "输入地点",
 		"enter_transportation_name": "输入交通名称",
-		"select_type": "选择类型",
+		"select_type": "Select a type",
 		"update_transportation_details": "更新运输详细信息",
 		"arrival_code": "到达代码",
 		"departure_code": "出发代码",
@@ -859,8 +923,17 @@
 		"move_to_collection_confirm": "此交通已在另一个收藏夹中。是否移动到此收藏夹？",
 		"linked_success": "交通链接成功",
 		"linked_error": "",
-		"type": "Type",
-		"select_type": "Select a type"
+		"transport_id": "交通编号",
+		"enter_transport_id": "如 AF765、TGV 8876、#4453536",
+		"departure": "出发",
+		"arrival": "到达",
+		"items": "项",
+		"from": "出发地",
+		"to": "目的地",
+		"from_placeholder": "输入出发地点...",
+		"to_placeholder": "输入到达地点...",
+		"click_map_hint": "点击地图设置出发地或目的地",
+		"airport_mode": "机场模式"
 	},
 	"search": {
 		"cities": "城市",
@@ -885,7 +958,8 @@
 		"locations_shown": "显示的地点",
 		"place_marker_desc_location": "单击地图以放置标记。",
 		"show_visited_cities": "参观城市",
-		"search_locations": "搜索地点..."
+		"search_locations": "搜索地点...",
+		"clear_filters": "清除筛选"
 	},
 	"share": {
 		"no_users_shared": "没有已共享的用户",
@@ -928,7 +1002,9 @@
 		"select_category": "选择类别",
 		"add_new_category": "添加新类别",
 		"name_required": "需要类别名称",
-		"location_update_after_refresh": "刷新页面后，将更新地点卡。"
+		"location_update_after_refresh": "刷新页面后，将更新地点卡。",
+		"make_public": "公开",
+		"public_description": "公开分类对所有用户可见和可用"
 	},
 	"dashboard": {
 		"countries_visited": "已访问国家数量",
@@ -944,7 +1020,10 @@
 		"welcome_text_2": "到目前为止的冒险",
 		"welcome_text_3": "继续探索和记录您的旅行！",
 		"recent_travel_plans": "您最近的旅行计划",
-		"recent_accommodations": "您最近的住宿"
+		"recent_accommodations": "您最近的住宿",
+		"places_visited": "已访问地点",
+		"total_transportation_km": "总行程距离",
+		"total_lodging_nights": "住宿夜数"
 	},
 	"immich": {
 		"api_key": "Immich API 密钥",
@@ -1038,7 +1117,9 @@
 		"linked_success": "住宿链接成功",
 		"linked_error": "",
 		"type": "Type",
-		"select_type": "Select a type"
+		"select_type": "Select a type",
+		"search_placeholder": "输入酒店、地址或城市...",
+		"enter_link": "输入链接"
 	},
 	"google_maps": {
 		"google_maps_integration_desc": "连接您的Google Maps帐户以获取高质量的地点搜索结果和建议。",
@@ -1127,7 +1208,13 @@
 		"remove_from_trip_context": "从上下文中删除",
 		"drag_to_reorder": "拖动以重新排序",
 		"add_to_day": "添加到日期",
-		"add_to_trip_context": "添加旅行背景"
+		"add_to_trip_context": "添加旅行背景",
+		"broken_item": "缺失项目",
+		"broken_item_desc": "关联的{type}已不存在或已被删除。",
+		"remove_broken_item": "移除损坏条目",
+		"remove_broken_item_confirm": "从行程中移除此损坏条目？",
+		"broken_item_removed": "损坏条目已移除",
+		"broken_item_remove_error": "移除损坏条目失败"
 	},
 	"collections": {
 		"all_items": "所有项目",
@@ -1142,7 +1229,10 @@
 		"not_found": "未找到集合",
 		"statistics": "统计数据",
 		"times_shown_in": "时间显示在",
-		"trip_costs": "旅行费用"
+		"trip_costs": "旅行费用",
+		"all_collections": "所有收藏",
+		"my_collections_tab": "我的收藏",
+		"public_collections": "公开收藏"
 	},
 	"currencies": {
 		"AED": "阿联酋迪拉姆",

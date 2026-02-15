@@ -28,7 +28,10 @@
 			"dim": "Halvány"
 		},
 		"navigation": "Navigáció",
-		"worldtravel": "Világutazás"
+		"worldtravel": "Világutazás",
+		"locations": "Helyszínek",
+		"lodging": "Szállás",
+		"transportation": "Közlekedés"
 	},
 	"about": {
 		"about": "Névjegy",
@@ -111,7 +114,6 @@
 		"descending": "Csökkenő",
 		"updated": "Frissítve",
 		"name": "Név",
-		"date": "Dátum",
 		"tags": "Címkék",
 		"add_a_tag": "Címke hozzáadása",
 		"date_constrain": "Korlátozás a gyűjtemény dátumaira",
@@ -496,7 +498,49 @@
 		"export_zip": "ZIP exportálása",
 		"import_failed": "Az importálás sikertelen",
 		"import_from_file": "Importálás fájlból",
-		"import_success": "Sikeres importálás"
+		"import_success": "Sikeres importálás",
+		"last_visited": "Utoljára meglátogatva",
+		"last_stay": "Utolsó tartózkodás",
+		"last_trip": "Utolsó utazás",
+		"import_existing": "Meglévő importálása",
+		"last_visit": "Utolsó látogatás",
+		"created_at": "Létrehozva",
+		"ratings": "értékelések",
+		"stars": "csillag",
+		"average_rating": "Átlagos értékelés",
+		"min_rating": "Minimális értékelés",
+		"min_price_tier": "Minimális árszint",
+		"total_cost": "Összköltség",
+		"number_of_people": "Személyek száma",
+		"people": "személy",
+		"avg_per_user": "Átl. személyenként",
+		"avg_per_user_per_night": "Átl. személy/éjszaka",
+		"avg_price": "Átlagár",
+		"price_tier_budget": "Olcsó",
+		"price_tier_moderate": "Mérsékelt",
+		"price_tier_expensive": "Drága",
+		"price_tier_premium": "Prémium",
+		"based_on_visits": "{count} látogatás alapján",
+		"all_locations": "Összes helyszín",
+		"public_locations": "Nyilvános helyszínek",
+		"departure_station": "Indulási állomás",
+		"departure_stop": "Indulási megálló",
+		"arrival_station": "Érkezési állomás",
+		"arrival_stop": "Érkezési megálló",
+		"airport": "Repülőtér",
+		"train": "Vonat",
+		"bus": "Busz",
+		"station_name_examples": "Állomás neve (pl. Budapest Keleti)",
+		"bus_stop_examples": "Buszmegálló neve",
+		"cab": "Taxi",
+		"vtc": "Magánsofőr",
+		"pickup_location": "Felvételi hely",
+		"dropoff_location": "Leadási hely",
+		"address_examples": "Cím, hely...",
+		"address": "Cím",
+		"addresses": "Címek",
+		"departures": "Indulások ↗",
+		"arrivals": "Érkezések ↙"
 	},
 	"worldtravel": {
 		"country_list": "Országlista",
@@ -737,7 +781,22 @@
 		"use_imperial": "Imperiális mértékegységek használata",
 		"use_imperial_desc": "Imperiális mértékegységek (láb, hüvelyk, font) használata a metrikus helyett",
 		"trails": "Útvonalak",
-		"activities": "Tevékenységek"
+		"activities": "Tevékenységek",
+		"mcp_title": "AI asszisztens (MCP)",
+		"mcp_desc": "Csatlakoztasd a Claude-ot vagy más AI asszisztenseket a kalandjaid kezeléséhez",
+		"mcp_endpoint": "MCP végpont",
+		"api_token": "API token",
+		"no_mcp_token": "Nincs API token. Hozz létre egyet az AI asszisztensek csatlakoztatásához.",
+		"mcp_help": "Használd ezt a tokent a Claude Desktop vagy Claude Code csatlakoztatásához az AdventureLog-hoz.",
+		"mcp_instructions": "Add hozzá az MCP végpont URL-t és használd a tokent a hitelesítéshez.",
+		"mcp_token_created": "API token létrehozva",
+		"mcp_token_deleted": "API token törölve",
+		"mcp_token_error": "Hiba az API token kezelésekor",
+		"copied_to_clipboard": "Vágólapra másolva",
+		"token_created": "Létrehozva",
+		"regenerate_token": "Token újragenerálása",
+		"revoke_token": "Token visszavonása",
+		"create_token": "API token létrehozása"
 	},
 	"collection": {
 		"collection_created": "A gyűjtemény sikeresen létrehozva!",
@@ -776,7 +835,12 @@
 		"duplicated_success": "Collection duplicated successfully",
 		"duplicate_error": "Error duplicating collection",
 		"save_as_template": "Save as Template",
-		"template_saved_success": "Template saved successfully"
+		"template_saved_success": "Template saved successfully",
+		"adventure_type": "Típus",
+		"no_type": "-- Nincs típus --",
+		"public_collections": "Nyilvános gyűjtemények",
+		"no_public_collections": "Nem találhatók nyilvános gyűjtemények.",
+		"no_public_collections_desc": "Más felhasználók nyilvános gyűjteményei itt jelennek meg."
 	},
 	"notes": {
 		"note_deleted": "A jegyzet sikeresen törölve!",
@@ -820,12 +884,11 @@
 	"transportation": {
 		"transportation_deleted": "Szállítás sikeresen törölve!",
 		"transportation_delete_error": "Hiba a szállítás törlésekor",
-		"type": "Típus",
+		"type": "Type",
 		"new_transportation": "Új szállítás",
 		"my_transportations": "Szállításaim",
 		"no_transportations_found": "Nem található szállítás",
 		"create_transportation": "Szállítás Létrehozása",
-		"flight_number": "Járatszám",
 		"from_location": "Kiindulási hely",
 		"to_location": "Célállomás",
 		"edit": "Szerkesztés",
@@ -837,15 +900,16 @@
 			"boat": "Hajó",
 			"bike": "Kerékpár",
 			"walking": "Gyalog",
-			"other": "Egyéb"
+			"other": "Egyéb",
+			"cab": "Taxi",
+			"vtc": "Magánsofőr"
 		},
 		"edit_transportation": "Szállítás szerkesztése",
 		"update_transportation_details": "Szállítási adatok frissítése",
 		"create_new_transportation": "Új szállítás létrehozása",
 		"enter_transportation_name": "Add meg a szállítás nevét",
-		"select_type": "Válassz típust",
+		"select_type": "Select a type",
 		"enter_link": "Adj meg egy hivatkozást",
-		"enter_flight_number": "Add meg a járatszámot",
 		"enter_from_location": "Add meg a kiindulási helyet",
 		"enter_to_location": "Add meg a célállomást",
 		"arrival_code": "Érkezési kód",
@@ -859,8 +923,17 @@
 		"move_to_collection_confirm": "Ez a közlekedés már egy másik gyűjteményben van. Áthelyezi ebbe a gyűjteménybe?",
 		"linked_success": "Közlekedés sikeresen összekapcsolva",
 		"linked_error": "",
-		"type": "Type",
-		"select_type": "Select a type"
+		"transport_id": "Szállítási azonosító",
+		"enter_transport_id": "pl. AF765, TGV 8876, #4453536",
+		"departure": "Indulás",
+		"arrival": "Érkezés",
+		"items": "elemek",
+		"from": "Honnan (Indulás)",
+		"to": "Hová (Érkezés)",
+		"from_placeholder": "Add meg az indulási helyet...",
+		"to_placeholder": "Add meg az érkezési helyet...",
+		"click_map_hint": "Kattints a térképre az indulási vagy érkezési hely beállításához",
+		"airport_mode": "Repülőtér mód"
 	},
 	"lodging": {
 		"new_lodging": "Új szállás",
@@ -891,7 +964,9 @@
 		"linked_success": "Szállás sikeresen összekapcsolva",
 		"linked_error": "",
 		"type": "Type",
-		"select_type": "Select a type"
+		"select_type": "Select a type",
+		"search_placeholder": "Add meg a szállás, cím vagy város nevét...",
+		"enter_link": "Link megadása"
 	},
 	"search": {
 		"result": "Találat",
@@ -916,7 +991,8 @@
 		"place_marker_desc_location": "Kattints a térképre egy jelölő elhelyezéséhez.",
 		"locations_shown": "megjelenített helyszín",
 		"show_visited_cities": "Látogatott városok",
-		"search_locations": "Helyek keresése..."
+		"search_locations": "Helyek keresése...",
+		"clear_filters": "Szűrők törlése"
 	},
 	"share": {
 		"shared": "Megosztva",
@@ -959,7 +1035,9 @@
 		"select_category": "Kategória kiválasztása",
 		"category_name": "Kategória neve",
 		"add_new_category": "Új kategória hozzáadása",
-		"name_required": "A kategória neve kötelező"
+		"name_required": "A kategória neve kötelező",
+		"make_public": "Nyilvános",
+		"public_description": "A nyilvános kategóriák mindenki számára láthatók és használhatók"
 	},
 	"dashboard": {
 		"welcome_back": "Üdv újra",
@@ -975,7 +1053,10 @@
 		"welcome_text_2": "kaland",
 		"welcome_text_3": "Folytasd a felfedezést és az utazásaid dokumentálását!",
 		"recent_travel_plans": "Legutóbbi utazási terveid",
-		"recent_accommodations": "Legutóbbi szállásaid"
+		"recent_accommodations": "Legutóbbi szállásaid",
+		"places_visited": "Meglátogatott helyek",
+		"total_transportation_km": "Összes megtett távolság",
+		"total_lodging_nights": "Éjszakák száma"
 	},
 	"immich": {
 		"immich": "Immich",
@@ -1105,7 +1186,10 @@
 		"not_found": "A gyűjtemény nem található",
 		"statistics": "Statisztika",
 		"times_shown_in": "A feltüntetett időpontok",
-		"trip_costs": "Utazási költségek"
+		"trip_costs": "Utazási költségek",
+		"all_collections": "Összes gyűjtemény",
+		"my_collections_tab": "Gyűjteményeim",
+		"public_collections": "Nyilvános gyűjtemények"
 	},
 	"common": {
 		"show_less": "Részletek elrejtése",
@@ -1167,7 +1251,13 @@
 		"trip_context": "Utazási kontextus",
 		"trip_context_info": "Az utazási kontextus elemei az egész utazásra vonatkoznak – például olyan helyek, amelyek maga az úti cél, általános megjegyzések vagy csomaglisták, amelyek az egész utazás szempontjából fontosak.",
 		"unscheduled_items": "Nem ütemezett tételek",
-		"unscheduled_items_desc": "Ezek az elemek ehhez az utazáshoz kapcsolódnak, de még nem adták hozzá egy adott naphoz."
+		"unscheduled_items_desc": "Ezek az elemek ehhez az utazáshoz kapcsolódnak, de még nem adták hozzá egy adott naphoz.",
+		"broken_item": "Hiányzó elem",
+		"broken_item_desc": "A hivatkozott {type} már nem létezik vagy törölve lett.",
+		"remove_broken_item": "Hibás bejegyzés eltávolítása",
+		"remove_broken_item_confirm": "Eltávolítod ezt a hibás bejegyzést az útvonaltervből?",
+		"broken_item_removed": "Hibás bejegyzés eltávolítva",
+		"broken_item_remove_error": "Nem sikerült eltávolítani a hibás bejegyzést"
 	},
 	"templates": {
 		"title": "Collection Templates",

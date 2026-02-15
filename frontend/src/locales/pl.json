@@ -28,7 +28,10 @@
 		"calendar": "Kalendarz",
 		"admin_panel": "Panel administracyjny",
 		"navigation": "Nawigacja",
-		"worldtravel": "Światowa podróż"
+		"worldtravel": "Światowa podróż",
+		"locations": "Miejsca",
+		"lodging": "Noclegi",
+		"transportation": "Transport"
 	},
 	"about": {
 		"about": "O aplikacji",
@@ -87,7 +90,6 @@
 		"descending": "Malejąco",
 		"updated": "Zaktualizowano",
 		"name": "Nazwa",
-		"date": "Data",
 		"tags": "Tagi",
 		"add_a_tag": "Dodaj tag",
 		"date_constrain": "Ogranicz do dat kolekcji",
@@ -496,7 +498,49 @@
 		"export_zip": "Eksportuj ZIP",
 		"import_failed": "Import nie powiódł się",
 		"import_from_file": "Importuj z pliku",
-		"import_success": "Sukces importu"
+		"import_success": "Sukces importu",
+		"last_visited": "Ostatnia wizyta",
+		"last_stay": "Ostatni pobyt",
+		"last_trip": "Ostatnia podróż",
+		"import_existing": "Importuj istniejący",
+		"last_visit": "Ostatnia wizyta",
+		"created_at": "Utworzono",
+		"ratings": "ocen",
+		"stars": "gwiazdek",
+		"average_rating": "Średnia ocena",
+		"min_rating": "Minimalna ocena",
+		"min_price_tier": "Minimalny poziom cenowy",
+		"total_cost": "Koszt całkowity",
+		"number_of_people": "Liczba osób",
+		"people": "osób",
+		"avg_per_user": "Śr. na osobę",
+		"avg_per_user_per_night": "Śr. na osobę/noc",
+		"avg_price": "Średnia cena",
+		"price_tier_budget": "Budżetowy",
+		"price_tier_moderate": "Umiarkowany",
+		"price_tier_expensive": "Drogi",
+		"price_tier_premium": "Premium",
+		"based_on_visits": "na podstawie {count} wizyt(y)",
+		"all_locations": "Wszystkie miejsca",
+		"public_locations": "Miejsca publiczne",
+		"departure_station": "Stacja odjazdu",
+		"departure_stop": "Przystanek odjazdu",
+		"arrival_station": "Stacja przyjazdu",
+		"arrival_stop": "Przystanek przyjazdu",
+		"airport": "Lotnisko",
+		"train": "Pociąg",
+		"bus": "Autobus",
+		"station_name_examples": "Nazwa stacji (np. Warszawa Centralna)",
+		"bus_stop_examples": "Nazwa przystanku autobusowego",
+		"cab": "Taksówka",
+		"vtc": "Prywatny kierowca",
+		"pickup_location": "Miejsce odbioru",
+		"dropoff_location": "Miejsce docelowe",
+		"address_examples": "Adres, miejsce...",
+		"address": "Adres",
+		"addresses": "Adresy",
+		"departures": "Odjazdy ↗",
+		"arrivals": "Przyjazdy ↙"
 	},
 	"worldtravel": {
 		"country_list": "Lista krajów",
@@ -737,7 +781,22 @@
 		"activities": "Zajęcia",
 		"trails": "Szlaki",
 		"use_imperial": "Używaj jednostek cesarskich",
-		"use_imperial_desc": "Użyj jednostek cesarskich (stopy, cale, funty) zamiast jednostek metrycznych"
+		"use_imperial_desc": "Użyj jednostek cesarskich (stopy, cale, funty) zamiast jednostek metrycznych",
+		"mcp_title": "Asystent AI (MCP)",
+		"mcp_desc": "Połącz Claude lub innych asystentów AI, aby zarządzać przygodami",
+		"mcp_endpoint": "Punkt końcowy MCP",
+		"api_token": "Token API",
+		"no_mcp_token": "Brak tokena API. Utwórz go, aby połączyć asystentów AI.",
+		"mcp_help": "Użyj tego tokena, aby połączyć Claude Desktop lub Claude Code z AdventureLog.",
+		"mcp_instructions": "Dodaj URL punktu końcowego MCP i użyj tokena do uwierzytelnienia.",
+		"mcp_token_created": "Token API utworzony",
+		"mcp_token_deleted": "Token API usunięty",
+		"mcp_token_error": "Błąd zarządzania tokenem API",
+		"copied_to_clipboard": "Skopiowano do schowka",
+		"token_created": "Utworzony",
+		"regenerate_token": "Regeneruj token",
+		"revoke_token": "Odwołaj token",
+		"create_token": "Utwórz token API"
 	},
 	"collection": {
 		"collection_created": "Kolekcja została pomyślnie utworzona!",
@@ -776,7 +835,12 @@
 		"duplicated_success": "Collection duplicated successfully",
 		"duplicate_error": "Error duplicating collection",
 		"save_as_template": "Save as Template",
-		"template_saved_success": "Template saved successfully"
+		"template_saved_success": "Template saved successfully",
+		"adventure_type": "Typ",
+		"no_type": "-- Brak typu --",
+		"public_collections": "Publiczne kolekcje",
+		"no_public_collections": "Nie znaleziono publicznych kolekcji.",
+		"no_public_collections_desc": "Publiczne kolekcje innych użytkowników pojawią się tutaj."
 	},
 	"notes": {
 		"note_deleted": "Notatka została pomyślnie usunięta!",
@@ -820,12 +884,11 @@
 	"transportation": {
 		"transportation_deleted": "Transport został pomyślnie usunięty!",
 		"transportation_delete_error": "Błąd podczas usuwania transportu",
-		"type": "Typ",
+		"type": "Type",
 		"new_transportation": "Nowy transport",
 		"my_transportations": "Moje Transporty",
 		"no_transportations_found": "Nie znaleziono transportów",
 		"create_transportation": "Utwórz Transport",
-		"flight_number": "Numer lotu",
 		"from_location": "Miejsce początkowe",
 		"to_location": "Miejsce docelowe",
 		"edit": "Edytuj",
@@ -837,16 +900,17 @@
 			"boat": "Łódź",
 			"bike": "Rower",
 			"walking": "Pieszo",
-			"other": "Inne"
+			"other": "Inne",
+			"cab": "Taksówka",
+			"vtc": "Prywatny kierowca"
 		},
 		"edit_transportation": "Edytuj transport",
 		"create_new_transportation": "Nowy transport",
-		"enter_flight_number": "Wprowadź numer lotu",
 		"enter_from_location": "Wprowadź z lokalizacji",
 		"enter_link": "Wprowadź link",
 		"enter_to_location": "Wprowadź do lokalizacji",
 		"enter_transportation_name": "Wprowadź nazwę transportu",
-		"select_type": "Wybierz Typ",
+		"select_type": "Select a type",
 		"update_transportation_details": "Zaktualizuj szczegóły transportu",
 		"arrival_code": "Kod przyjazdu",
 		"arrival_date": "Data przyjazdu",
@@ -859,8 +923,17 @@
 		"move_to_collection_confirm": "Ten transport jest już w innej kolekcji. Przenieść do tej kolekcji?",
 		"linked_success": "Transport powiązany pomyślnie",
 		"linked_error": "",
-		"type": "Type",
-		"select_type": "Select a type"
+		"transport_id": "ID transportu",
+		"enter_transport_id": "np. AF765, TGV 8876, #4453536",
+		"departure": "Odjazd",
+		"arrival": "Przyjazd",
+		"items": "elementy",
+		"from": "Z (Odjazd)",
+		"to": "Do (Przyjazd)",
+		"from_placeholder": "Wpisz miejsce odjazdu...",
+		"to_placeholder": "Wpisz miejsce przyjazdu...",
+		"click_map_hint": "Kliknij na mapę, aby ustawić miejsce odjazdu lub przyjazdu",
+		"airport_mode": "Tryb lotniskowy"
 	},
 	"search": {
 		"cities": "Miasta",
@@ -885,7 +958,8 @@
 		"locations_shown": "Pokazane lokalizacje",
 		"place_marker_desc_location": "Kliknij mapę, aby umieścić znacznik.",
 		"show_visited_cities": "Odwiedzone miasta",
-		"search_locations": "Wyszukaj lokalizacje..."
+		"search_locations": "Wyszukaj lokalizacje...",
+		"clear_filters": "Wyczyść filtry"
 	},
 	"share": {
 		"shared": "Udostępnione",
@@ -928,7 +1002,9 @@
 		"category_name": "Nazwa kategorii",
 		"add_new_category": "Dodaj nową kategorię",
 		"name_required": "Nazwa kategorii jest wymagana",
-		"location_update_after_refresh": "Karty lokalizacji zostaną zaktualizowane po odświeżeniu strony."
+		"location_update_after_refresh": "Karty lokalizacji zostaną zaktualizowane po odświeżeniu strony.",
+		"make_public": "Publiczna",
+		"public_description": "Publiczne kategorie są widoczne i dostępne dla wszystkich użytkowników"
 	},
 	"dashboard": {
 		"countries_visited": "Odwiedzone kraje",
@@ -944,7 +1020,10 @@
 		"welcome_text_2": "Jak dotąd przygody",
 		"welcome_text_3": "Badaj i dokumentuj swoje podróże!",
 		"recent_travel_plans": "Twoje ostatnie plany podróży",
-		"recent_accommodations": "Twoje ostatnie noclegi"
+		"recent_accommodations": "Twoje ostatnie noclegi",
+		"places_visited": "Odwiedzone miejsca",
+		"total_transportation_km": "Łączna przebyta odległość",
+		"total_lodging_nights": "Liczba noclegów"
 	},
 	"immich": {
 		"api_key": "Klucz API Immicha",
@@ -1038,7 +1117,9 @@
 		"linked_success": "Zakwaterowanie powiązane pomyślnie",
 		"linked_error": "",
 		"type": "Type",
-		"select_type": "Select a type"
+		"select_type": "Select a type",
+		"search_placeholder": "Wpisz hotel, adres lub miasto...",
+		"enter_link": "Wpisz link"
 	},
 	"google_maps": {
 		"google_maps_integration_desc": "Połącz swoje konto Google Maps, aby uzyskać wysokiej jakości wyniki wyszukiwania i zalecenia dotyczące lokalizacji.",
@@ -1105,7 +1186,10 @@
 		"not_found": "Nie znaleziono kolekcji",
 		"statistics": "Statystyka",
 		"times_shown_in": "Czasy pokazane w",
-		"trip_costs": "Koszty podróży"
+		"trip_costs": "Koszty podróży",
+		"all_collections": "Wszystkie kolekcje",
+		"my_collections_tab": "Moje kolekcje",
+		"public_collections": "Publiczne kolekcje"
 	},
 	"common": {
 		"show_less": "Ukryj szczegóły",
@@ -1167,7 +1251,13 @@
 		"trip_context": "Kontekst podróży",
 		"trip_context_info": "Elementy kontekstu podróży dotyczą całej podróży — na przykład lokalizacje będące samym celem podróży, uwagi ogólne lub listy rzeczy do spakowania ważne dla całej podróży.",
 		"unscheduled_items": "Niezaplanowane pozycje",
-		"unscheduled_items_desc": "Te elementy są powiązane z tą podróżą, ale nie zostały jeszcze dodane do konkretnego dnia."
+		"unscheduled_items_desc": "Te elementy są powiązane z tą podróżą, ale nie zostały jeszcze dodane do konkretnego dnia.",
+		"broken_item": "Brakujący element",
+		"broken_item_desc": "Powiązany {type} nie istnieje lub został usunięty.",
+		"remove_broken_item": "Usuń uszkodzony wpis",
+		"remove_broken_item_confirm": "Usunąć ten uszkodzony wpis z planu podróży?",
+		"broken_item_removed": "Uszkodzony wpis usunięty",
+		"broken_item_remove_error": "Nie udało się usunąć uszkodzonego wpisu"
 	},
 	"templates": {
 		"title": "Collection Templates",

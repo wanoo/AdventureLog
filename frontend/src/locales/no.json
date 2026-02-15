@@ -28,7 +28,10 @@
 			"northernLights": "Nordlys"
 		},
 		"navigation": "Navigasjon",
-		"worldtravel": "Verdensreise"
+		"worldtravel": "Verdensreise",
+		"locations": "Steder",
+		"lodging": "Overnatting",
+		"transportation": "Transport"
 	},
 	"about": {
 		"about": "Om",
@@ -95,7 +98,6 @@
 		"descending": "Synkende",
 		"updated": "Oppdatert",
 		"name": "Navn",
-		"date": "Dato",
 		"tags": "Tags",
 		"add_a_tag": "Legg til en tag",
 		"date_constrain": "Begrens til samlingsdatoer",
@@ -496,7 +498,49 @@
 		"export_zip": "Eksporter ZIP",
 		"import_failed": "Import mislyktes",
 		"import_from_file": "Importer fra fil",
-		"import_success": "Import suksess"
+		"import_success": "Import suksess",
+		"last_visited": "Sist besøkt",
+		"last_stay": "Siste opphold",
+		"last_trip": "Siste reise",
+		"import_existing": "Importer eksisterende",
+		"last_visit": "Siste besøk",
+		"created_at": "Opprettet",
+		"ratings": "vurderinger",
+		"stars": "stjerner",
+		"average_rating": "Gjennomsnittlig vurdering",
+		"min_rating": "Minimumsvurdering",
+		"min_price_tier": "Minimumsprisnivå",
+		"total_cost": "Totalkostnad",
+		"number_of_people": "Antall personer",
+		"people": "personer",
+		"avg_per_user": "Snitt per person",
+		"avg_per_user_per_night": "Snitt per person/natt",
+		"avg_price": "Gjennomsnittspris",
+		"price_tier_budget": "Budsjett",
+		"price_tier_moderate": "Moderat",
+		"price_tier_expensive": "Dyrt",
+		"price_tier_premium": "Premium",
+		"based_on_visits": "basert på {count} besøk",
+		"all_locations": "Alle steder",
+		"public_locations": "Offentlige steder",
+		"departure_station": "Avreisestasjon",
+		"departure_stop": "Avreiseholdeplass",
+		"arrival_station": "Ankomststasjon",
+		"arrival_stop": "Ankomstholdeplass",
+		"airport": "Flyplass",
+		"train": "Tog",
+		"bus": "Buss",
+		"station_name_examples": "Stasjonsnavn (f.eks. Oslo S)",
+		"bus_stop_examples": "Navn på bussholdeplass",
+		"cab": "Taxi",
+		"vtc": "Privatsjåfør",
+		"pickup_location": "Hentested",
+		"dropoff_location": "Leveringssted",
+		"address_examples": "Adresse, sted...",
+		"address": "Adresse",
+		"addresses": "Adresser",
+		"departures": "Avganger ↗",
+		"arrivals": "Ankomster ↙"
 	},
 	"worldtravel": {
 		"country_list": "Liste over land",
@@ -737,7 +781,22 @@
 		"activities": "Aktiviteter",
 		"trails": "Stier",
 		"use_imperial": "Bruk keiserlige enheter",
-		"use_imperial_desc": "Bruk keiserlige enheter (føtter, tommer, pund) i stedet for metriske enheter"
+		"use_imperial_desc": "Bruk keiserlige enheter (føtter, tommer, pund) i stedet for metriske enheter",
+		"mcp_title": "AI-assistent (MCP)",
+		"mcp_desc": "Koble Claude eller andre AI-assistenter for å administrere eventyrene dine",
+		"mcp_endpoint": "MCP-endepunkt",
+		"api_token": "API-token",
+		"no_mcp_token": "Ingen API-token finnes. Opprett en for å koble til AI-assistenter.",
+		"mcp_help": "Bruk dette tokenet for å koble Claude Desktop eller Claude Code til AdventureLog.",
+		"mcp_instructions": "Legg til MCP-endepunkt-URL og bruk tokenet for autentisering.",
+		"mcp_token_created": "API-token opprettet",
+		"mcp_token_deleted": "API-token slettet",
+		"mcp_token_error": "Kunne ikke administrere API-token",
+		"copied_to_clipboard": "Kopiert til utklippstavlen",
+		"token_created": "Opprettet",
+		"regenerate_token": "Regenerer token",
+		"revoke_token": "Tilbakekall token",
+		"create_token": "Opprett API-token"
 	},
 	"collection": {
 		"collection_created": "Samling opprettet!",
@@ -776,7 +835,12 @@
 		"duplicated_success": "Collection duplicated successfully",
 		"duplicate_error": "Error duplicating collection",
 		"save_as_template": "Save as Template",
-		"template_saved_success": "Template saved successfully"
+		"template_saved_success": "Template saved successfully",
+		"adventure_type": "Type",
+		"no_type": "-- Ingen type --",
+		"public_collections": "Offentlige samlinger",
+		"no_public_collections": "Ingen offentlige samlinger funnet.",
+		"no_public_collections_desc": "Offentlige samlinger fra andre brukere vil vises her."
 	},
 	"notes": {
 		"note_deleted": "Notat slettet!",
@@ -825,7 +889,6 @@
 		"my_transportations": "Mine Transportmidler",
 		"no_transportations_found": "Ingen transportmidler funnet",
 		"create_transportation": "Opprett Transport",
-		"flight_number": "Flynummer",
 		"from_location": "Fra sted",
 		"to_location": "Til sted",
 		"edit": "Rediger",
@@ -837,16 +900,17 @@
 			"boat": "Båt",
 			"bike": "Sykkel",
 			"walking": "Går",
-			"other": "Annet"
+			"other": "Annet",
+			"cab": "Taxi",
+			"vtc": "Privatsjåfør"
 		},
 		"edit_transportation": "Rediger transport",
 		"create_new_transportation": "Ny transport",
-		"enter_flight_number": "Skriv inn flynummer",
 		"enter_from_location": "Gå inn fra stedet",
 		"enter_link": "Skriv inn lenken",
 		"enter_to_location": "Gå til stedet",
 		"enter_transportation_name": "Skriv inn transportnavn",
-		"select_type": "Velg Type",
+		"select_type": "Select a type",
 		"update_transportation_details": "Oppdater transportdetaljer",
 		"arrival_code": "Ankomstkode",
 		"arrival_date": "Ankomstdato",
@@ -859,8 +923,17 @@
 		"move_to_collection_confirm": "Denne transporten er allerede i en annen samling. Flytte til denne samlingen?",
 		"linked_success": "Transport koblet vellykket",
 		"linked_error": "",
-		"type": "Type",
-		"select_type": "Select a type"
+		"transport_id": "Transport-ID",
+		"enter_transport_id": "f.eks. AF765, TGV 8876, #4453536",
+		"departure": "Avreise",
+		"arrival": "Ankomst",
+		"items": "elementer",
+		"from": "Fra (Avreise)",
+		"to": "Til (Ankomst)",
+		"from_placeholder": "Skriv inn avreisested...",
+		"to_placeholder": "Skriv inn ankomststed...",
+		"click_map_hint": "Klikk på kartet for å angi avreise- eller ankomststed",
+		"airport_mode": "Flyplass-modus"
 	},
 	"lodging": {
 		"new_lodging": "Ny overnatting",
@@ -891,7 +964,9 @@
 		"linked_success": "Overnatting koblet vellykket",
 		"linked_error": "",
 		"type": "Type",
-		"select_type": "Select a type"
+		"select_type": "Select a type",
+		"search_placeholder": "Skriv inn hotell, adresse eller by...",
+		"enter_link": "Skriv inn lenke"
 	},
 	"search": {
 		"cities": "Byer",
@@ -916,7 +991,8 @@
 		"locations_shown": "steder vist",
 		"place_marker_desc_location": "Klikk på kartet for å plassere en markør.",
 		"show_visited_cities": "Besøkte byer",
-		"search_locations": "Søk etter steder..."
+		"search_locations": "Søk etter steder...",
+		"clear_filters": "Fjern filtre"
 	},
 	"share": {
 		"shared": "Delt",
@@ -959,7 +1035,9 @@
 		"category_name": "Kategorinavn",
 		"add_new_category": "Legg til ny kategori",
 		"name_required": "Kategorinavnet er påkrevd",
-		"location_update_after_refresh": "Stedskortene vil bli oppdatert når du oppdaterer siden."
+		"location_update_after_refresh": "Stedskortene vil bli oppdatert når du oppdaterer siden.",
+		"make_public": "Offentlig",
+		"public_description": "Offentlige kategorier er synlige og brukbare for alle brukere"
 	},
 	"dashboard": {
 		"welcome_back": "Velkommen tilbake",
@@ -975,7 +1053,10 @@
 		"welcome_text_2": "Eventyr så langt",
 		"welcome_text_3": "Fortsett å utforske og dokumentere dine reiser!",
 		"recent_travel_plans": "Dine nylige reiseplaner",
-		"recent_accommodations": "Dine nylige overnattingssteder"
+		"recent_accommodations": "Dine nylige overnattingssteder",
+		"places_visited": "Besøkte steder",
+		"total_transportation_km": "Total reisedistanse",
+		"total_lodging_nights": "Overnattinger"
 	},
 	"immich": {
 		"immich": "Immich",
@@ -1105,7 +1186,10 @@
 		"not_found": "Finner ikke samlingen",
 		"statistics": "Statistikk",
 		"times_shown_in": "Tider vist i",
-		"trip_costs": "Reisekostnader"
+		"trip_costs": "Reisekostnader",
+		"all_collections": "Alle samlinger",
+		"my_collections_tab": "Mine samlinger",
+		"public_collections": "Offentlige samlinger"
 	},
 	"common": {
 		"show_less": "Skjul detaljer",
@@ -1167,7 +1251,13 @@
 		"trip_context": "Turkontekst",
 		"trip_context_info": "Turkontekstelementer gjelder for hele turen – for eksempel steder som er selve destinasjonen, generelle notater eller pakkelister som er viktige for hele turen.",
 		"unscheduled_items": "Ikke-planlagte elementer",
-		"unscheduled_items_desc": "Disse elementene er knyttet til denne turen, men har ikke blitt lagt til en bestemt dag ennå."
+		"unscheduled_items_desc": "Disse elementene er knyttet til denne turen, men har ikke blitt lagt til en bestemt dag ennå.",
+		"broken_item": "Manglende element",
+		"broken_item_desc": "Den tilknyttede {type} eksisterer ikke lenger eller ble slettet.",
+		"remove_broken_item": "Fjern ødelagt oppføring",
+		"remove_broken_item_confirm": "Fjerne denne ødelagte oppføringen fra reiseplanen?",
+		"broken_item_removed": "Ødelagt oppføring fjernet",
+		"broken_item_remove_error": "Kunne ikke fjerne ødelagt oppføring"
 	},
 	"templates": {
 		"title": "Collection Templates",

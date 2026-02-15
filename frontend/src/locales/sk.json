@@ -28,7 +28,10 @@
 			"dim": "Tlmená"
 		},
 		"navigation": "Navigácia",
-		"worldtravel": "Svetové cestovanie"
+		"worldtravel": "Svetové cestovanie",
+		"locations": "Miesta",
+		"lodging": "Ubytovanie",
+		"transportation": "Doprava"
 	},
 	"about": {
 		"about": "O aplikácii",
@@ -111,7 +114,6 @@
 		"descending": "Zostupne",
 		"updated": "Zmenené",
 		"name": "Názov",
-		"date": "Dátum",
 		"tags": "Značky",
 		"add_a_tag": "Pridať značku",
 		"date_constrain": "Obmedziť na dátumy zbierky",
@@ -496,7 +498,49 @@
 		"export_zip": "Exportovať ZIP",
 		"import_failed": "Import zlyhal",
 		"import_from_file": "Importovať zo súboru",
-		"import_success": "Import bol úspešný"
+		"import_success": "Import bol úspešný",
+		"last_visited": "Naposledy navštívené",
+		"last_stay": "Posledný pobyt",
+		"last_trip": "Posledná cesta",
+		"import_existing": "Importovať existujúce",
+		"last_visit": "Posledná návšteva",
+		"created_at": "Vytvorené",
+		"ratings": "hodnotení",
+		"stars": "hviezdičiek",
+		"average_rating": "Priemerné hodnotenie",
+		"min_rating": "Minimálne hodnotenie",
+		"min_price_tier": "Minimálna cenová úroveň",
+		"total_cost": "Celkové náklady",
+		"number_of_people": "Počet osôb",
+		"people": "osôb",
+		"avg_per_user": "Priemer na osobu",
+		"avg_per_user_per_night": "Priemer na osobu/noc",
+		"avg_price": "Priemerná cena",
+		"price_tier_budget": "Rozpočtový",
+		"price_tier_moderate": "Stredný",
+		"price_tier_expensive": "Drahý",
+		"price_tier_premium": "Prémiový",
+		"based_on_visits": "na základe {count} návštev(y)",
+		"all_locations": "Všetky miesta",
+		"public_locations": "Verejné miesta",
+		"departure_station": "Odjazdová stanica",
+		"departure_stop": "Odjazdová zastávka",
+		"arrival_station": "Príjazdová stanica",
+		"arrival_stop": "Príjazdová zastávka",
+		"airport": "Letisko",
+		"train": "Vlak",
+		"bus": "Autobus",
+		"station_name_examples": "Názov stanice (napr. Bratislava hl.st.)",
+		"bus_stop_examples": "Názov autobusovej zastávky",
+		"cab": "Taxi",
+		"vtc": "Súkromný vodič",
+		"pickup_location": "Miesto vyzdvihnutia",
+		"dropoff_location": "Miesto vysadenia",
+		"address_examples": "Adresa, miesto...",
+		"address": "Adresa",
+		"addresses": "Adresy",
+		"departures": "Odchody ↗",
+		"arrivals": "Príchody ↙"
 	},
 	"worldtravel": {
 		"country_list": "Zoznam krajín",
@@ -737,7 +781,22 @@
 		"use_imperial": "Používať imperiálne jednotky",
 		"use_imperial_desc": "Používať imperiálne jednotky (stopy, palce, libry) namiesto metrických jednotiek",
 		"trails": "Trasy",
-		"activities": "Aktivity"
+		"activities": "Aktivity",
+		"mcp_title": "AI asistent (MCP)",
+		"mcp_desc": "Pripojte Claude alebo iných AI asistentov na správu vašich dobrodružstiev",
+		"mcp_endpoint": "MCP koncový bod",
+		"api_token": "API token",
+		"no_mcp_token": "Neexistuje žiadny API token. Vytvorte ho na pripojenie AI asistentov.",
+		"mcp_help": "Použite tento token na pripojenie Claude Desktop alebo Claude Code k AdventureLog.",
+		"mcp_instructions": "Pridajte URL koncového bodu MCP a použite token na overenie.",
+		"mcp_token_created": "API token vytvorený",
+		"mcp_token_deleted": "API token vymazaný",
+		"mcp_token_error": "Chyba pri správe API tokenu",
+		"copied_to_clipboard": "Skopírované do schránky",
+		"token_created": "Vytvorený",
+		"regenerate_token": "Obnoviť token",
+		"revoke_token": "Zrušiť token",
+		"create_token": "Vytvoriť API token"
 	},
 	"collection": {
 		"collection_created": "Zbierka bola úspešne vytvorená!",
@@ -771,7 +830,17 @@
 		"no_images_available": "Zatiaľ nie sú dostupné žiadne obrázky z prepojených miest.",
 		"public_collection_description": "Povoliť zobrazenie komukoľvek s odkazom",
 		"set_cover": "Nastaviť kryt",
-		"update_collection_details": "Aktualizujte podrobnosti zbierky"
+		"update_collection_details": "Aktualizujte podrobnosti zbierky",
+		"duplicate": "Duplikovať",
+		"duplicated_success": "Kolekcia úspešne zduplikovaná",
+		"duplicate_error": "Chyba pri duplikovaní kolekcie",
+		"save_as_template": "Uložiť ako šablónu",
+		"template_saved_success": "Šablóna úspešne uložená",
+		"adventure_type": "Typ",
+		"no_type": "-- Bez typu --",
+		"public_collections": "Verejné zbierky",
+		"no_public_collections": "Nenašli sa žiadne verejné zbierky.",
+		"no_public_collections_desc": "Verejné zbierky iných používateľov sa zobrazia tu."
 	},
 	"notes": {
 		"note_deleted": "Poznámka bola úspešne odstránená!",
@@ -815,12 +884,11 @@
 	"transportation": {
 		"transportation_deleted": "Doprava bola úspešne odstránená!",
 		"transportation_delete_error": "Chyba pri odstraňovaní dopravy",
-		"type": "Typ",
+		"type": "Type",
 		"new_transportation": "Nová doprava",
 		"my_transportations": "Moja Doprava",
 		"no_transportations_found": "Nenašla sa žiadna doprava",
 		"create_transportation": "Vytvoriť Dopravu",
-		"flight_number": "Číslo letu",
 		"from_location": "Miesto odletu",
 		"to_location": "Miesto príletu",
 		"edit": "Upraviť",
@@ -832,15 +900,16 @@
 			"boat": "Loď",
 			"bike": "Bicykel",
 			"walking": "Chôdza",
-			"other": "Iné"
+			"other": "Iné",
+			"cab": "Taxi",
+			"vtc": "Súkromný vodič"
 		},
 		"edit_transportation": "Upraviť dopravu",
 		"update_transportation_details": "Aktualizovať detaily dopravy",
 		"create_new_transportation": "Nová doprava",
 		"enter_transportation_name": "Zadajte názov dopravy",
-		"select_type": "Vyberte typ",
+		"select_type": "Select a type",
 		"enter_link": "Zadajte odkaz",
-		"enter_flight_number": "Zadajte číslo letu",
 		"enter_from_location": "Zadajte miesto odletu",
 		"enter_to_location": "Zadajte miesto príletu",
 		"arrival_code": "Kód príchodu",
@@ -854,8 +923,17 @@
 		"move_to_collection_confirm": "Táto doprava sa už nachádza v inej zbierke. Presunúť do tejto zbierky?",
 		"linked_success": "Doprava úspešne prepojená",
 		"linked_error": "",
-		"type": "Type",
-		"select_type": "Select a type"
+		"transport_id": "ID dopravy",
+		"enter_transport_id": "napr. AF765, TGV 8876, #4453536",
+		"departure": "Odchod",
+		"arrival": "Príchod",
+		"items": "položky",
+		"from": "Z (Odchod)",
+		"to": "Do (Príchod)",
+		"from_placeholder": "Zadajte miesto odchodu...",
+		"to_placeholder": "Zadajte miesto príchodu...",
+		"click_map_hint": "Kliknite na mapu na nastavenie miesta odchodu alebo príchodu",
+		"airport_mode": "Režim letiska"
 	},
 	"lodging": {
 		"new_lodging": "Nové ubytovanie",
@@ -886,7 +964,9 @@
 		"linked_success": "Ubytovanie úspešne prepojené",
 		"linked_error": "",
 		"type": "Type",
-		"select_type": "Select a type"
+		"select_type": "Select a type",
+		"search_placeholder": "Zadajte hotel, adresu alebo mesto...",
+		"enter_link": "Zadajte odkaz"
 	},
 	"search": {
 		"result": "Výsledok",
@@ -911,7 +991,8 @@
 		"place_marker_desc_location": "Kliknite na mapu pre umiestnenie značky.",
 		"locations_shown": "zobrazených miest",
 		"show_visited_cities": "Navštívené mestá",
-		"search_locations": "Hľadať miesta..."
+		"search_locations": "Hľadať miesta...",
+		"clear_filters": "Vymazať filtre"
 	},
 	"share": {
 		"shared": "Zdieľané",
@@ -954,7 +1035,9 @@
 		"select_category": "Vyberte kategóriu",
 		"category_name": "Názov kategórie",
 		"add_new_category": "Pridať novú kategóriu",
-		"name_required": "Názov kategórie je povinný"
+		"name_required": "Názov kategórie je povinný",
+		"make_public": "Verejná",
+		"public_description": "Verejné kategórie sú viditeľné a použiteľné všetkými používateľmi"
 	},
 	"dashboard": {
 		"welcome_back": "Vitajte späť",
@@ -970,7 +1053,10 @@
 		"welcome_text_2": "dobrodružstvách doteraz",
 		"welcome_text_3": "Pokračujte v objavovaní a dokumentovaní svojich ciest!",
 		"recent_travel_plans": "Vaše nedávne cestovné plány",
-		"recent_accommodations": "Vaše nedávne ubytovania"
+		"recent_accommodations": "Vaše nedávne ubytovania",
+		"places_visited": "Navštívené miesta",
+		"total_transportation_km": "Celková precestovaná vzdialenosť",
+		"total_lodging_nights": "Počet nocí"
 	},
 	"immich": {
 		"immich": "Immich",
@@ -1100,7 +1186,10 @@
 		"not_found": "Zbierka sa nenašla",
 		"statistics": "Štatistiky",
 		"times_shown_in": "Časy uvedené v",
-		"trip_costs": "Cestovné náklady"
+		"trip_costs": "Cestovné náklady",
+		"all_collections": "Všetky zbierky",
+		"my_collections_tab": "Moje zbierky",
+		"public_collections": "Verejné zbierky"
 	},
 	"common": {
 		"show_less": "Skryť podrobnosti",
@@ -1162,7 +1251,13 @@
 		"trip_context": "Kontext cesty",
 		"trip_context_info": "Kontextové položky cesty sa vzťahujú na celú cestu – napríklad miesta, ktoré sú samotným cieľom, všeobecné poznámky alebo zoznamy balíkov, ktoré sú dôležité pre celú cestu.",
 		"unscheduled_items": "Neplánované položky",
-		"unscheduled_items_desc": "Tieto položky sú spojené s touto cestou, ale zatiaľ neboli pridané ku konkrétnemu dňu."
+		"unscheduled_items_desc": "Tieto položky sú spojené s touto cestou, ale zatiaľ neboli pridané ku konkrétnemu dňu.",
+		"broken_item": "Chýbajúca položka",
+		"broken_item_desc": "Prepojený {type} už neexistuje alebo bol vymazaný.",
+		"remove_broken_item": "Odstrániť poškodenú položku",
+		"remove_broken_item_confirm": "Odstrániť túto poškodenú položku z itinerára?",
+		"broken_item_removed": "Poškodená položka odstránená",
+		"broken_item_remove_error": "Nepodarilo sa odstrániť poškodenú položku"
 	},
 	"history": {
 		"title": "História",

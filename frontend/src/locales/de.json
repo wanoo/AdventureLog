@@ -31,7 +31,6 @@
 		"filter_by_type": "Nach Typ filtern",
 		"clear": "Zurücksetzen",
 		"collection": "Sammlung",
-		"date": "Datum",
 		"dates": "Termine",
 		"delete_collection": "Sammlung löschen",
 		"delete_collection_success": "Sammlung erfolgreich gelöscht!",
@@ -447,7 +446,49 @@
 		"export_zip": "ZIP exportieren",
 		"import_failed": "Import fehlgeschlagen",
 		"import_from_file": "Aus Datei importieren",
-		"import_success": "Erfolg importieren"
+		"import_success": "Erfolg importieren",
+		"last_visited": "Zuletzt besucht",
+		"last_stay": "Letzter Aufenthalt",
+		"last_trip": "Letzte Reise",
+		"import_existing": "Vorhandenes importieren",
+		"last_visit": "Letzter Besuch",
+		"created_at": "Erstellt",
+		"ratings": "Bewertungen",
+		"stars": "Sterne",
+		"average_rating": "Durchschnittsbewertung",
+		"min_rating": "Mindestbewertung",
+		"min_price_tier": "Mindestpreisstufe",
+		"total_cost": "Gesamtkosten",
+		"number_of_people": "Personenanzahl",
+		"people": "Personen",
+		"avg_per_user": "Durchschn. pro Person",
+		"avg_per_user_per_night": "Durchschn. pro Person/Nacht",
+		"avg_price": "Durchschnittspreis",
+		"price_tier_budget": "Günstig",
+		"price_tier_moderate": "Moderat",
+		"price_tier_expensive": "Teuer",
+		"price_tier_premium": "Premium",
+		"based_on_visits": "basierend auf {count} Besuch(en)",
+		"all_locations": "Alle Orte",
+		"public_locations": "Öffentliche Orte",
+		"departure_station": "Abfahrtsbahnhof",
+		"departure_stop": "Abfahrtshaltestelle",
+		"arrival_station": "Ankunftsbahnhof",
+		"arrival_stop": "Ankunftshaltestelle",
+		"airport": "Flughafen",
+		"train": "Zug",
+		"bus": "Bus",
+		"station_name_examples": "Bahnhofsname (z.B. Berlin Hbf)",
+		"bus_stop_examples": "Name der Bushaltestelle",
+		"cab": "Taxi",
+		"vtc": "Mietwagen mit Fahrer",
+		"pickup_location": "Abholort",
+		"dropoff_location": "Absetzort",
+		"address_examples": "Adresse, Ort...",
+		"address": "Adresse",
+		"addresses": "Adressen",
+		"departures": "Abfahrten ↗",
+		"arrivals": "Ankünfte ↙"
 	},
 	"home": {
 		"desc_1": "Entdecken, planen und erkunden Sie mühelos",
@@ -496,7 +537,10 @@
 		"calendar": "Kalender",
 		"admin_panel": "Administration",
 		"navigation": "Navigation",
-		"worldtravel": "Weltreisen"
+		"worldtravel": "Weltreisen",
+		"locations": "Orte",
+		"lodging": "Unterkünfte",
+		"transportation": "Transport"
 	},
 	"auth": {
 		"confirm_password": "Passwort bestätigen",
@@ -737,7 +781,22 @@
 		"activities": "Aktivitäten",
 		"trails": "Wanderwege",
 		"use_imperial": "Verwenden Sie imperiale Einheiten",
-		"use_imperial_desc": "Verwenden Sie imperiale Einheiten (Füße, Zoll, Pfund) anstelle von metrischen Einheiten"
+		"use_imperial_desc": "Verwenden Sie imperiale Einheiten (Füße, Zoll, Pfund) anstelle von metrischen Einheiten",
+		"mcp_title": "KI-Assistent (MCP)",
+		"mcp_desc": "Claude oder andere KI-Assistenten verbinden, um Ihre Abenteuer zu verwalten",
+		"mcp_endpoint": "MCP-Endpunkt",
+		"api_token": "API-Token",
+		"no_mcp_token": "Kein API-Token vorhanden. Erstellen Sie einen, um KI-Assistenten zu verbinden.",
+		"mcp_help": "Verwenden Sie diesen Token, um Claude Desktop oder Claude Code mit AdventureLog zu verbinden.",
+		"mcp_instructions": "Fügen Sie die MCP-Endpunkt-URL hinzu und verwenden Sie den Token zur Authentifizierung.",
+		"mcp_token_created": "API-Token erstellt",
+		"mcp_token_deleted": "API-Token gelöscht",
+		"mcp_token_error": "Fehler bei der Verwaltung des API-Tokens",
+		"copied_to_clipboard": "In die Zwischenablage kopiert",
+		"token_created": "Erstellt",
+		"regenerate_token": "Token neu generieren",
+		"revoke_token": "Token widerrufen",
+		"create_token": "API-Token erstellen"
 	},
 	"checklist": {
 		"checklist_delete_error": "Fehler beim Löschen der Checkliste",
@@ -798,7 +857,12 @@
 		"duplicated_success": "Collection duplicated successfully",
 		"duplicate_error": "Error duplicating collection",
 		"save_as_template": "Save as Template",
-		"template_saved_success": "Template saved successfully"
+		"template_saved_success": "Template saved successfully",
+		"adventure_type": "Typ",
+		"no_type": "-- Kein Typ --",
+		"public_collections": "Öffentliche Sammlungen",
+		"no_public_collections": "Keine öffentlichen Sammlungen gefunden.",
+		"no_public_collections_desc": "Öffentliche Sammlungen anderer Benutzer werden hier angezeigt."
 	},
 	"notes": {
 		"content": "Inhalt",
@@ -820,7 +884,6 @@
 	"transportation": {
 		"edit": "Bearbeiten",
 		"edit_transportation": "Verkehrsmittel bearbeiten",
-		"flight_number": "Flugnummer",
 		"from_location": "Start-Standort",
 		"modes": {
 			"bike": "Fahrrad",
@@ -830,23 +893,24 @@
 			"car": "Auto",
 			"other": "Andere",
 			"plane": "Flugzeug",
-			"train": "Zug"
+			"train": "Zug",
+			"cab": "Taxi",
+			"vtc": "Mietwagen mit Fahrer"
 		},
 		"transportation_delete_error": "Fehler beim Löschen des Verkehrsmittels",
 		"transportation_deleted": "Verkehrsmittel erfolgreich gelöscht!",
-		"type": "Typ",
+		"type": "Type",
 		"new_transportation": "Neues Verkehrsmittel",
 		"my_transportations": "Meine Verkehrsmittel",
 		"no_transportations_found": "Keine Verkehrsmittel gefunden",
 		"create_transportation": "Verkehrsmittel erstellen",
 		"to_location": "End-Standort",
 		"create_new_transportation": "Neuer Transport",
-		"enter_flight_number": "Flugnummer eingeben",
 		"enter_from_location": "Start-Standort eingeben",
 		"enter_link": "Link eingeben",
 		"enter_to_location": "End-Standort eingeben",
 		"enter_transportation_name": "Geben Sie den Transportnamen ein",
-		"select_type": "Typ auswählen",
+		"select_type": "Select a type",
 		"update_transportation_details": "Aktualisieren Sie die Transportdetails",
 		"arrival_code": "Ankunftscode",
 		"arrival_date": "Ankunftsdatum",
@@ -859,8 +923,17 @@
 		"move_to_collection_confirm": "Dieser Transport ist bereits in einer anderen Sammlung. Zur dieser Sammlung verschieben?",
 		"linked_success": "Transport erfolgreich verknüpft",
 		"linked_error": "",
-		"type": "Type",
-		"select_type": "Select a type"
+		"transport_id": "Transport-ID",
+		"enter_transport_id": "z.B. AF765, TGV 8876, #4453536",
+		"departure": "Abfahrt",
+		"arrival": "Ankunft",
+		"items": "Elemente",
+		"from": "Von (Abfahrt)",
+		"to": "Nach (Ankunft)",
+		"from_placeholder": "Abfahrtsort eingeben...",
+		"to_placeholder": "Ankunftsort eingeben...",
+		"click_map_hint": "Klicken Sie auf die Karte, um den Abfahrts- oder Ankunftsort festzulegen",
+		"airport_mode": "Flughafenmodus"
 	},
 	"search": {
 		"cities": "Städte",
@@ -885,7 +958,8 @@
 		"locations_shown": "Standorte angezeigt",
 		"place_marker_desc_location": "Klicken Sie auf die Karte, um einen Marker zu platzieren.",
 		"show_visited_cities": "Besuchte Städte",
-		"search_locations": "Standorte suchen..."
+		"search_locations": "Standorte suchen...",
+		"clear_filters": "Filter zurücksetzen"
 	},
 	"share": {
 		"no_users_shared": "Mit keinen Benutzern geteilt",
@@ -928,7 +1002,9 @@
 		"select_category": "Kategorie wählen",
 		"add_new_category": "Neue Kategorie hinzufügen",
 		"name_required": "Der Kategorienname ist erforderlich",
-		"location_update_after_refresh": "Die Standortkarten werden aktualisiert, sobald Sie die Seite aktualisiert haben."
+		"location_update_after_refresh": "Die Standortkarten werden aktualisiert, sobald Sie die Seite aktualisiert haben.",
+		"make_public": "Öffentlich",
+		"public_description": "Öffentliche Kategorien sind für alle Benutzer sichtbar und nutzbar"
 	},
 	"dashboard": {
 		"countries_visited": "Besuchte Länder",
@@ -944,7 +1020,10 @@
 		"welcome_text_2": "Abenteuern bisher",
 		"welcome_text_3": "Erkunden und dokumentieren Sie Ihre Reisen!",
 		"recent_travel_plans": "Ihre letzten Reisepläne",
-		"recent_accommodations": "Ihre letzten Unterkünfte"
+		"recent_accommodations": "Ihre letzten Unterkünfte",
+		"places_visited": "Besuchte Orte",
+		"total_transportation_km": "Gesamte Reisestrecke",
+		"total_lodging_nights": "Übernachtungen"
 	},
 	"immich": {
 		"api_key": "Immich-API-Schlüssel",
@@ -1038,7 +1117,9 @@
 		"linked_success": "Unterkunft erfolgreich verknüpft",
 		"linked_error": "",
 		"type": "Type",
-		"select_type": "Select a type"
+		"select_type": "Select a type",
+		"search_placeholder": "Hotel, Adresse oder Stadt eingeben...",
+		"enter_link": "Link eingeben"
 	},
 	"google_maps": {
 		"google_maps_integration_desc": "Verbinden Sie Ihr Google Maps-Konto, um hochwertige Suchergebnisse und Empfehlungen für Standort zu erhalten.",
@@ -1105,7 +1186,10 @@
 		"not_found": "Sammlung nicht gefunden",
 		"statistics": "Statistiken",
 		"times_shown_in": "Zeiten angezeigt in",
-		"trip_costs": "Reisekosten"
+		"trip_costs": "Reisekosten",
+		"all_collections": "Alle Sammlungen",
+		"my_collections_tab": "Meine Sammlungen",
+		"public_collections": "Öffentliche Sammlungen"
 	},
 	"common": {
 		"show_less": "Details ausblenden",
@@ -1167,7 +1251,13 @@
 		"trip_context": "Reisekontext",
 		"trip_context_info": "Reisekontextelemente gelten für die gesamte Reise – zum Beispiel Orte, die das Ziel selbst darstellen, allgemeine Notizen oder Packlisten, die für die gesamte Reise wichtig sind.",
 		"unscheduled_items": "Ungeplante Einträge",
-		"unscheduled_items_desc": "Diese Einträge sind mit dieser Reise verknüpft, wurden aber noch keinem bestimmten Tag hinzugefügt."
+		"unscheduled_items_desc": "Diese Einträge sind mit dieser Reise verknüpft, wurden aber noch keinem bestimmten Tag hinzugefügt.",
+		"broken_item": "Fehlendes Element",
+		"broken_item_desc": "Das verknüpfte {type} existiert nicht mehr oder wurde gelöscht.",
+		"remove_broken_item": "Defekten Eintrag entfernen",
+		"remove_broken_item_confirm": "Diesen defekten Eintrag aus dem Reiseplan entfernen?",
+		"broken_item_removed": "Defekter Eintrag entfernt",
+		"broken_item_remove_error": "Fehler beim Entfernen des defekten Eintrags"
 	},
 	"templates": {
 		"title": "Collection Templates",

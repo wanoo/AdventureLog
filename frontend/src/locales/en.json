@@ -903,6 +903,8 @@
 			"boat": "Boat",
 			"bike": "Bike",
 			"walking": "Walking",
+			"cab": "Cab",
+			"vtc": "VTC",
 			"other": "Other"
 		},
 		"edit_transportation": "Edit Transportation",

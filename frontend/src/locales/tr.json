@@ -28,7 +28,10 @@
 			"dim": "Loş"
 		},
 		"navigation": "Navigasyon",
-		"worldtravel": "Dünya Seyahati"
+		"worldtravel": "Dünya Seyahati",
+		"locations": "Mekanlar",
+		"lodging": "Konaklama",
+		"transportation": "Ulaşım"
 	},
 	"about": {
 		"about": "Hakkında",
@@ -111,7 +114,6 @@
 		"descending": "Azalan",
 		"updated": "Güncellenme",
 		"name": "İsim",
-		"date": "Tarih",
 		"tags": "Etiketler",
 		"add_a_tag": "Etiket ekle",
 		"date_constrain": "Koleksiyon tarihleri ile sınırla",
@@ -496,7 +498,49 @@
 		"export_zip": "ZIP'i dışa aktar",
 		"import_failed": "İçe Aktarma Başarısız",
 		"import_from_file": "Dosyadan içe aktar",
-		"import_success": "İçe Aktarma Başarısı"
+		"import_success": "İçe Aktarma Başarısı",
+		"last_visited": "Son ziyaret",
+		"last_stay": "Son konaklama",
+		"last_trip": "Son yolculuk",
+		"import_existing": "Mevcut olanı içe aktar",
+		"last_visit": "Son ziyaret",
+		"created_at": "Oluşturulma",
+		"ratings": "değerlendirme",
+		"stars": "yıldız",
+		"average_rating": "Ortalama puan",
+		"min_rating": "Minimum puan",
+		"min_price_tier": "Minimum fiyat seviyesi",
+		"total_cost": "Toplam maliyet",
+		"number_of_people": "Kişi sayısı",
+		"people": "kişi",
+		"avg_per_user": "Kişi başı ortalama",
+		"avg_per_user_per_night": "Kişi başı/gece ortalama",
+		"avg_price": "Ortalama fiyat",
+		"price_tier_budget": "Bütçe dostu",
+		"price_tier_moderate": "Orta",
+		"price_tier_expensive": "Pahalı",
+		"price_tier_premium": "Premium",
+		"based_on_visits": "{count} ziyarete dayalı",
+		"all_locations": "Tüm mekanlar",
+		"public_locations": "Herkese açık mekanlar",
+		"departure_station": "Kalkış istasyonu",
+		"departure_stop": "Kalkış durağı",
+		"arrival_station": "Varış istasyonu",
+		"arrival_stop": "Varış durağı",
+		"airport": "Havalimanı",
+		"train": "Tren",
+		"bus": "Otobüs",
+		"station_name_examples": "İstasyon adı (ör. Ankara Garı)",
+		"bus_stop_examples": "Otobüs durağı adı",
+		"cab": "Taksi",
+		"vtc": "Özel şoför",
+		"pickup_location": "Alış noktası",
+		"dropoff_location": "Bırakış noktası",
+		"address_examples": "Adres, yer...",
+		"address": "Adres",
+		"addresses": "Adresler",
+		"departures": "Kalkışlar ↗",
+		"arrivals": "Varışlar ↙"
 	},
 	"worldtravel": {
 		"country_list": "Ülke Listesi",
@@ -737,7 +781,22 @@
 		"use_imperial": "İngiliz Ölçü Birimlerini Kullan",
 		"use_imperial_desc": "Metrik birimler yerine İngiliz birimlerini (fit, inç, pound) kullanın",
 		"trails": "Patikalar",
-		"activities": "Aktiviteler"
+		"activities": "Aktiviteler",
+		"mcp_title": "Yapay Zeka Asistanı (MCP)",
+		"mcp_desc": "Maceralarınızı yönetmek için Claude veya diğer AI asistanları bağlayın",
+		"mcp_endpoint": "MCP Uç Noktası",
+		"api_token": "API Anahtarı",
+		"no_mcp_token": "API anahtarı yok. AI asistanlarını bağlamak için bir tane oluşturun.",
+		"mcp_help": "Claude Desktop veya Claude Code'u AdventureLog'a bağlamak için bu anahtarı kullanın.",
+		"mcp_instructions": "MCP uç nokta URL'sini ekleyin ve kimlik doğrulama için anahtarı kullanın.",
+		"mcp_token_created": "API anahtarı oluşturuldu",
+		"mcp_token_deleted": "API anahtarı silindi",
+		"mcp_token_error": "API anahtarı yönetimi başarısız",
+		"copied_to_clipboard": "Panoya kopyalandı",
+		"token_created": "Oluşturuldu",
+		"regenerate_token": "Anahtarı yeniden oluştur",
+		"revoke_token": "Anahtarı iptal et",
+		"create_token": "API anahtarı oluştur"
 	},
 	"collection": {
 		"collection_created": "Koleksiyon başarıyla oluşturuldu!",
@@ -776,7 +835,12 @@
 		"duplicated_success": "Collection duplicated successfully",
 		"duplicate_error": "Error duplicating collection",
 		"save_as_template": "Save as Template",
-		"template_saved_success": "Template saved successfully"
+		"template_saved_success": "Template saved successfully",
+		"adventure_type": "Tür",
+		"no_type": "-- Tür yok --",
+		"public_collections": "Herkese açık koleksiyonlar",
+		"no_public_collections": "Herkese açık koleksiyon bulunamadı.",
+		"no_public_collections_desc": "Diğer kullanıcıların herkese açık koleksiyonları burada görünecektir."
 	},
 	"notes": {
 		"note_deleted": "Not başarıyla silindi!",
@@ -820,12 +884,11 @@
 	"transportation": {
 		"transportation_deleted": "Ulaşım başarıyla silindi!",
 		"transportation_delete_error": "Ulaşım silinirken hata oluştu",
-		"type": "Tür",
+		"type": "Type",
 		"new_transportation": "Yeni Ulaşım",
 		"my_transportations": "Ulaşımlarım",
 		"no_transportations_found": "Ulaşım bulunamadı",
 		"create_transportation": "Ulaşım Oluştur",
-		"flight_number": "Uçuş Numarası",
 		"from_location": "Başlangıç Konumu",
 		"to_location": "Varış Konumu",
 		"edit": "Düzenle",
@@ -837,15 +900,16 @@
 			"boat": "Gemi",
 			"bike": "Motorsiklet",
 			"walking": "Yürüyüş",
-			"other": "Diğer"
+			"other": "Diğer",
+			"cab": "Taksi",
+			"vtc": "Özel şoför"
 		},
 		"edit_transportation": "Ulaşımı Düzenle",
 		"update_transportation_details": "Ulaşım Detaylarını Güncelle",
 		"create_new_transportation": "Yeni Ulaşım",
 		"enter_transportation_name": "Ulaşım adını girin",
-		"select_type": "Tür Seçin",
+		"select_type": "Select a type",
 		"enter_link": "Bağlantı girin",
-		"enter_flight_number": "Uçuş numarasını girin",
 		"enter_from_location": "Başlangıç konumunu girin",
 		"enter_to_location": "Varış konumunu girin",
 		"arrival_code": "Varış Kodu",
@@ -859,8 +923,17 @@
 		"move_to_collection_confirm": "Bu ulaşım zaten başka bir koleksiyonda. Bu koleksiyona taşınsın mı?",
 		"linked_success": "Ulaşım başarıyla bağlandı",
 		"linked_error": "",
-		"type": "Type",
-		"select_type": "Select a type"
+		"transport_id": "Ulaşım kimliği",
+		"enter_transport_id": "ör. AF765, TGV 8876, #4453536",
+		"departure": "Kalkış",
+		"arrival": "Varış",
+		"items": "öğeler",
+		"from": "Nereden (Kalkış)",
+		"to": "Nereye (Varış)",
+		"from_placeholder": "Kalkış yerini girin...",
+		"to_placeholder": "Varış yerini girin...",
+		"click_map_hint": "Kalkış veya varış yerini ayarlamak için haritaya tıklayın",
+		"airport_mode": "Havalimanı modu"
 	},
 	"lodging": {
 		"new_lodging": "Yeni Konaklama",
@@ -891,7 +964,9 @@
 		"linked_success": "Konaklama başarıyla bağlandı",
 		"linked_error": "",
 		"type": "Type",
-		"select_type": "Select a type"
+		"select_type": "Select a type",
+		"search_placeholder": "Otel, adres veya şehir girin...",
+		"enter_link": "Bağlantı girin"
 	},
 	"search": {
 		"result": "Sonuç",
@@ -916,7 +991,8 @@
 		"place_marker_desc_location": "Bir işaretçi yerleştirmek için haritaya tıklayın.",
 		"locations_shown": "gösterilen konumlar",
 		"show_visited_cities": "Ziyaret Edilen Şehirler",
-		"search_locations": "Konumları arayın..."
+		"search_locations": "Konumları arayın...",
+		"clear_filters": "Filtreleri temizle"
 	},
 	"share": {
 		"shared": "Paylaşılan",
@@ -959,7 +1035,9 @@
 		"select_category": "Kategori Seçin",
 		"category_name": "Kategori Adı",
 		"add_new_category": "Yeni Kategori Ekle",
-		"name_required": "Kategori adı gereklidir"
+		"name_required": "Kategori adı gereklidir",
+		"make_public": "Herkese açık",
+		"public_description": "Herkese açık kategoriler tüm kullanıcılar tarafından görülebilir ve kullanılabilir"
 	},
 	"dashboard": {
 		"welcome_back": "Tekrar hoş geldiniz",
@@ -975,7 +1053,10 @@
 		"welcome_text_2": "şu ana kadar maceralar",
 		"welcome_text_3": "Seyahatlerinizi keşfetmeye ve belgelemeye devam edin!",
 		"recent_travel_plans": "Son seyahat planlarınız",
-		"recent_accommodations": "Son konaklamalarınız"
+		"recent_accommodations": "Son konaklamalarınız",
+		"places_visited": "Ziyaret edilen yerler",
+		"total_transportation_km": "Toplam kat edilen mesafe",
+		"total_lodging_nights": "Konaklama geceleri"
 	},
 	"immich": {
 		"immich": "Immich",
@@ -1105,7 +1186,10 @@
 		"not_found": "Koleksiyon Bulunamadı",
 		"statistics": "İstatistikler",
 		"times_shown_in": "Gösterilen zamanlar",
-		"trip_costs": "Seyahat Maliyetleri"
+		"trip_costs": "Seyahat Maliyetleri",
+		"all_collections": "Tüm koleksiyonlar",
+		"my_collections_tab": "Koleksiyonlarım",
+		"public_collections": "Herkese açık koleksiyonlar"
 	},
 	"common": {
 		"show_less": "Ayrıntıları gizle",
@@ -1167,7 +1251,13 @@
 		"trip_context": "Seyahat İçeriği",
 		"trip_context_info": "Seyahat bağlamı öğeleri seyahatin tamamı için geçerlidir; örneğin varış noktasının kendisi olan konumlar, genel notlar veya seyahatin tamamı için önemli olan paket listeleri.",
 		"unscheduled_items": "Planlanmamış Öğeler",
-		"unscheduled_items_desc": "Bu öğeler bu geziye bağlı ancak henüz belirli bir güne eklenmedi."
+		"unscheduled_items_desc": "Bu öğeler bu geziye bağlı ancak henüz belirli bir güne eklenmedi.",
+		"broken_item": "Eksik öğe",
+		"broken_item_desc": "Bağlantılı {type} artık mevcut değil veya silindi.",
+		"remove_broken_item": "Bozuk girişi kaldır",
+		"remove_broken_item_confirm": "Bu bozuk girişi programdan kaldırmak istiyor musunuz?",
+		"broken_item_removed": "Bozuk giriş kaldırıldı",
+		"broken_item_remove_error": "Bozuk giriş kaldırılamadı"
 	},
 	"templates": {
 		"title": "Collection Templates",
