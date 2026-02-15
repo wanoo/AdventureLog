@@ -99,7 +99,7 @@ import { fetchExchangeRates, formatConvertedPrice, ratesLoaded } from '$lib/stor
 		}
 		if (getRouteCodes(t)) {
 			badges.push({
-				label: `✈️ ${getRouteCodes(t)}`,
+				label: `${getTransportationIcon(t.type)} ${getRouteCodes(t)}`,
 				class: 'badge-outline'
 			});
 		}
