@@ -316,8 +316,8 @@
 	function unifiedToGeoSelection(result: UnifiedSearchResult): GeoSelection & { source?: string; code?: string | null } {
 		return {
 			name: result.name,
-			lat: result.lat,
-			lng: result.lon,
+			lat: typeof result.lat === 'string' ? parseFloat(result.lat) : result.lat,
+			lng: typeof result.lon === 'string' ? parseFloat(result.lon) : result.lon,
 			location: result.display_name,
 			type: result.type,
 			category: result.category,
