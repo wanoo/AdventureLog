@@ -93,14 +93,21 @@ def _convert_from_usd(amount_usd, target_currency_code):
 
 def _get_entity_currency(entity, entity_type):
     """Get the country currency code for an entity, fallback to USD."""
-    country = None
+    candidates = []
     if entity_type == 'transportation':
-        country = getattr(entity, 'origin_country', None)
+        # Try origin first, then destination
+        candidates = [
+            getattr(entity, 'origin_country', None),
+            getattr(entity, 'destination_country', None),
+        ]
     else:
-        country = getattr(entity, 'country', None)
+        candidates = [getattr(entity, 'country', None)]
 
-    if country and getattr(country, 'currency_code', None):
-        return country.currency_code
+    for country in candidates:
+        if country:
+            code = getattr(country, 'currency_code', None)
+            if code and str(code).strip():
+                return str(code).strip()
     return 'USD'
 
 

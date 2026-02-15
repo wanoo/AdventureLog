@@ -72,6 +72,7 @@
 			value={value.currency}
 			options={currencyOptions || undefined}
 			{priorityCurrencies}
+			{compact}
 			on:change={updateCurrency}
 		/>
 		{#if showClear}

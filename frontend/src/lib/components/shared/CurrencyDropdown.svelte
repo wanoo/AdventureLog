@@ -22,6 +22,7 @@
 	export let placeholder = '';
 	export let disabled = false;
 	export let id: string | undefined;
+	export let compact = false;
 
 	const dispatch = createEventDispatcher<{ change: string | null }>();
 
@@ -109,13 +110,13 @@
 </script>
 
 <div
-	class={`dropdown dropdown-bottom w-full ${open ? 'dropdown-open' : ''}`}
+	class={`dropdown dropdown-bottom ${compact ? 'w-auto' : 'w-full'} ${open ? 'dropdown-open' : ''}`}
 	bind:this={container}
 	on:focusout={handleFocusOut}
 >
 	<button
 		type="button"
-		class="input input-bordered w-full justify-between gap-3 bg-base-100/80 focus:bg-base-100 flex items-center"
+		class="input input-bordered {compact ? 'input-sm w-auto min-w-[80px]' : 'w-full'} justify-between gap-2 bg-base-100/80 focus:bg-base-100 flex items-center"
 		aria-haspopup="listbox"
 		aria-expanded={open}
 		aria-controls={id ? `${id}-listbox` : undefined}
@@ -128,7 +129,7 @@
 			<span class="font-mono text-sm"
 				>{value || $t('currencies.select_currency') || placeholder}</span
 			>
-			{#if value}
+			{#if value && !compact}
 				<span class="text-xs text-base-content/70 truncate"
 					>{$t(`currencies.${value}`) || CURRENCY_LABELS[value]}</span
 				>
