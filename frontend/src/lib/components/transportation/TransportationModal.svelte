@@ -169,13 +169,13 @@
 					transportation.from_location = origin.location || origin.name;
 					transportation.origin_latitude = origin.latitude;
 					transportation.origin_longitude = origin.longitude;
-					if (origin.code) transportation.start_code = origin.code;
+					transportation.start_code = origin.code || null;
 				}
 				if (destination) {
 					transportation.to_location = destination.location || destination.name;
 					transportation.destination_latitude = destination.latitude;
 					transportation.destination_longitude = destination.longitude;
-					if (destination.code) transportation.end_code = destination.code;
+					transportation.end_code = destination.code || null;
 				}
 				// Set type based on search mode (always update to match user's selection)
 				if (searchMode === 'airport') transportation.type = 'plane';

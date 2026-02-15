@@ -84,7 +84,15 @@ def background_geocode_lodging(lodging_id: str):
             if country:
                 lodging.country = country
 
-        lodging.save(update_fields=["region", "city", "country"], _skip_geocode=True)
+        # Update price_currency from country if still the default 'USD'
+        update_fields = ["region", "city", "country"]
+        if lodging.country and str(lodging.price_currency) == 'USD':
+            currency_code = getattr(lodging.country, 'currency_code', None)
+            if currency_code and str(currency_code).strip():
+                lodging.price_currency = str(currency_code).strip()
+                update_fields.append("price_currency")
+
+        lodging.save(update_fields=update_fields, _skip_geocode=True)
 
     except Exception as e:
         print(f"[Lodging Geocode Thread] Error processing {lodging_id}: {e}")
@@ -113,7 +121,15 @@ def background_geocode_transportation(transportation_id: str):
                 if country:
                     transportation.destination_country = country
 
-        transportation.save(update_fields=["origin_country", "destination_country"], _skip_geocode=True)
+        # Update price_currency from origin country if still the default 'USD'
+        update_fields = ["origin_country", "destination_country"]
+        if transportation.origin_country and str(transportation.price_currency) == 'USD':
+            currency_code = getattr(transportation.origin_country, 'currency_code', None)
+            if currency_code and str(currency_code).strip():
+                transportation.price_currency = str(currency_code).strip()
+                update_fields.append("price_currency")
+
+        transportation.save(update_fields=update_fields, _skip_geocode=True)
 
     except Exception as e:
         print(f"[Transportation Geocode Thread] Error processing {transportation_id}: {e}")
