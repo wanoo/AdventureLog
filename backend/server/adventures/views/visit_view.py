@@ -5,7 +5,7 @@ from adventures.models import Location, Visit, Transportation, Lodging
 from adventures.serializers import VisitSerializer
 from adventures.permissions import IsOwnerOrSharedWithFullAccess
 from rest_framework.exceptions import PermissionDenied
-from adventures.models import background_geocode_and_assign
+from adventures.utils.geocoding_tasks import background_geocode
 
 class VisitViewSet(viewsets.ModelViewSet):
     serializer_class = VisitSerializer
@@ -76,7 +76,7 @@ class VisitViewSet(viewsets.ModelViewSet):
 
         # This will update any visited regions or cities based on if it's now visited (only for locations)
         if location:
-            background_geocode_and_assign(str(location.id))
+            background_geocode(Location, str(location.id))
 
     def perform_update(self, serializer):
         instance = serializer.instance
@@ -106,7 +106,7 @@ class VisitViewSet(viewsets.ModelViewSet):
 
         # Update geocoding for locations only
         if instance.location:
-            background_geocode_and_assign(str(instance.location.id))
+            background_geocode(Location, str(instance.location.id))
 
     def perform_destroy(self, instance):
         # In collaborative mode, users can only delete their own visits
